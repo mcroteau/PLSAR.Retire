@@ -1,0 +1,42 @@
+key=
+mail.key=
+
+host=localhost:3000
+#host=yourdomain.com
+
+### qio settings ###
+qio.env=create
+qio.assets=benefit
+qio.properties=this
+
+### database settings ###
+db.url=jdbc:h2:~/Giga
+db.driver=org.h2.Driver
+db.user=sa
+db.pass=
+
+#db.url=jdbc:h2:tcp://66.42.71.179:9092/~/Giga
+#db.driver=org.h2.Driver
+#db.user=sa
+#db.pass=
+
+### easypost settings ###
+easypost.key=
+
+### stripe payments settings ###
+stripe.key=
+
+### digital ocean settings ###
+digital.ocean.key=
+digital.ocean.secret=
+
+
+### mail settings ###
+smtp.host=
+smtp.auth=true
+smtp.port=2525
+smtp.username=
+smtp.password=
+smtp.supportEmail=
+smtp.starttls=true
+

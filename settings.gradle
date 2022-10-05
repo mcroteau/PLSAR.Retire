@@ -1,0 +1,4 @@
+rootProject.name = 'oceanblue'
+include 'ocean-blue'
+include 'samples:Giga'
+

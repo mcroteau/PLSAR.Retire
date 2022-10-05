@@ -1,0 +1,29 @@
+<gigante:authenticated>
+    Hello <gigante:user/>!
+    You are authenticated.
+    <a href="/signout">Signout</a>
+</gigante:authenticated>
+
+<gigante:guest>
+
+    <gigante:if spec="${message != ''}">
+        ${message}
+    </gigante:if>
+
+    <h1>Signin.</h1>
+    <form action="/authenticate" method="post">
+        <input type="text" name="user"/>
+        <input type="text" name="pass"/>
+        <input type="submit" name="Signin!"/>
+    </form>
+    <p><strong>Super User</strong><br/>
+        username : croteau.mike+uno@gmail.com<br/>
+        password : effort.
+    </p>
+    <p><strong>Basic User</strong><br/>
+        username : croteau.mike+dos@gmail.com<br/>
+        password : effort.
+    </p>
+</gigante:guest>
+
+Special instructions: ${instructions}

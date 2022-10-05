@@ -1,0 +1,10 @@
+### Qio Settings ###
+qio.dev=true
+qio.assets=benefit
+qio.properties=this
+
+### database settings ###
+db.url=jdbc:h2:~/GigaTest
+db.driver=org.h2.Driver
+db.user=sa
+db.pass=
