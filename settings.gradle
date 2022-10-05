@@ -1,4 +1,4 @@
-rootProject.name = 'oceanblue'
-include 'ocean-blue'
-include 'samples:Giga'
+rootProject.name = 'Earthling'
+include 'earthling'
+include 'samples:petshop'
 
