@@ -1,6 +1,6 @@
 package example;
 
-import oceanblue.OceanBlue;
+import oceanblue.PLSAR;
 import oceanblue.SchemaConfig;
 import oceanblue.PersistenceConfig;
 import oceanblue.security.renderer.AuthenticatedRenderer;
@@ -16,13 +16,13 @@ public class Main {
         schemaConfig.setSchema("schema.sql");
         schemaConfig.setEnvironment(Environments.DEVELOPMENT);
 
-        OceanBlue oceanBlue = new OceanBlue(8080);
-        oceanBlue.addViewRenderer(new AuthenticatedRenderer());
-        oceanBlue.addViewRenderer(new GuestRenderer());
-        oceanBlue.addViewRenderer(new UserRenderer());
-        oceanBlue.setPersistenceConfig(persistenceConfig);
-        oceanBlue.setSchemaConfig(schemaConfig);
+        PLSAR PLSAR = new PLSAR(8080);
+        PLSAR.addViewRenderer(new AuthenticatedRenderer());
+        PLSAR.addViewRenderer(new GuestRenderer());
+        PLSAR.addViewRenderer(new UserRenderer());
+        PLSAR.setPersistenceConfig(persistenceConfig);
+        PLSAR.setSchemaConfig(schemaConfig);
 
-        oceanBlue.start();
+        PLSAR.start();
     }
 }

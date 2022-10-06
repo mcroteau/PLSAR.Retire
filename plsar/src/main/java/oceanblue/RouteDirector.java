@@ -140,7 +140,7 @@ public class RouteDirector {
             e.printStackTrace();
         } catch (IOException ioException) {
             ioException.printStackTrace();
-        } catch (EarthlingException e) {
+        } catch (PlsarException e) {
             e.printStackTrace();
         }
 

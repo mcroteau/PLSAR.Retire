@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
-public class OceanBlue {
+public class PLSAR {
 
-    static Logger Log = Logger.getLogger(OceanBlue.class.getName());
+    static Logger Log = Logger.getLogger(PLSAR.class.getName());
 
     Integer port;
     SchemaConfig schemaConfig;
@@ -31,7 +31,7 @@ public class OceanBlue {
     PersistenceConfig persistenceConfig;
     List<ViewRenderer> viewRenderers;
 
-    public OceanBlue(int port){
+    public PLSAR(int port){
         this.port = port;
         this.viewRenderers = new ArrayList<>();
     }
@@ -278,9 +278,9 @@ public class OceanBlue {
                     clientOutput.write(response.toString().getBytes());
                 }else{
                     Map<String, Object> redirectAttributes = new HashMap<>();
-                    redirectAttributes.put(OceanBlue.HTTPREQUEST, httpRequest);
-                    redirectAttributes.put(OceanBlue.HTTPRESPONSE, httpResponse);
-                    redirectAttributes.put(OceanBlue.CACHE, cache);
+                    redirectAttributes.put(PLSAR.HTTPREQUEST, httpRequest);
+                    redirectAttributes.put(PLSAR.HTTPRESPONSE, httpResponse);
+                    redirectAttributes.put(PLSAR.CACHE, cache);
                     redirectRegistry.getRegistry().put(routeDirectorGuid, redirectAttributes);
                     StringBuilder response = new StringBuilder();
                     response.append("HTTP/1.1 307\r\n");
@@ -336,12 +336,12 @@ public class OceanBlue {
         this.schemaConfig = schemaConfig;
     }
 
-    public OceanBlue addViewRenderer(ViewRenderer viewRenderer){
+    public PLSAR addViewRenderer(ViewRenderer viewRenderer){
         this.viewRenderers.add(viewRenderer);
         return this;
     }
 
-    public OceanBlue setPersistenceConfig(PersistenceConfig persistenceConfig) {
+    public PLSAR setPersistenceConfig(PersistenceConfig persistenceConfig) {
         this.persistenceConfig = persistenceConfig;
         return this;
     }

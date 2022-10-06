@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
 
-public class EarthlingDatasource implements DataSource {
+public class PlsarDatasource implements DataSource {
     String driver;
     String url;
     String user;

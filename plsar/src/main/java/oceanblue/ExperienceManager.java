@@ -30,7 +30,7 @@ public class ExperienceManager {
     final String HTML_COMMENT = "<!--";
 
     //todo: please.
-    public String execute(String pageElement, Cache cache, HttpRequest req, List<ViewRenderer> viewRenderers) throws EarthlingException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public String execute(String pageElement, Cache cache, HttpRequest req, List<ViewRenderer> viewRenderers) throws PlsarException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         List<String> elementEntries = Arrays.asList(pageElement.split("\n"));
         List<String> viewRendererElementEntries = getInterpretedRenderers(req, elementEntries, viewRenderers);
 
@@ -152,7 +152,7 @@ public class ExperienceManager {
         return elementEntries;
     }
 
-    List<DataPartial> getCompletedPartials(List<DataPartial> dataPartialsPre, Cache resp) throws InvocationTargetException, NoSuchMethodException, EarthlingException, NoSuchFieldException, IllegalAccessException {
+    List<DataPartial> getCompletedPartials(List<DataPartial> dataPartialsPre, Cache resp) throws InvocationTargetException, NoSuchMethodException, PlsarException, NoSuchFieldException, IllegalAccessException {
 
         List<DataPartial> dataPartials = new ArrayList<>();
         for(DataPartial dataPartial : dataPartialsPre) {
@@ -233,7 +233,7 @@ public class ExperienceManager {
         return dataPartials;
     }
 
-    boolean passesSpec(Object object, DataPartial specPartial, DataPartial dataPartial, Cache resp) throws NoSuchMethodException, EarthlingException, IllegalAccessException, NoSuchFieldException, InvocationTargetException {
+    boolean passesSpec(Object object, DataPartial specPartial, DataPartial dataPartial, Cache resp) throws NoSuchMethodException, PlsarException, IllegalAccessException, NoSuchFieldException, InvocationTargetException {
         if(dataPartial.isWithinIterable() && passesIterableSpec(specPartial, object, resp)){
             return true;
         }
@@ -311,7 +311,7 @@ public class ExperienceManager {
     }
 
 
-    List<DataPartial> getInflatedPartials(List<DataPartial> dataPartials, Cache resp) throws NoSuchFieldException, IllegalAccessException, EarthlingException {
+    List<DataPartial> getInflatedPartials(List<DataPartial> dataPartials, Cache resp) throws NoSuchFieldException, IllegalAccessException, PlsarException {
 
         List<DataPartial> dataPartialsPre = new ArrayList<>();
         for(int tao = 0; tao < dataPartials.size(); tao++) {
@@ -474,7 +474,7 @@ public class ExperienceManager {
         return specPartialsReady;
     }
 
-    List<DataPartial> getIterablePartials(int openIdx, List<DataPartial> dataPartials) throws EarthlingException {
+    List<DataPartial> getIterablePartials(int openIdx, List<DataPartial> dataPartials) throws PlsarException {
         Integer openCount = 1, endCount = 0;
         List<DataPartial> dataPartialsDeux = new ArrayList<>();
         for (int foo = openIdx; foo < dataPartials.size(); foo++) {
@@ -490,7 +490,7 @@ public class ExperienceManager {
         return dataPartialsDeux;
     }
 
-    List<DataPartial> getIterablePartialsNested(int openIdx, List<DataPartial> dataPartials) throws EarthlingException {
+    List<DataPartial> getIterablePartialsNested(int openIdx, List<DataPartial> dataPartials) throws PlsarException {
         List<DataPartial> dataPartialsDeux = new ArrayList<>();
         Integer endIdx = getEndEach(openIdx, dataPartials);
         for (int foo = openIdx; foo < endIdx; foo++) {
@@ -500,7 +500,7 @@ public class ExperienceManager {
         return dataPartialsDeux;
     }
 
-    int getEndEach(int openIdx, List<DataPartial> basePartials) throws EarthlingException {
+    int getEndEach(int openIdx, List<DataPartial> basePartials) throws PlsarException {
         Integer openEach = 1;
         Integer endEach = 0;
         for (int qxro = openIdx + 1; qxro < basePartials.size(); qxro++) {
@@ -508,12 +508,12 @@ public class ExperienceManager {
             String basicEntry = basePartial.getEntry();
             if(basicEntry.contains(this.ENDEACH))endEach++;
 
-            if(openEach > 3)throw new EarthlingException("too many nested <earthling:iterate>.");
+            if(openEach > 3)throw new PlsarException("too many nested <earthling:iterate>.");
             if(basicEntry.contains(this.ENDEACH) && endEach == openEach && endEach != 0){
                 return qxro + 1;
             }
         }
-        throw new EarthlingException("missing end </earthling:iterate>");
+        throw new PlsarException("missing end </earthling:iterate>");
     }
 
 

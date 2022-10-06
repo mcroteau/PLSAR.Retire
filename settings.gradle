@@ -1,4 +1,4 @@
-rootProject.name = 'Earthling'
-include 'earthling'
-include 'samples:petshop'
+rootProject.name = 'PLSAR'
+include 'plsar'
+include 'samples:Giga'
 
