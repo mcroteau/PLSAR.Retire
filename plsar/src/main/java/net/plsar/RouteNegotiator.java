@@ -4,7 +4,7 @@ import net.plsar.annotations.Metadata;
 import net.plsar.model.Cache;
 import net.plsar.model.HttpRequest;
 import net.plsar.model.HttpResponse;
-import net.plsar.model.RedirectRegistry;
+import net.plsar.security.SecurityManager;
 import net.plsar.resources.ServerResources;
 
 import java.io.*;
@@ -20,7 +20,7 @@ public class RouteNegotiator {
     String guid;//love.
     RouteAttributes routeAttributes;
 
-    public RouteResponse negotiate(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, RedirectRegistry registry, List<Class<?>> viewRenderers){
+    public RouteResponse negotiate(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, SecurityManager securityManager, List<Class<?>> viewRenderers){
 
         try {
             ServerResources serverResources = new ServerResources();
@@ -30,7 +30,7 @@ public class RouteNegotiator {
             RouteEndpointHolder routeEndpointHolder = routeAttributes.getRouteEndpointHolder();
 
             RouteEndpoint routeEndpoint = serverResources.getRouteEndpoint(httpRequest.getVerb(), httpRequest.getUriPath(), routeEndpointHolder);
-            Object[] signature = serverResources.getRouteParameters(httpRequest.getUriPath(), httpRequest, httpResponse, cache, routeEndpoint);
+            Object[] signature = serverResources.getRouteParameters(httpRequest.getUriPath(), routeEndpoint, cache, httpRequest, httpResponse, securityManager);
             Method method = routeEndpoint.getRouteMethod();
 
             String design = null, title = null, keywords = null, description = null;

@@ -6,6 +6,7 @@ import net.plsar.SchemaConfig;
 import net.plsar.security.renderer.AuthenticatedRenderer;
 import net.plsar.security.renderer.GuestRenderer;
 import net.plsar.security.renderer.UserRenderer;
+import plsar.assist.AuthSecurityAccess;
 
 public class Main {
     public static void main(String[] args) {
@@ -24,7 +25,7 @@ public class Main {
         plsar.addViewRenderer(GuestRenderer.class);
         plsar.addViewRenderer(UserRenderer.class);
 
-        plsar.setSecurityAccess(net.plsar.example.assist.AuthSecurityAccess.class);
+        plsar.setSecurityAccess(AuthSecurityAccess.class);
         plsar.start();
     }
 }

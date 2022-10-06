@@ -2,14 +2,14 @@ package net.plsar.security.renderer;
 
 import net.plsar.implement.ViewRenderer;
 import net.plsar.model.HttpRequest;
-import net.plsar.security.PlsarSecurityManager;
-import net.plsar.example.SecurityManagerHelper;
+import net.plsar.security.SecurityManager;
+import net.plsar.security.SecurityManagerHelper;
 
 public class GuestRenderer implements ViewRenderer {
 
     public boolean truthy(HttpRequest httpRequest){
         SecurityManagerHelper securityManagerHelper = new SecurityManagerHelper();
-        PlsarSecurityManager security = securityManagerHelper.getSecurityManager();
+        SecurityManager security = securityManagerHelper.getSecurityManager(httpRequest);
         return !security.userIsAuthenticated(httpRequest);
     }
 
@@ -17,7 +17,7 @@ public class GuestRenderer implements ViewRenderer {
         return "";
     }
 
-    public String getKey() { return "gigante:guest"; }
+    public String getKey() { return "plsar:guest"; }
 
     public Boolean isEval() {
         return true;

@@ -2,8 +2,8 @@ package net.plsar.security.renderer;
 
 import net.plsar.implement.ViewRenderer;
 import net.plsar.model.HttpRequest;
-import net.plsar.security.PlsarSecurityManager;
-import net.plsar.example.SecurityManagerHelper;
+import net.plsar.security.SecurityManager;
+import net.plsar.security.SecurityManagerHelper;
 
 public class IdentityRenderer implements ViewRenderer {
 
@@ -13,12 +13,12 @@ public class IdentityRenderer implements ViewRenderer {
 
     public String render(HttpRequest httpRequest){
         SecurityManagerHelper securityManagerHelper = new SecurityManagerHelper();
-        PlsarSecurityManager security = securityManagerHelper.getSecurityManager();
+        SecurityManager security = securityManagerHelper.getSecurityManager(httpRequest);
         return security.get("userId", httpRequest);
     }
 
     public String getKey() {
-        return "gigante:id";
+        return "plsar:id";
     }
 
     public Boolean isEval() {

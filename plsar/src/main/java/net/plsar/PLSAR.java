@@ -2,6 +2,8 @@ package net.plsar;
 
 import net.plsar.model.*;
 import net.plsar.resources.*;
+import net.plsar.security.SecurityManager;
+import net.plsar.security.SecurityAccess;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,7 +33,7 @@ public class PLSAR {
     Integer NUMBER_PARTITIONS = 2;
     Integer NUMBER_REQUEST_EXECUTORS = 4;
     PersistenceConfig persistenceConfig;
-    Class<?> securityAccess;
+    Class<?> securityAccessClass;
     List<Class<?>> viewRenderers;
 
     public PLSAR(int port){
@@ -84,7 +86,7 @@ public class PLSAR {
             AnnotationElement serverStartup = annotationElementHolder.getServerStartup();
             Method startupMethod = serverStartup.getKlass().getMethod("startup");
 
-            RouteAttributes routeAttributes = (RouteAttributes) startupMethod.invoke(serverResources.getObject(serverStartup.getKlass()));
+            RouteAttributes routeAttributes = (RouteAttributes) startupMethod.invoke(serverResources.getInstance(serverStartup.getKlass()));
 
             RouteEndpointsResolver routeEndpointsResolver = new RouteEndpointsResolver(serverResources);
             RouteEndpointHolder routeEndpointHolder = routeEndpointsResolver.resolve();
@@ -98,7 +100,13 @@ public class PLSAR {
             persistenceConfig.setPassword(this.persistenceConfig.getPassword());
 
             routeAttributes.setPersistenceConfig(persistenceConfig);
-            routeAttributes.setSecurityAccess(securityAccess);
+
+            Persistence persistence = new Persistence(persistenceConfig);
+            SecurityAccess securityAccessInstance = (SecurityAccess) securityAccessClass.getConstructor().newInstance();
+            Method setPersistence = securityAccessInstance.getClass().getMethod("setPersistence", Persistence.class);
+            setPersistence.invoke(persistence);
+            SecurityManager securityManager = new SecurityManager(securityAccessInstance);
+            routeAttributes.setSecurityManager(securityManager);
 
             RouteNegotiator routeNegotiator = new RouteNegotiator();
             routeNegotiator.setRouteAttributes(routeAttributes);
@@ -108,9 +116,6 @@ public class PLSAR {
         return routeNegotiators;
     }
 
-    public void setSecurityAccess(Class<?> securityAccess) {
-        this.securityAccess = securityAccess;
-    }
 
     public static class PartitionedExecutor implements Runnable{
         Integer numberOfExecutors;
@@ -253,7 +258,8 @@ public class PLSAR {
 
                 RouteAttributes routeAttributes = routeNegotiator.getRouteAttributes();
                 httpRequest.setRouteAttributes(routeAttributes);
-                RouteResponse routeResponse = routeNegotiator.negotiate(cache, httpRequest, httpResponse, redirectRegistry, viewRenderers);
+                SecurityManager securityManager = routeAttributes.getSecurityManager();
+                RouteResponse routeResponse = routeNegotiator.negotiate(cache, httpRequest, httpResponse, securityManager, viewRenderers);
 
                 sessionGuid = httpRequest.getSession(true).getGuid();
                 if(!routeNegotiator.getRouteAttributes().getSessions().containsKey(sessionGuid)){
@@ -339,6 +345,9 @@ public class PLSAR {
 
     }
 
+    public void setSecurityAccess(Class<?> securityAccess) {
+        this.securityAccessClass = securityAccessClass;
+    }
 
     public void setSchemaConfig(SchemaConfig schemaConfig) {
         this.schemaConfig = schemaConfig;

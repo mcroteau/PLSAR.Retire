@@ -8,27 +8,31 @@ import net.plsar.model.SecurityAttribute;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-public class PlsarSecurityManager {
+public class SecurityManager {
     
-    DatabaseAccess databaseAccess;
+    SecurityAccess securityAccess;
+    ConcurrentMap<String, Boolean> sessionRegistry;
 
-    public PlsarSecurityManager(DatabaseAccess databaseAccess){
-        this.databaseAccess = databaseAccess;
+    public SecurityManager(SecurityAccess securityAccess){
+        this.securityAccess = securityAccess;
+        this.sessionRegistry = new ConcurrentHashMap<>();
     }
 
-    public DatabaseAccess getDatabaseAccess() {
-        return databaseAccess;
+    public SecurityAccess getSecurityAccess() {
+        return securityAccess;
     }
 
-    public void setDatabaseAccess(DatabaseAccess databaseAccess) {
-        this.databaseAccess = databaseAccess;
+    public void setSecurityAccess(SecurityAccess securityAccess) {
+        this.securityAccess = securityAccess;
     }
 
     public boolean hasRole(String role, HttpRequest httpRequest){
         String user = getUser(httpRequest);
         if(user != null) {
-            Set<String> roles = databaseAccess.getRoles(user);
+            Set<String> roles = securityAccess.getRoles(user);
             if(roles.contains(role)){
                 return true;
             }
@@ -39,7 +43,7 @@ public class PlsarSecurityManager {
     public boolean hasPermission(String permission, HttpRequest httpRequest){
         String user = getUser(httpRequest);
         if(user != null) {
-            Set<String> permissions = databaseAccess.getPermissions(user);
+            Set<String> permissions = securityAccess.getPermissions(user);
             if(permissions.contains(permission)){
                 return true;
             }
@@ -68,7 +72,7 @@ public class PlsarSecurityManager {
 
     public Boolean signin(String username, String passwordUntouched, HttpRequest httpRequest, HttpResponse httpResponse){
         String hashed = hash(passwordUntouched);
-        String password = databaseAccess.getPassword(username);
+        String password = securityAccess.getPassword(username);
 
         if(!userIsAuthenticated(httpRequest) &&
                 password.equals(hashed)){
@@ -76,11 +80,11 @@ public class PlsarSecurityManager {
             HttpSession oldHttpSession = httpRequest.getSession(true);
             if(oldHttpSession != null){
                 expireHttpSession(oldHttpSession, httpResponse);
-                SessionDiscovery.sessionRegistry.remove(oldHttpSession.getGuid());
+                this.sessionRegistry.remove(oldHttpSession.getGuid());
             }
 
             HttpSession httpSession = httpRequest.getSession(false);
-            SessionDiscovery.sessionRegistry.put(httpSession.getGuid(), true);
+            this.sessionRegistry.put(httpSession.getGuid(), true);
 
             httpSession.set("user", username);
             httpRequest.setSession(httpSession);
@@ -96,13 +100,13 @@ public class PlsarSecurityManager {
 
         if(httpRequest != null){
             expireHttpSession(oldHttpSession, httpResponse);
-            SessionDiscovery.sessionRegistry.remove(oldHttpSession.getGuid());
+            this.sessionRegistry.remove(oldHttpSession.getGuid());
         }
         return true;
     }
 
     public void expireHttpSession(HttpSession oldHttpSession, HttpResponse httpResponse){
-        SecurityAttribute securityAttribute = new SecurityAttribute("gigante-sessions", oldHttpSession.getGuid());
+        SecurityAttribute securityAttribute = new SecurityAttribute("plsar-sessions", oldHttpSession.getGuid());
         httpResponse.getSecurityAttributes().add(securityAttribute);
     }
 
@@ -110,13 +114,13 @@ public class PlsarSecurityManager {
         HttpSession httpSession = httpRequest.getSession(true);
 
         if(httpSession != null) {
-            return SessionDiscovery.sessionRegistry.containsKey(httpSession.getGuid());
+            return this.sessionRegistry.containsKey(httpSession.getGuid());
         }
         return false;
     }
 
-    public boolean configure(DatabaseAccess databaseAccess){
-        this.databaseAccess = databaseAccess;
+    public boolean configure(SecurityAccess securityAccess){
+        this.securityAccess = securityAccess;
         return true;
     }
 

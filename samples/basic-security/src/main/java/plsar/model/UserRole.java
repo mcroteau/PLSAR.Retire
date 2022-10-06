@@ -1,4 +1,4 @@
-package net.plsar.example.model;
+package plsar.model;
 
 public class UserRole {
     

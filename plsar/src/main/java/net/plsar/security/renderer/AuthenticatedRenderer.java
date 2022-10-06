@@ -2,14 +2,14 @@ package net.plsar.security.renderer;
 
 import net.plsar.implement.ViewRenderer;
 import net.plsar.model.HttpRequest;
-import net.plsar.security.PlsarSecurityManager;
-import net.plsar.example.SecurityManagerHelper;
+import net.plsar.security.SecurityManager;
+import net.plsar.security.SecurityManagerHelper;
 
 public class AuthenticatedRenderer implements ViewRenderer {
 
     public boolean truthy(HttpRequest httpRequest){
         SecurityManagerHelper securityManagerHelper = new SecurityManagerHelper();
-        PlsarSecurityManager security = securityManagerHelper.getSecurityManager();
+        SecurityManager security = securityManagerHelper.getSecurityManager(httpRequest);
         return security.userIsAuthenticated(httpRequest);
     }
 
@@ -18,7 +18,7 @@ public class AuthenticatedRenderer implements ViewRenderer {
     }
 
     public String getKey() {
-        return "gigante:authenticated";
+        return "plsar:authenticated";
     }
 
     public Boolean isEval() {

@@ -4,6 +4,7 @@ import net.plsar.model.*;
 import net.plsar.RouteEndpoint;
 import net.plsar.RouteEndpointHolder;
 import net.plsar.model.Cache;
+import net.plsar.security.SecurityManager;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -18,7 +19,7 @@ import java.util.regex.Pattern;
 
 public class ServerResources {
 
-    public Object getObject(Class<?> klass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public Object getInstance(Class<?> klass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Object object = klass.getConstructor().newInstance();
         return object;
     }
@@ -159,7 +160,7 @@ public class ServerResources {
         return parameterTypes;
     }
 
-    public Object[] getRouteParameters(String requestUri, HttpRequest httpRequest, HttpResponse httpResponse, Cache cache, RouteEndpoint routeEndpoint){
+    public Object[] getRouteParameters(String requestUri, RouteEndpoint routeEndpoint, Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, SecurityManager securityManager){
 
         List<VariablePosition> endpointValues = getRouteVariablePositions(requestUri, routeEndpoint);
         List<Object> params = new ArrayList<>();
@@ -167,13 +168,16 @@ public class ServerResources {
         int currentIndex = 0;//todo:
         for(int activeIndex = 0; activeIndex <  typeNames.size(); activeIndex++){
             String type = typeNames.get(activeIndex);
-            if(type.equals("echo.plsar.model.HttpRequest")){
+            if(type.equals("net.plsar.security.SecurityManager")){
                 params.add(httpRequest);
             }
-            if(type.equals("echo.plsar.model.HttpResponse")){
+            if(type.equals("net.plsar.model.HttpRequest")){
+                params.add(httpRequest);
+            }
+            if(type.equals("net.plsar.model.HttpResponse")){
                 params.add(httpResponse);
             }
-            if(type.equals("echo.plsar.model.Cache")){
+            if(type.equals("net.plsar.model.Cache")){
                 params.add(cache);
             }
             if(type.equals("java.lang.Integer")){

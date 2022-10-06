@@ -1,8 +1,8 @@
-package net.plsar.example.assist;
+package plsar.assist;
 
-import net.plsar.example.model.User;
-import net.plsar.example.model.UserPermission;
-import net.plsar.example.model.UserRole;
+import plsar.model.User;
+import plsar.model.UserPermission;
+import plsar.model.UserRole;
 import net.plsar.Persistence;
 import net.plsar.security.SecurityAccess;
 

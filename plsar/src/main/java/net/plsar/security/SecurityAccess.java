@@ -1,5 +1,7 @@
 package net.plsar.security;
 
+import net.plsar.Persistence;
+
 import java.util.Set;
 
 public interface SecurityAccess {
@@ -31,5 +33,6 @@ public interface SecurityAccess {
      */
     public Set<String> getPermissions(String user);
 
+    public void setPersistence(Persistence persistence);
 }
 

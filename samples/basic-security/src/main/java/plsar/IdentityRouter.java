@@ -8,7 +8,7 @@ import net.plsar.annotations.http.Post;
 import net.plsar.model.HttpRequest;
 import net.plsar.implement.PersistenceRouter;
 import net.plsar.model.Cache;
-import net.plsar.security.PlsarSecurityManager;
+import net.plsar.security.SecurityManager;
 
 @Router
 public class IdentityRouter implements PersistenceRouter {
@@ -22,7 +22,7 @@ public class IdentityRouter implements PersistenceRouter {
     }
 
     @Post("/authenticate")
-    public String authenticate(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, PlsarSecurityManager security) {
+    public String authenticate(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, SecurityManager security) {
         String user = httpRequest.value("user");
         String pass = httpRequest.value("pass");
 
@@ -35,7 +35,7 @@ public class IdentityRouter implements PersistenceRouter {
     }
 
     @Get("/secret")
-    public String secret(Cache cache, HttpRequest httpRequest, PlsarSecurityManager security) {
+    public String secret(Cache cache, HttpRequest httpRequest, SecurityManager security) {
         if(security.userIsAuthenticated(httpRequest)){
             return "/secret.html";
         }
@@ -44,7 +44,7 @@ public class IdentityRouter implements PersistenceRouter {
     }
 
     @Get("/signout")
-    public String signout(HttpRequest httpRequest, HttpResponse httpResponse, PlsarSecurityManager security) {
+    public String signout(HttpRequest httpRequest, HttpResponse httpResponse, SecurityManager security) {
         security.signout(httpRequest, httpResponse);
         return "[redirect]/";
     }

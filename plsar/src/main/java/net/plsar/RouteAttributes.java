@@ -2,6 +2,7 @@ package net.plsar;
 
 import net.plsar.implement.ViewRenderer;
 import net.plsar.model.HttpSession;
+import net.plsar.security.SecurityManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,10 +20,9 @@ public class RouteAttributes {
 
     Map<String, Object> attributes;
     Map<String, HttpSession> sessions;
-    Map<String, HttpSession> authdSessions;
     Map<String, ViewRenderer> viewRenderers;
     RouteEndpointHolder routeEndpointHolder;
-    Class<?> securityAccess;
+    SecurityManager securityManager;
 
     public Object get(String key){
         if(this.attributes.containsKey(key)){
@@ -63,14 +63,6 @@ public class RouteAttributes {
         this.sessions = sessions;
     }
 
-    public Map<String, HttpSession> getAuthdSessions() {
-        return authdSessions;
-    }
-
-    public void setAuthdSessions(Map<String, HttpSession> authdSessions) {
-        this.authdSessions = authdSessions;
-    }
-
     public Map<String, ViewRenderer> getViewRenderers() {
         return viewRenderers;
     }
@@ -87,11 +79,11 @@ public class RouteAttributes {
         this.routeEndpointHolder = routeEndpointHolder;
     }
 
-    public Class<?> getSecurityAccess() {
-        return securityAccess;
+    public SecurityManager getSecurityManager() {
+        return securityManager;
     }
 
-    public void setSecurityAccess(Class<?> securityAccess) {
-        this.securityAccess = securityAccess;
+    public void setSecurityManager(SecurityManager securityManager) {
+        this.securityManager = securityManager;
     }
 }
