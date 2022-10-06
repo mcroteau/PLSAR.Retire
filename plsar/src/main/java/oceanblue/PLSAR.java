@@ -1,6 +1,5 @@
 package oceanblue;
 
-import oceanblue.implement.ViewRenderer;
 import oceanblue.model.*;
 import oceanblue.resources.*;
 
@@ -17,7 +16,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 public class PLSAR {
@@ -29,7 +31,8 @@ public class PLSAR {
     Integer NUMBER_PARTITIONS = 2;
     Integer NUMBER_REQUEST_EXECUTORS = 4;
     PersistenceConfig persistenceConfig;
-    List<ViewRenderer> viewRenderers;
+    Class<?> securityAccess;
+    List<Class<?>> viewRenderers;
 
     public PLSAR(int port){
         this.port = port;
@@ -48,10 +51,10 @@ public class PLSAR {
             annotationInspector.retroInspect();
             AnnotationElementHolder annotationElementHolder = annotationInspector.getAnnotationElementHolder();
 
-            Log.info("Registering route directors, please wait...");
-            List<RouteDirector> routeDirectors = getRouteNegotiators(TOTAL_NUMBER_EXECUTORS, serverResources, annotationElementHolder);
+            Log.info("Registering " + NUMBER_REQUEST_EXECUTORS + " route negotiators, please wait...");
+            List<RouteNegotiator> routeNegotiators = getRouteNegotiators(TOTAL_NUMBER_EXECUTORS, serverResources, annotationElementHolder);
             ConcurrentMap<String, String> sessionRouteRegistry = new ConcurrentHashMap<>(0, 3, 63010);
-            ConcurrentMap<String, RouteDirector> routeDirectorRegistry = registerRouteDirectors(routeDirectors);
+            ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry = registerRouteDirectors(routeNegotiators);
 
             RedirectRegistry redirectRegistry = new RedirectRegistry();
 
@@ -67,16 +70,16 @@ public class PLSAR {
         }
     }
 
-    ConcurrentMap<String, RouteDirector> registerRouteDirectors(List<RouteDirector> routeDirectors) {
-        ConcurrentMap<String, RouteDirector> routeDirectorRegistry = new ConcurrentHashMap<>(0, 3, 63010);
-        for(RouteDirector routeDirector : routeDirectors){
-            routeDirectorRegistry.put(routeDirector.getGuid(), routeDirector);
+    ConcurrentMap<String, RouteNegotiator> registerRouteDirectors(List<RouteNegotiator> routeNegotiators) {
+        ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry = new ConcurrentHashMap<>(0, 3, 63010);
+        for(RouteNegotiator routeNegotiator : routeNegotiators){
+            routeDirectorRegistry.put(routeNegotiator.getGuid(), routeNegotiator);
         }
         return routeDirectorRegistry;
     }
 
-    List<RouteDirector> getRouteNegotiators(Integer TOTAL_NUMBER_EXECUTORS, ServerResources serverResources, AnnotationElementHolder annotationElementHolder) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        List<RouteDirector> routeDirectors = new ArrayList();
+    List<RouteNegotiator> getRouteNegotiators(Integer TOTAL_NUMBER_EXECUTORS, ServerResources serverResources, AnnotationElementHolder annotationElementHolder) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        List<RouteNegotiator> routeNegotiators = new ArrayList();
         for(Integer activeIndex = 0; activeIndex < TOTAL_NUMBER_EXECUTORS; activeIndex++){//todo:set guid
             AnnotationElement serverStartup = annotationElementHolder.getServerStartup();
             Method startupMethod = serverStartup.getKlass().getMethod("startup");
@@ -96,23 +99,27 @@ public class PLSAR {
 
             routeAttributes.setPersistenceConfig(persistenceConfig);
 
-            RouteDirector routeDirector = new RouteDirector();
-            routeDirector.setRouteAttributes(routeAttributes);
+            RouteNegotiator routeNegotiator = new RouteNegotiator();
+            routeNegotiator.setRouteAttributes(routeAttributes);
 
-            routeDirectors.add(routeDirector);
+            routeNegotiators.add(routeNegotiator);
         }
-        return routeDirectors;
+        return routeNegotiators;
+    }
+
+    public void setSecurityAccess(Class<?> securityAccess) {
+        this.securityAccess = securityAccess;
     }
 
     public static class PartitionedExecutor implements Runnable{
         Integer numberOfExecutors;
         ServerSocket serverSocket;
         ConcurrentMap<String, String> sessionRouteRegistry;
-        ConcurrentMap<String, RouteDirector> routeDirectorRegistry;
+        ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry;
         RedirectRegistry redirectRegistry;
-        List<ViewRenderer> viewRenderers;
+        List<Class<?>> viewRenderers;
 
-        public PartitionedExecutor(Integer numberOfExecutors, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, String> sessionRouteRegistry, ConcurrentMap<String, RouteDirector> routeDirectorRegistry, List<ViewRenderer> viewRenderers) {
+        public PartitionedExecutor(Integer numberOfExecutors, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, String> sessionRouteRegistry, ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry, List<Class<?>> viewRenderers) {
             this.numberOfExecutors = numberOfExecutors;
             this.serverSocket = serverSocket;
             this.redirectRegistry = redirectRegistry;
@@ -142,11 +149,11 @@ public class PLSAR {
         ExecutorService executors;
         ServerSocket serverSocket;
         ConcurrentMap<String, String> sessionRouteRegistry;
-        ConcurrentMap<String, RouteDirector> routeDirectorRegistry;
+        ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry;
         RedirectRegistry redirectRegistry;
-        List<ViewRenderer> viewRenderers;
+        List<Class<?>> viewRenderers;
 
-        public HttpRequestIngester(ExecutorService executors, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, String> sessionRouteRegistry, ConcurrentMap<String, RouteDirector> routeDirectorRegistry, List<ViewRenderer> viewRenderers){
+        public HttpRequestIngester(ExecutorService executors, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, String> sessionRouteRegistry, ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry, List<Class<?>> viewRenderers){
             this.executors = executors;
             this.serverSocket = serverSocket;
             this.redirectRegistry = redirectRegistry;
@@ -217,20 +224,20 @@ public class PLSAR {
                 if(sessionGuid == null) sessionGuid = serverResources.getGuid(24);
 
                 String routeDirectorGuid = sessionRouteRegistry.get(sessionGuid);
-                RouteDirector routeDirector = null;
+                RouteNegotiator routeNegotiator = null;
                 if(routeDirectorGuid != null) {
-                    routeDirector = routeDirectorRegistry.get(routeDirectorGuid);
+                    routeNegotiator = routeDirectorRegistry.get(routeDirectorGuid);
                 }
-                if(routeDirector == null){
-                    routeDirector = getRouteDirector(routeDirectorRegistry);
+                if(routeNegotiator == null){
+                    routeNegotiator = getRouteDirector(routeDirectorRegistry);
                 }
 
-                HttpSession activeHttpSession = routeDirector.getRouteAttributes().getSessions().get(sessionGuid);
+                HttpSession activeHttpSession = routeNegotiator.getRouteAttributes().getSessions().get(sessionGuid);
                 if(activeHttpSession == null) activeHttpSession = new HttpSession(time, sessionGuid);
                 httpRequest.setSession(activeHttpSession);
 
                 Cache cache = new Cache();
-                routeDirectorGuid = routeDirector.getGuid();
+                routeDirectorGuid = routeNegotiator.getGuid();
                 if(redirectRegistry.getRegistry().containsKey(routeDirectorGuid) &&
                         redirectRegistry.getRegistry().get(routeDirectorGuid).containsKey(HTTPREQUEST)) {
                     HttpRequest storedHttpRequest = (HttpRequest) redirectRegistry.getRegistry().get(routeDirectorGuid).get(HTTPREQUEST);
@@ -243,19 +250,19 @@ public class PLSAR {
 
                 setSessionAttributesCache(cache, activeHttpSession);
 
-                RouteAttributes routeAttributes = routeDirector.getRouteAttributes();
+                RouteAttributes routeAttributes = routeNegotiator.getRouteAttributes();
                 httpRequest.setRouteAttributes(routeAttributes);
-                RouteResponse routeResponse = routeDirector.direct(cache, httpRequest, httpResponse, redirectRegistry, viewRenderers);
+                RouteResponse routeResponse = routeNegotiator.negotiate(cache, httpRequest, httpResponse, redirectRegistry, viewRenderers);
 
                 sessionGuid = httpRequest.getSession(true).getGuid();
-                if(!routeDirector.getRouteAttributes().getSessions().containsKey(sessionGuid)){
-                    routeDirector.getRouteAttributes().getSessions().put(sessionGuid, activeHttpSession);
+                if(!routeNegotiator.getRouteAttributes().getSessions().containsKey(sessionGuid)){
+                    routeNegotiator.getRouteAttributes().getSessions().put(sessionGuid, activeHttpSession);
                 }else{
-                    routeDirector.getRouteAttributes().getSessions().replace(sessionGuid, activeHttpSession);
+                    routeNegotiator.getRouteAttributes().getSessions().replace(sessionGuid, activeHttpSession);
                 }
 
-                sessionRouteRegistry.put(sessionGuid, routeDirector.getGuid());
-                routeDirectorRegistry.replace(routeDirector.getGuid(), routeDirector);
+                sessionRouteRegistry.put(sessionGuid, routeNegotiator.getGuid());
+                routeDirectorRegistry.replace(routeNegotiator.getGuid(), routeNegotiator);
 
                 StringBuilder sessionValues = new StringBuilder();
                 sessionValues.append(serverResources.getSessionId()).append("=").append(httpRequest.getSession(true).getGuid() + ";");
@@ -322,8 +329,8 @@ public class PLSAR {
             }
         }
 
-        RouteDirector getRouteDirector(ConcurrentMap<String, RouteDirector> routeDirectorRegistry){
-            for(Map.Entry<String, RouteDirector> routeDirectorEntry : routeDirectorRegistry.entrySet()){
+        RouteNegotiator getRouteDirector(ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry){
+            for(Map.Entry<String, RouteNegotiator> routeDirectorEntry : routeDirectorRegistry.entrySet()){
                 return routeDirectorEntry.getValue();
             }
             return null;
@@ -336,7 +343,7 @@ public class PLSAR {
         this.schemaConfig = schemaConfig;
     }
 
-    public PLSAR addViewRenderer(ViewRenderer viewRenderer){
+    public PLSAR addViewRenderer(Class<?> viewRenderer){
         this.viewRenderers.add(viewRenderer);
         return this;
     }

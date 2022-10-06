@@ -1,21 +1,19 @@
 package example;
 
+import oceanblue.Persistence;
 import oceanblue.model.HttpResponse;
-import example.assist.AuthAccess;
 import oceanblue.annotations.Router;
 import oceanblue.annotations.http.Get;
 import oceanblue.annotations.http.Post;
 import oceanblue.model.HttpRequest;
-import oceanblue.Persistence;
 import oceanblue.implement.PersistenceRouter;
 import oceanblue.model.Cache;
-import oceanblue.security.DatabaseAccess;
-import oceanblue.security.EarthlingSecurityManager;
+import oceanblue.security.PlsarSecurityManager;
 
 @Router
 public class IdentityRouter implements PersistenceRouter {
 
-    EarthlingSecurityManager security;
+    Persistence persistence;
 
     @Get("/")
     public String signin(Cache cache) {
@@ -24,7 +22,7 @@ public class IdentityRouter implements PersistenceRouter {
     }
 
     @Post("/authenticate")
-    public String authenticate(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse) {
+    public String authenticate(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, PlsarSecurityManager security) {
         String user = httpRequest.value("user");
         String pass = httpRequest.value("pass");
 
@@ -37,7 +35,7 @@ public class IdentityRouter implements PersistenceRouter {
     }
 
     @Get("/secret")
-    public String secret(Cache cache, HttpRequest httpRequest) {
+    public String secret(Cache cache, HttpRequest httpRequest, PlsarSecurityManager security) {
         if(security.userIsAuthenticated(httpRequest)){
             return "/secret.html";
         }
@@ -46,14 +44,13 @@ public class IdentityRouter implements PersistenceRouter {
     }
 
     @Get("/signout")
-    public String signout(HttpRequest httpRequest, HttpResponse httpResponse) {
+    public String signout(HttpRequest httpRequest, HttpResponse httpResponse, PlsarSecurityManager security) {
         security.signout(httpRequest, httpResponse);
         return "[redirect]/";
     }
 
     @Override
     public void setPersistence(Persistence persistence) {
-        DatabaseAccess authAccess = new AuthAccess(new UserRepo(persistence));
-        this.security = new EarthlingSecurityManager(authAccess);
+        this.persistence = persistence;
     }
 }

@@ -2,7 +2,7 @@ package oceanblue.security.renderer;
 
 import oceanblue.implement.ViewRenderer;
 import oceanblue.model.HttpRequest;
-import oceanblue.security.EarthlingSecurityManager;
+import oceanblue.security.PlsarSecurityManager;
 import example.SecurityManagerHelper;
 
 public class UserRenderer implements ViewRenderer {
@@ -11,7 +11,7 @@ public class UserRenderer implements ViewRenderer {
 
     public String render(HttpRequest httpRequest){
         SecurityManagerHelper securityManagerHelper = new SecurityManagerHelper();
-        EarthlingSecurityManager security = securityManagerHelper.getSecurityManager();
+        PlsarSecurityManager security = securityManagerHelper.getSecurityManager();
         return security.get("user", httpRequest);
     }
 

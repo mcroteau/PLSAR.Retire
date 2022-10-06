@@ -30,7 +30,7 @@ public class ExperienceManager {
     final String HTML_COMMENT = "<!--";
 
     //todo: please.
-    public String execute(String pageElement, Cache cache, HttpRequest req, List<ViewRenderer> viewRenderers) throws PlsarException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public String execute(String pageElement, Cache cache, HttpRequest req, List<Class<?>> viewRenderers) throws PlsarException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
         List<String> elementEntries = Arrays.asList(pageElement.split("\n"));
         List<String> viewRendererElementEntries = getInterpretedRenderers(req, elementEntries, viewRenderers);
 
@@ -108,10 +108,12 @@ public class ExperienceManager {
         return dataPartials;
     }
 
-    List<String> getInterpretedRenderers(HttpRequest req, List<String> elementEntries, List<ViewRenderer> viewRenderers){
+    List<String> getInterpretedRenderers(HttpRequest req, List<String> elementEntries, List<Class<?>> viewRenderers) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
 
-        for(ViewRenderer viewRenderer : viewRenderers){
-            String rendererKey = viewRenderer.getKey();//changedto:attribute in <dice:rollem> is key
+        for(Class<?> viewRendererKlass : viewRenderers){
+            Object viewRendererInstance = viewRendererKlass.getConstructor().newInstance();
+            Method getKey = viewRendererInstance.getClass().getDeclaredMethod("getKey");
+            String rendererKey = (String) getKey.invoke(viewRendererInstance);
 
             String openRendererKey = "<" + rendererKey + ">";
             String completeRendererKey = "<" + rendererKey + "/>";
@@ -120,10 +122,12 @@ public class ExperienceManager {
             for(int tao = 0; tao < elementEntries.size(); tao++) {
 
                 String elementEntry = elementEntries.get(tao);
+                Method isEval = viewRendererInstance.getClass().getDeclaredMethod("isEval");
+                Method truthy = viewRendererInstance.getClass().getDeclaredMethod("truthy", HttpRequest.class);
 
-                if (viewRenderer.isEval() &&
+                if ((Boolean) isEval.invoke(viewRendererInstance) &&
                         (elementEntry.contains(openRendererKey)) &&
-                        viewRenderer.truthy(req)) {
+                        (Boolean) truthy.invoke(req)) {
 
                     viewRendererIteration:
                     for(int moa = tao; moa < elementEntries.size(); moa++){
@@ -132,9 +136,9 @@ public class ExperienceManager {
                         if(elementEntryDeux.contains(endRendererKey))break viewRendererIteration;
                     }
                 }
-                if (viewRenderer.isEval() &&
+                if ((Boolean) isEval.invoke(viewRendererInstance) &&
                         (elementEntry.contains(openRendererKey)) &&
-                        !viewRenderer.truthy(req)) {
+                        !(Boolean) truthy.invoke(req)) {
                     viewRendererIteration:
                     for(int moa = tao; moa < elementEntries.size(); moa++){
                         String elementEntryDeux = elementEntries.get(moa);
@@ -142,9 +146,10 @@ public class ExperienceManager {
                         if(elementEntryDeux.contains(endRendererKey))break viewRendererIteration;
                     }
                 }
-                if(!viewRenderer.isEval() &&
+                if(!(Boolean) isEval.invoke(viewRendererInstance) &&
                         elementEntry.contains(completeRendererKey)){
-                    String rendered = viewRenderer.render(req);
+                    Method render = viewRendererInstance.getClass().getDeclaredMethod("render", HttpRequest.class);
+                    String rendered = (String) render.invoke(req);
                     elementEntries.set(tao, rendered);
                 }
             }

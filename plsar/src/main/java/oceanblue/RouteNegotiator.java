@@ -16,12 +16,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class RouteDirector {
+public class RouteNegotiator {
 
     String guid;//love.
     RouteAttributes routeAttributes;
 
-    public RouteResponse direct(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, RedirectRegistry registry, List<ViewRenderer> viewRenderers){
+    public RouteResponse negotiate(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, RedirectRegistry registry, List<Class<?>> viewRenderers){
 
         try {
             ServerResources serverResources = new ServerResources();
@@ -147,7 +147,7 @@ public class RouteDirector {
         return new RouteResponse("404");
     }
 
-    public RouteDirector(){
+    public RouteNegotiator(){
         this.guid = new ServerResources().getGuid(24);
     }
 

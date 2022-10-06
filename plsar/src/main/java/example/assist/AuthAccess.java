@@ -2,43 +2,59 @@ package example.assist;
 
 import example.UserRepo;
 import example.model.User;
-import oceanblue.security.DatabaseAccess;
+import example.model.UserPermission;
+import example.model.UserRole;
+import oceanblue.Persistence;
+import oceanblue.security.SecurityAccess;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-public class AuthAccess implements DatabaseAccess {
+public class AuthAccess implements SecurityAccess {
 
-    UserRepo userRepo;
+    Persistence persistence;
+
+    public String getPassword(String credential){
+        User user = getUser(credential);
+        return user.getPassword();
+    }
 
     public User getUser(String credential){
-        User user = userRepo.getPhone(credential);
+        String phonesql = "select * from users where phone = '[+]'";
+        User user = (User) persistence.get(phonesql, new Object[] { credential }, User.class);
         if(user == null){
-            user = userRepo.getEmail(credential);
+            String emailsql = "select * from users where email = '[+]'";
+            user = (User) persistence.get(emailsql, new Object[] { credential }, User.class);
         }
         return user;
     }
 
-    public String getPassword(String credential){
-        System.out.println("repo:" + userRepo);
-        User user = getUser(credential);
-        if(user != null) return user.getPassword();
-        return "";
-    }
-
     public Set<String> getRoles(String credential){
         User user = getUser(credential);
-        Set<String> roles = userRepo.getUserRoles(user.getId());
+        String sql = "select r.name as name from user_roles ur inner join roles r on r.id = ur.role_id where ur.user_id = [+]";
+        List<UserRole> rolesList = (ArrayList) persistence.getList(sql, new Object[]{ user.getId() }, UserRole.class);
+        Set<String> roles = new HashSet<>();
+        for(UserRole role: rolesList){
+            roles.add(role.getName());
+        }
         return roles;
     }
 
     public Set<String> getPermissions(String credential){
         User user = getUser(credential);
-        Set<String> permissions = userRepo.getUserPermissions(user.getId());
+        String sql = "select permission from user_permissions where user_id = [+]";
+        List<UserPermission> permissionsList = (ArrayList) persistence.getList(sql, new Object[]{ user.getId() }, UserPermission.class);
+        Set<String> permissions = new HashSet<>();
+        for(UserPermission permission: permissionsList){
+            permissions.add(permission.getPermission());
+        }
         return permissions;
     }
 
-    public AuthAccess(UserRepo userRepo){
-        this.userRepo = userRepo;
+    public void setPersistence(Persistence persistence){
+        this.persistence = persistence;
     }
 
 }

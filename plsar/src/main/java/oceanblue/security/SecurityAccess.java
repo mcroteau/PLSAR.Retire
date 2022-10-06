@@ -2,7 +2,7 @@ package oceanblue.security;
 
 import java.util.Set;
 
-public interface DatabaseAccess {
+public interface SecurityAccess {
     /**
      * Intended to return the user's password based
      * on the username

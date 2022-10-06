@@ -9,11 +9,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Set;
 
-public class EarthlingSecurityManager {
+public class PlsarSecurityManager {
     
     DatabaseAccess databaseAccess;
 
-    public EarthlingSecurityManager(DatabaseAccess databaseAccess){
+    public PlsarSecurityManager(DatabaseAccess databaseAccess){
         this.databaseAccess = databaseAccess;
     }
 
