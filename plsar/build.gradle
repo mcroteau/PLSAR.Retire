@@ -9,9 +9,7 @@ version "1.0"
 repositories {
     mavenCentral()
 }
-application{
-    mainClass.set("example.Main")
-}
+
 dependencies {
     implementation "com.h2database:h2:2.1.210"
 }
