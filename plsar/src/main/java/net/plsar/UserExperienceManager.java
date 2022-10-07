@@ -420,12 +420,11 @@ public class UserExperienceManager {
     }
 
     boolean isTrailingPartial(int chi, List<DataPartial> dataPartials) {
-        Integer openCount = 0, endCount = 0, endIdx = 0;
+        Integer openCount = 0, endIdx = 0;
         for(int tai = 0; tai < dataPartials.size(); tai++){
             DataPartial dataPartial = dataPartials.get(tai);
             if(dataPartial.isIterable())openCount++;
             if(dataPartial.isEndIterable()){
-                endCount++;
                 endIdx = tai;
             }
         }
