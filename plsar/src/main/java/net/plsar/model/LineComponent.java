@@ -49,5 +49,5 @@ public class LineComponent {
 
     static final String OPEN = "\\$\\{";
     static final String END = "\\}";
-    static final String END_FUNCTION = "\\(\\)}";
+    static final String END_FUNCTION = "\\(\\a-zA-Z+)}";
 }

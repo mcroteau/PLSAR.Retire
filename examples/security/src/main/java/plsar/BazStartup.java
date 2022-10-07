@@ -8,6 +8,7 @@ import net.plsar.implement.ServerListener;
 public class BazStartup implements ServerListener {
     @Override
     public RouteAttributes startup() {
+
         return new RouteAttributes();
     }
 }

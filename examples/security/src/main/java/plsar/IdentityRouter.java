@@ -16,9 +16,13 @@ public class IdentityRouter implements PersistenceRouter {
     Persistence persistence;
 
     @Get("/")
-    public String signin(Cache cache) {
+    public String signin(Cache cache, HttpRequest httpRequest, SecurityManager securityManager) {
         cache.set("instructions", "effort.");
-        return "/signin.html";
+        cache.set("cache", cache);
+        cache.set("request", httpRequest);
+        cache.set("securityManager", securityManager);
+        cache.set("fooService", new FooService());
+        return "/index.htm";
     }
 
     @Post("/authenticate")

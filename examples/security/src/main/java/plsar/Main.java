@@ -21,7 +21,7 @@ public class Main {
         schemaConfig.setSchema("schema.sql");
         schemaConfig.setEnvironment(Environments.DEVELOPMENT);
 
-        PLSAR plsar = new PLSAR(8080);
+        PLSAR plsar = new PLSAR(1234);
         plsar.setPersistenceConfig(persistenceConfig);
         plsar.setSchemaConfig(schemaConfig);
 

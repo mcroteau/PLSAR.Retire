@@ -1,4 +1,4 @@
 rootProject.name = 'PLSAR'
 include 'plsar'
-include 'samples:basic-security'
+include 'examples:security'
 

@@ -5,6 +5,7 @@ import net.plsar.model.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,7 +17,7 @@ public class UserExperienceManager {
 
     final String DOT      = "\\.";
     final String NEWLINE  = "\n";
-    final String LOCATOR  = "\\$\\{[a-zA-Z+\\.+\\(\\)]*\\}";
+    final String LOCATOR  = "\\$\\{[a-zA-Z+\\.+\\(\\a-zA-Z+)]*\\}";
     final String FOREACH  = "<plsar:iterate";
     final String ENDEACH  = "</plsar:iterate>";
     final String IFSPEC   = "<plsar:if";
@@ -237,16 +238,6 @@ public class UserExperienceManager {
         return dataPartials;
     }
 
-    boolean passesSpec(Object object, DataPartial specPartial, DataPartial dataPartial, Cache resp) throws NoSuchMethodException, PlsarException, IllegalAccessException, NoSuchFieldException, InvocationTargetException {
-        if(dataPartial.isWithinIterable() && passesIterableSpec(specPartial, object, resp)){
-            return true;
-        }
-        if(!dataPartial.isWithinIterable() && passesSpec(specPartial, resp)){
-            return true;
-        }
-        return false;
-    }
-
     String getCompleteLineElementObject(String activeField, Object object, String entryBase, Cache resp) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         List<LineComponent> lineComponents = getPageLineComponents(entryBase);
         List<LineComponent> iteratedLineComponents = new ArrayList<>();
@@ -303,10 +294,10 @@ public class UserExperienceManager {
             String objectField = lineComponent.getObjectField();
             String objectValue = getResponseValueLineComponent(activeObjectField, objectField, resp);
             String objectValueClean = objectValue != null ? objectValue.replace("${", "\\$\\{").replace("}", "\\}") : "";
-            if(objectValue != null && objectField.contains("()")){
-                String lineElement = lineComponent.getCompleteLineFunction();
+            if(objectValue != null && objectField.contains("(")){
+                String lineElement = "\\$\\{" + lineComponent.getLineElement().replace("(", "\\(").replace(")", "\\)") + "\\}";
                 entryBase = entryBase.replaceAll(lineElement, objectValue);
-            }else if(objectValue != null && !objectValue.contains("()")){
+            }else if(objectValue != null && !objectValue.contains("(")){
                 String lineElement = lineComponent.getCompleteLineElement();
                 entryBase = entryBase.replaceAll(lineElement, objectValueClean);
             }
@@ -903,6 +894,7 @@ public class UserExperienceManager {
 
             Object activeObject = resp.get(activeField);
             if(activeObject != null) {
+
                 String[] activeObjectFields = objectField.split(DOT);
 
                 for (String activeObjectField : activeObjectFields) {
@@ -911,6 +903,7 @@ public class UserExperienceManager {
 
                 if (activeObject == null) return null;
                 return String.valueOf(activeObject);
+
             }
         }else{
 
@@ -920,6 +913,7 @@ public class UserExperienceManager {
                         !objectField.contains(".")) {
 
                 Object objectValue = null;
+
                 if(objectField.contains("()")){
                     String methodName = objectField.replace("()", "");
                     Method methodObject = respValue.getClass().getDeclaredMethod(methodName);
@@ -927,18 +921,86 @@ public class UserExperienceManager {
                     if(methodObject != null) {
                         objectValue = methodObject.invoke(respValue);
                     }
+                }else if (isObjectMethod(respValue, objectField)) {
+
+                    Object activeObject = getObjectMethodValue(resp, respValue, objectField);
+                    if(activeObject == null) return null;
+
+                    return String.valueOf(activeObject);
+
                 }else{
+
                     objectValue = getObjectValue(objectField, respValue);
+
                 }
 
                 if (objectValue == null) return null;
                 return String.valueOf(objectValue);
+
             }else{
+
                 if (respValue == null) return null;
                 return String.valueOf(respValue);
             }
         }
         return null;
+    }
+
+    boolean passesSpec(Object object, DataPartial specPartial, DataPartial dataPartial, Cache resp) throws NoSuchMethodException, PlsarException, IllegalAccessException, NoSuchFieldException, InvocationTargetException {
+        if(dataPartial.isWithinIterable() && passesIterableSpec(specPartial, object, resp)){
+            return true;
+        }
+        if(!dataPartial.isWithinIterable() && passesSpec(specPartial, resp)){
+            return true;
+        }
+        return false;
+    }
+
+    Object getObjectMethodValue(Cache resp, Object respValue, String objectField) throws InvocationTargetException, IllegalAccessException {
+        Method activeMethod = getObjectMethod(respValue, objectField);
+        String[] parameters = getMethodParameters(objectField);
+        List<Object> values = new ArrayList<>();
+        for(int foo = 0; foo < parameters.length; foo++){
+            String parameter = parameters[foo].trim();
+            Object parameterValue = resp.get(parameter);
+            values.add(parameterValue);
+        }
+
+        Object activeObjectValue = activeMethod.invoke(respValue, values.toArray());
+        return activeObjectValue;
+    }
+
+    String[] getMethodParameters(String objectField){
+        String[] activeMethodAttributes = objectField.split("\\(");
+        String methodParameters = activeMethodAttributes[ONE];
+        String activeMethod = methodParameters.replace("(", "").replace(")", "");
+        String[] parameters = activeMethod.split(",");
+        return parameters;
+    }
+
+
+    Method getObjectMethod(Object activeObject, String objectField) {
+        String[] activeMethodAttributes = objectField.split("\\(");
+        String activeMethodName = activeMethodAttributes[ZERO];
+        Method[] activeObjectMethods = activeObject.getClass().getDeclaredMethods();
+        Method activeMethod = null;
+        for(Method activeObjectMethod : activeObjectMethods){
+            if(activeObjectMethod.getName().equals(activeMethodName)){
+                activeMethod = activeObjectMethod;
+                break;
+            }
+        }
+        return activeMethod;
+    }
+
+    boolean isObjectMethod(Object respValue, String objectField) {
+        String[] activeMethodAttributes = objectField.split("\\(");
+        String activeMethodName = activeMethodAttributes[ZERO];
+        Method[] activeObjectMethods = respValue.getClass().getDeclaredMethods();
+        for(Method activeMethod : activeObjectMethods){
+            if(activeMethod.getName().equals(activeMethodName))return true;
+        }
+        return false;
     }
 
     String getObjectValueForLineComponent(String objectField, Object object) throws IllegalAccessException, NoSuchFieldException {
