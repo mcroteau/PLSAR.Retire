@@ -151,6 +151,7 @@ public class PLSAR {
 
     public static class HttpRequestIngester implements Runnable {
 
+        final String IGNORE_CHROME = "/favicon.ico";
         final String BREAK = "\r\n";
         final String SPACE = " ";
         final String DOUBLEBREAK = "\r\n\r\n";
@@ -190,6 +191,8 @@ public class PLSAR {
 
                 if(requestInputStream.available() == 0) {
                     requestInputStream.close();
+                    clientOutput.flush();
+                    clientOutput.close();
                     executors.execute(new HttpRequestIngester(executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
                     return;
                 }
@@ -215,6 +218,14 @@ public class PLSAR {
                 String requestPath = methodPathVersionComponents[REQUEST_PATH];
 
                 HttpRequest httpRequest = new HttpRequest(requestVerb, requestPath, serverResources, sessionRouteRegistry);
+                if(httpRequest.getUriPath().equals(IGNORE_CHROME)){
+                    requestInputStream.close();
+                    clientOutput.flush();
+                    clientOutput.close();
+                    executors.execute(new HttpRequestIngester(executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
+                    return;
+                }
+
                 HttpResponse httpResponse = new HttpResponse();
                 httpResponse.setResponseOutput(clientOutput);
                 httpResponse.setContentType("text/html");

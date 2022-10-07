@@ -14,11 +14,9 @@ import java.util.concurrent.ConcurrentMap;
 public class SecurityManager {
     
     SecurityAccess securityAccess;
-    ConcurrentMap<String, Boolean> sessionRegistry;
 
     public SecurityManager(SecurityAccess securityAccess){
         this.securityAccess = securityAccess;
-        this.sessionRegistry = new ConcurrentHashMap<>();
     }
 
     public SecurityAccess getSecurityAccess() {
@@ -80,11 +78,11 @@ public class SecurityManager {
             HttpSession oldHttpSession = httpRequest.getSession(true);
             if(oldHttpSession != null){
                 expireHttpSession(oldHttpSession, httpResponse);
-                this.sessionRegistry.remove(oldHttpSession.getGuid());
+                httpRequest.getRouteAttributes().getSessionRegistry().remove(oldHttpSession.getGuid());
             }
 
             HttpSession httpSession = httpRequest.getSession(false);
-            this.sessionRegistry.put(httpSession.getGuid(), true);
+            httpRequest.getRouteAttributes().getSessionRegistry().put(httpSession.getGuid(), true);
 
             httpSession.set("user", username);
             httpRequest.setSession(httpSession);
@@ -100,7 +98,7 @@ public class SecurityManager {
 
         if(httpRequest != null){
             expireHttpSession(oldHttpSession, httpResponse);
-            this.sessionRegistry.remove(oldHttpSession.getGuid());
+            httpRequest.getRouteAttributes().getSessionRegistry().remove(oldHttpSession.getGuid());
         }
         return true;
     }
@@ -114,7 +112,7 @@ public class SecurityManager {
         HttpSession httpSession = httpRequest.getSession(true);
 
         if(httpSession != null) {
-            return this.sessionRegistry.containsKey(httpSession.getGuid());
+            return httpRequest.getRouteAttributes().getSessionRegistry().containsKey(httpSession.getGuid());
         }
         return false;
     }

@@ -6,22 +6,27 @@ import net.plsar.security.SecurityManager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class RouteAttributes {
 
     public RouteAttributes(){
-        this.attributes = new HashMap<>();
-        this.sessions = new HashMap<>();
+        this.attributes = new ConcurrentHashMap<>();
+        this.sessions = new ConcurrentHashMap<>();
         this.routeEndpointHolder = new RouteEndpointHolder();
+        this.sessionRegistry = new ConcurrentHashMap<>();
     }
 
     RouteAttributes routeAttributes;
     PersistenceConfig persistenceConfig;
 
-    Map<String, Object> attributes;
-    Map<String, HttpSession> sessions;
-    Map<String, ViewRenderer> viewRenderers;
+    ConcurrentMap<String, Object> attributes;
+    ConcurrentMap<String, HttpSession> sessions;
+    ConcurrentMap<String, ViewRenderer> viewRenderers;
+    ConcurrentMap<String, Boolean> sessionRegistry;
     RouteEndpointHolder routeEndpointHolder;
+
     Class<?> securityAccess;
     SecurityManager securityManager;
 
@@ -48,28 +53,36 @@ public class RouteAttributes {
         this.persistenceConfig = persistenceConfig;
     }
 
-    public Map<String, Object> getAttributes() {
+    public ConcurrentMap<String, Object> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Map<String, Object> attributes) {
+    public void setAttributes(ConcurrentMap<String, Object> attributes) {
         this.attributes = attributes;
     }
 
-    public Map<String, HttpSession> getSessions() {
+    public ConcurrentMap<String, HttpSession> getSessions() {
         return sessions;
     }
 
-    public void setSessions(Map<String, HttpSession> sessions) {
+    public void setSessions(ConcurrentMap<String, HttpSession> sessions) {
         this.sessions = sessions;
     }
 
-    public Map<String, ViewRenderer> getViewRenderers() {
+    public ConcurrentMap<String, ViewRenderer> getViewRenderers() {
         return viewRenderers;
     }
 
-    public void setViewRenderers(Map<String, ViewRenderer> viewRenderers) {
+    public void setViewRenderers(ConcurrentMap<String, ViewRenderer> viewRenderers) {
         this.viewRenderers = viewRenderers;
+    }
+
+    public ConcurrentMap<String, Boolean> getSessionRegistry() {
+        return sessionRegistry;
+    }
+
+    public void setSessionRegistry(ConcurrentMap<String, Boolean> sessionRegistry) {
+        this.sessionRegistry = sessionRegistry;
     }
 
     public RouteEndpointHolder getRouteEndpointHolder() {

@@ -21,7 +21,7 @@ public class Persistence {
                 .url(config.getUrl())
                 .user(config.getUser())
                 .password(config.getPassword())
-                .connections(config.getConnections())
+                .connections(1)
                 .create();
     }
 

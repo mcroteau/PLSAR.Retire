@@ -169,7 +169,7 @@ public class ServerResources {
         for(int activeIndex = 0; activeIndex <  typeNames.size(); activeIndex++){
             String type = typeNames.get(activeIndex);
             if(type.equals("net.plsar.security.SecurityManager")){
-                params.add(httpRequest);
+                params.add(securityManager);
             }
             if(type.equals("net.plsar.model.HttpRequest")){
                 params.add(httpRequest);
