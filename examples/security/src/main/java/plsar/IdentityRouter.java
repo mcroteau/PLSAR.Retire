@@ -19,6 +19,7 @@ public class IdentityRouter implements PersistenceRouter {
     public String signin(Cache cache, HttpRequest httpRequest, SecurityManager securityManager) {
         cache.set("instructions", "effort.");
         cache.set("cache", cache);
+        cache.set("resp", cache);
         cache.set("request", httpRequest);
         cache.set("securityManager", securityManager);
         cache.set("fooService", new FooService());

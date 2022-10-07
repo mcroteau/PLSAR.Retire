@@ -600,98 +600,101 @@ public class UserExperienceManager {
         String specElementEntry = specPartial.getEntry();
         int startExpression = specElementEntry.indexOf(OPENSPEC);
         int endExpression = specElementEntry.indexOf(ENDSPEC);
-        String expressionElement = specElementEntry.substring(startExpression + OPENSPEC.length(), endExpression);
-        String conditionalElement = getConditionalElement(expressionElement);
+        String completeExpressionElement = specElementEntry.substring(startExpression + OPENSPEC.length(), endExpression);
 
-        String subjectElement = expressionElement, predicateValue = "";
-        if(!conditionalElement.equals("")){
-            String[] expressionElements = expressionElement.split(conditionalElement);
-            subjectElement = expressionElements[ZERO].trim();
-            String predicateElement = expressionElements[ONE];
-            predicateValue = predicateElement.replaceAll("'", "").trim();
-        }
+        String[] allElementExpressions = completeExpressionElement.split("&&");
+        for(String expressionElementClean : allElementExpressions) {
+            String expressionElement = expressionElementClean.trim();
+            String conditionalElement = getConditionalElement(expressionElement);
 
-        if(subjectElement.contains(".")){
+            String subjectElement = expressionElement, predicateValue = "";
+            if (!conditionalElement.equals("")) {
+                String[] expressionElements = expressionElement.split(conditionalElement);
+                subjectElement = expressionElements[ZERO].trim();
+                String predicateElement = expressionElements[ONE];
+                predicateValue = predicateElement.replaceAll("'", "").trim();
+            }
 
-            if(predicateValue.equals("") &&
-                    conditionalElement.equals("")){
-                boolean falseActive = subjectElement.contains("!");
-                String subjectElementClean = subjectElement.replace("!", "");
+            if (subjectElement.contains(".")) {
 
-                String[] subjectFieldElements = subjectElementClean.split(DOT, 2);
+                if (predicateValue.equals("") &&
+                        conditionalElement.equals("")) {
+                    boolean falseActive = subjectElement.contains("!");
+                    String subjectElementClean = subjectElement.replace("!", "");
+
+                    String[] subjectFieldElements = subjectElementClean.split(DOT, 2);
+                    String subjectField = subjectFieldElements[ZERO];
+                    String subjectFieldElementsRemainder = subjectFieldElements[ONE];
+
+                    Object activeSubjectObject = resp.get(subjectField);
+                    if (activeSubjectObject == null) return false;
+
+                    String[] activeSubjectFieldElements = subjectFieldElementsRemainder.split(DOT);
+                    for (String activeFieldElement : activeSubjectFieldElements) {
+                        activeSubjectObject = getObjectValue(activeFieldElement, activeSubjectObject);
+                    }
+
+                    boolean activeSubjectObjectBoolean = (Boolean) activeSubjectObject;
+                    if (activeSubjectObjectBoolean && !falseActive) return true;
+                    if (!activeSubjectObjectBoolean && falseActive) return true;
+                }
+
+                if (subjectElement.contains("()")) {
+                    String subjectElements = subjectElement.replace("()", "");
+                    String[] subjectFieldElements = subjectElements.split(DOT);
+                    String subjectField = subjectFieldElements[ZERO];
+                    String methodName = subjectFieldElements[ONE];
+                    Object activeSubjectObject = resp.get(subjectField);
+                    if (activeSubjectObject == null) return false;
+                    Method activeMethod = activeSubjectObject.getClass().getMethod(methodName);
+                    activeMethod.setAccessible(true);
+                    Object activeObjectValue = activeMethod.invoke(activeSubjectObject);
+                    if (activeObjectValue == null) return false;
+                    String subjectValue = String.valueOf(activeObjectValue);
+                    Integer subjectNumericValue = Integer.parseInt(subjectValue);
+                    Integer predicateNumericValue = Integer.parseInt(predicateValue);
+                    if(!getValidation(subjectNumericValue, predicateNumericValue, conditionalElement, expressionElement))return false;
+                }
+
+                String[] subjectFieldElements = subjectElement.split(DOT, 2);
                 String subjectField = subjectFieldElements[ZERO];
-                String subjectFieldElementsRemainder = subjectFieldElements[ONE];
+                String activeSubjectFields = subjectFieldElements[ONE];
 
+                String[] activeSubjectFieldElements = activeSubjectFields.split(DOT);
                 Object activeSubjectObject = resp.get(subjectField);
-                if(activeSubjectObject == null)return false;
+                if (activeSubjectObject == null) return false;
 
-                String[] activeSubjectFieldElements = subjectFieldElementsRemainder.split(DOT);
-                for(String activeFieldElement : activeSubjectFieldElements){
+                for (String activeFieldElement : activeSubjectFieldElements) {
                     activeSubjectObject = getObjectValue(activeFieldElement, activeSubjectObject);
                 }
 
+                if (activeSubjectObject == null) {
+                    if(!passesNilSpec(activeSubjectObject, predicateValue, conditionalElement))return false;
+                }
+
+                String subjectValue = String.valueOf(activeSubjectObject);
+                if(!passesSpec(subjectValue, predicateValue, conditionalElement))return false;
+
+            } else if (predicateValue.equals("") &&
+                    conditionalElement.equals("")) {
+                boolean falseActive = subjectElement.contains("!");
+                String subjectElementClean = subjectElement.replace("!", "");
+                Object activeSubjectObject = resp.get(subjectElementClean);
+                if (activeSubjectObject == null) return false;
                 boolean activeSubjectObjectBoolean = (Boolean) activeSubjectObject;
-                if(activeSubjectObjectBoolean && !falseActive)return true;
-                if(!activeSubjectObjectBoolean && falseActive)return true;
+                if (!activeSubjectObjectBoolean && falseActive) return false;
+                if (activeSubjectObjectBoolean && !falseActive) return false;
             }
 
-            if(subjectElement.contains("()")){
-                String subjectElements = subjectElement.replace("()", "");
-                String[] subjectFieldElements = subjectElements.split(DOT);
-                String subjectField = subjectFieldElements[ZERO];
-                String methodName = subjectFieldElements[ONE];
-                Object activeSubjectObject = resp.get(subjectField);
-                if(activeSubjectObject == null)return false;
-                Method activeMethod = activeSubjectObject.getClass().getMethod(methodName);
-                activeMethod.setAccessible(true);
-                Object activeObjectValue = activeMethod.invoke(activeSubjectObject);
-                if(activeObjectValue == null)return false;
-                String subjectValue = String.valueOf(activeObjectValue);
-                Integer subjectNumericValue = Integer.parseInt(subjectValue);
-                Integer predicateNumericValue = Integer.parseInt(predicateValue);
-                boolean passesSpecification = getValidation(subjectNumericValue, predicateNumericValue, conditionalElement, expressionElement);
-                return passesSpecification;
+
+            Object activeSubjectObject = resp.get(subjectElement);
+            if (activeSubjectObject == null) {
+                if(!passesNilSpec(activeSubjectObject, predicateValue, conditionalElement))return false;
             }
-
-            String[] subjectFieldElements = subjectElement.split(DOT, 2);
-            String subjectField = subjectFieldElements[ZERO];
-            String activeSubjectFields = subjectFieldElements[ONE];
-
-            String[] activeSubjectFieldElements = activeSubjectFields.split(DOT);
-            Object activeSubjectObject = resp.get(subjectField);
-            if(activeSubjectObject == null)return false;
-
-            for(String activeFieldElement : activeSubjectFieldElements){
-                activeSubjectObject = getObjectValue(activeFieldElement, activeSubjectObject);
-            }
-
-            if(activeSubjectObject == null){
-                boolean passesSpecification = passesNilSpec(activeSubjectObject, predicateValue, conditionalElement);
-                return passesSpecification;
-            }
-
-            String subjectValue = String.valueOf(activeSubjectObject);
-            boolean passesSpecification = passesSpec(subjectValue, predicateValue, conditionalElement);
-            return passesSpecification;
-        }else if(predicateValue.equals("") &&
-                conditionalElement.equals("")){
-            boolean falseActive = subjectElement.contains("!");
-            String subjectElementClean = subjectElement.replace("!", "");
-            Object activeSubjectObject = resp.get(subjectElementClean);
-            if(activeSubjectObject == null) return false;
-            boolean activeSubjectObjectBoolean = (Boolean) activeSubjectObject;
-            if(activeSubjectObjectBoolean && !falseActive)return true;
-            if(!activeSubjectObjectBoolean && falseActive)return true;
+            String subjectValue = String.valueOf(activeSubjectObject).trim();
+            if(!passesSpec(subjectValue, predicateValue, conditionalElement))return false;
         }
-
-        Object activeSubjectObject = resp.get(subjectElement);
-        if(activeSubjectObject == null){
-            boolean passesSpecification = passesNilSpec(activeSubjectObject, predicateValue, conditionalElement);
-            return passesSpecification;
-        }
-        String subjectValue = String.valueOf(activeSubjectObject).trim();
-        boolean passesSpecification = passesSpec(subjectValue, predicateValue, conditionalElement);
-        return passesSpecification;
+        return true;
     }
 
     boolean passesNilSpec(Object activePredicateObject, String predicateValue, String conditionalElement) {
