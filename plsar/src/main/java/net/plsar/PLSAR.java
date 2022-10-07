@@ -14,10 +14,7 @@ import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -53,9 +50,8 @@ public class PLSAR {
             annotationInspector.retroInspect();
             AnnotationElementHolder annotationElementHolder = annotationInspector.getAnnotationElementHolder();
 
-            Log.info("Registering " + NUMBER_REQUEST_EXECUTORS + " route negotiators, please wait...");
+            Log.info("Registering route negotiators, please wait...");
             List<RouteNegotiator> routeNegotiators = getRouteNegotiators(TOTAL_NUMBER_EXECUTORS, serverResources, annotationElementHolder);
-            ConcurrentMap<String, String> sessionRouteRegistry = new ConcurrentHashMap<>(0, 3, 63010);
             ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry = registerRouteDirectors(routeNegotiators);
 
             RedirectRegistry redirectRegistry = new RedirectRegistry();
@@ -63,7 +59,7 @@ public class PLSAR {
             ServerSocket serverSocket = new ServerSocket(port);
             serverSocket.setPerformancePreferences(0, 1, 2);
             ExecutorService executors = Executors.newFixedThreadPool(NUMBER_PARTITIONS);
-            executors.execute(new PartitionedExecutor(NUMBER_REQUEST_EXECUTORS, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
+            executors.execute(new PartitionedExecutor(NUMBER_REQUEST_EXECUTORS, serverSocket, redirectRegistry, routeDirectorRegistry, viewRenderers));
 
             Log.info("Ready!");
 
@@ -104,9 +100,11 @@ public class PLSAR {
             Persistence persistence = new Persistence(persistenceConfig);
             SecurityAccess securityAccessInstance = (SecurityAccess) securityAccessClass.getConstructor().newInstance();
             Method setPersistence = securityAccessInstance.getClass().getMethod("setPersistence", Persistence.class);
-            setPersistence.invoke(persistence);
+            setPersistence.invoke(securityAccessInstance, persistence);
             SecurityManager securityManager = new SecurityManager(securityAccessInstance);
             routeAttributes.setSecurityManager(securityManager);
+
+            routeAttributes.setSecurityAccess(this.securityAccessClass);
 
             RouteNegotiator routeNegotiator = new RouteNegotiator();
             routeNegotiator.setRouteAttributes(routeAttributes);
@@ -118,21 +116,31 @@ public class PLSAR {
 
 
     public static class PartitionedExecutor implements Runnable{
+        String guid;
         Integer numberOfExecutors;
         ServerSocket serverSocket;
-        ConcurrentMap<String, String> sessionRouteRegistry;
         ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry;
         RedirectRegistry redirectRegistry;
         List<Class<?>> viewRenderers;
+        ConcurrentMap<String, String> sessionRouteRegistry;
 
-        public PartitionedExecutor(Integer numberOfExecutors, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, String> sessionRouteRegistry, ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry, List<Class<?>> viewRenderers) {
+        public PartitionedExecutor(Integer numberOfExecutors, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry, List<Class<?>> viewRenderers) {
+            Random random = new Random();
             this.numberOfExecutors = numberOfExecutors;
             this.serverSocket = serverSocket;
-            this.redirectRegistry = redirectRegistry;
-            this.sessionRouteRegistry = sessionRouteRegistry;
+            this.redirectRegistry = redirectRegistry;;
             this.routeDirectorRegistry = routeDirectorRegistry;
             this.viewRenderers = viewRenderers;
+            this.guid = String.valueOf(random.nextFloat());
+            this.sessionRouteRegistry = new ConcurrentHashMap<>();
         }
+
+        /**
+         *
+         *
+         * session
+         *
+         */
 
         @Override
         public void run() {
@@ -346,7 +354,7 @@ public class PLSAR {
     }
 
     public void setSecurityAccess(Class<?> securityAccess) {
-        this.securityAccessClass = securityAccessClass;
+        this.securityAccessClass = securityAccess;
     }
 
     public void setSchemaConfig(SchemaConfig schemaConfig) {

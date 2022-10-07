@@ -67,7 +67,7 @@ public class ServerResources {
     }
 
     public String getSessionId() {
-        return "gigante.sessions";
+        return "plsar.sessions";
     }
 
     public String getDateFormat() {

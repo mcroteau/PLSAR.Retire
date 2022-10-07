@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ExperienceManager {
+public class UserExperienceManager {
 
     final Integer ZERO = 0;
     final Integer ONE  = 1;
@@ -17,12 +17,12 @@ public class ExperienceManager {
     final String DOT      = "\\.";
     final String NEWLINE  = "\n";
     final String LOCATOR  = "\\$\\{[a-zA-Z+\\.+\\(\\)]*\\}";
-    final String FOREACH  = "<earthling:iterate";
-    final String ENDEACH  = "</earthling:iterate>";
-    final String IFSPEC   = "<earthling:if";
-    final String ENDIF    = "</earthling:if>";
-    final String SETVAR   = "<earthling:set";
-    final String OPENSPEC = "<earthling:if spec=\"${";
+    final String FOREACH  = "<plsar:iterate";
+    final String ENDEACH  = "</plsar:iterate>";
+    final String IFSPEC   = "<plsar:if";
+    final String ENDIF    = "</plsar:if>";
+    final String SETVAR   = "<plsar:set";
+    final String OPENSPEC = "<plsar:if spec=\"${";
     final String ENDSPEC  = "}";
 
     final String COMMENT      = "<%--";
@@ -126,7 +126,7 @@ public class ExperienceManager {
 
                 if ((Boolean) isEval.invoke(viewRendererInstance) &&
                         (elementEntry.contains(openRendererKey)) &&
-                        (Boolean) truthy.invoke(req)) {
+                        (Boolean) truthy.invoke(viewRendererInstance, req)) {
 
                     viewRendererIteration:
                     for(int moa = tao; moa < elementEntries.size(); moa++){
@@ -137,7 +137,7 @@ public class ExperienceManager {
                 }
                 if ((Boolean) isEval.invoke(viewRendererInstance) &&
                         (elementEntry.contains(openRendererKey)) &&
-                        !(Boolean) truthy.invoke(req)) {
+                        !(Boolean) truthy.invoke(viewRendererInstance, req)) {
                     viewRendererIteration:
                     for(int moa = tao; moa < elementEntries.size(); moa++){
                         String elementEntryDeux = elementEntries.get(moa);
@@ -148,7 +148,7 @@ public class ExperienceManager {
                 if(!(Boolean) isEval.invoke(viewRendererInstance) &&
                         elementEntry.contains(completeRendererKey)){
                     Method render = viewRendererInstance.getClass().getDeclaredMethod("render", HttpRequest.class);
-                    String rendered = (String) render.invoke(req);
+                    String rendered = (String) render.invoke(viewRendererInstance, req);
                     elementEntries.set(tao, rendered);
                 }
             }
@@ -512,12 +512,12 @@ public class ExperienceManager {
             String basicEntry = basePartial.getEntry();
             if(basicEntry.contains(this.ENDEACH))endEach++;
 
-            if(openEach > 3)throw new PlsarException("too many nested <earthling:iterate>.");
+            if(openEach > 3)throw new PlsarException("too many nested <plsar:iterate>.");
             if(basicEntry.contains(this.ENDEACH) && endEach == openEach && endEach != 0){
                 return qxro + 1;
             }
         }
-        throw new PlsarException("missing end </earthling:iterate>");
+        throw new PlsarException("missing end </plsar:iterate>");
     }
 
 

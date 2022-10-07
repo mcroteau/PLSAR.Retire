@@ -1,9 +1,9 @@
 package plsar;
 
-import net.plsar.example.model.User;
-import net.plsar.example.model.UserPermission;
-import net.plsar.example.model.UserRole;
 import net.plsar.Persistence;
+import plsar.model.User;
+import plsar.model.UserPermission;
+import plsar.model.UserRole;
 
 import java.util.ArrayList;
 import java.util.HashSet;

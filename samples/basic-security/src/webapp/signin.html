@@ -1,14 +1,14 @@
-<gigante:authenticated>
+<plsar:authenticated>
     Hello <gigante:user/>!
     You are authenticated.
     <a href="/signout">Signout</a>
-</gigante:authenticated>
+</plsar:authenticated>
 
-<gigante:guest>
+<plsar:guest>
 
-    <gigante:if spec="${message != ''}">
+    <plsar:if spec="${message != ''}">
         ${message}
-    </gigante:if>
+    </plsar:if>
 
     <h1>Signin.</h1>
     <form action="/authenticate" method="post">
@@ -24,6 +24,6 @@
         username : croteau.mike+dos@gmail.com<br/>
         password : effort.
     </p>
-</gigante:guest>
+</plsar:guest>
 
 Special instructions: ${instructions}

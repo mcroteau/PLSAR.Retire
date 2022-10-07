@@ -19,7 +19,7 @@ public class SecurityManagerHelper {
             Class<?> securityAccessClass = routeAttributes.getSecurityAccess();
             SecurityAccess securityAccessInstance = (SecurityAccess) securityAccessClass.getConstructor().newInstance();
             Method setPersistence = securityAccessInstance.getClass().getMethod("setPersistence", Persistence.class);
-            setPersistence.invoke(persistence);
+            setPersistence.invoke(securityAccessInstance, persistence);
             security = new SecurityManager(securityAccessInstance);
         } catch (InvocationTargetException e) {
             e.printStackTrace();

@@ -22,11 +22,11 @@ public class IdentityRouter implements PersistenceRouter {
     }
 
     @Post("/authenticate")
-    public String authenticate(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, SecurityManager security) {
+    public String authenticate(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, SecurityManager securityManager) {
         String user = httpRequest.value("user");
         String pass = httpRequest.value("pass");
 
-        if(security.signin(user, pass, httpRequest, httpResponse)){
+        if(securityManager.signin(user, pass, httpRequest, httpResponse)){
             httpRequest.getSession(true).set("user", user);
             return "[redirect]/secret";
         }
@@ -35,8 +35,8 @@ public class IdentityRouter implements PersistenceRouter {
     }
 
     @Get("/secret")
-    public String secret(Cache cache, HttpRequest httpRequest, SecurityManager security) {
-        if(security.userIsAuthenticated(httpRequest)){
+    public String secret(Cache cache, HttpRequest httpRequest, SecurityManager securityManager) {
+        if(securityManager.userIsAuthenticated(httpRequest)){
             return "/secret.html";
         }
         cache.set("message", "authenticate please.");
@@ -44,8 +44,8 @@ public class IdentityRouter implements PersistenceRouter {
     }
 
     @Get("/signout")
-    public String signout(HttpRequest httpRequest, HttpResponse httpResponse, SecurityManager security) {
-        security.signout(httpRequest, httpResponse);
+    public String signout(HttpRequest httpRequest, HttpResponse httpResponse, SecurityManager securityManager) {
+        securityManager.signout(httpRequest, httpResponse);
         return "[redirect]/";
     }
 

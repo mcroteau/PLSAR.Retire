@@ -22,6 +22,7 @@ public class RouteAttributes {
     Map<String, HttpSession> sessions;
     Map<String, ViewRenderer> viewRenderers;
     RouteEndpointHolder routeEndpointHolder;
+    Class<?> securityAccess;
     SecurityManager securityManager;
 
     public Object get(String key){
@@ -77,6 +78,14 @@ public class RouteAttributes {
 
     public void setRouteEndpointHolder(RouteEndpointHolder routeEndpointHolder) {
         this.routeEndpointHolder = routeEndpointHolder;
+    }
+
+    public Class<?> getSecurityAccess() {
+        return securityAccess;
+    }
+
+    public void setSecurityAccess(Class<?> securityAccess) {
+        this.securityAccess = securityAccess;
     }
 
     public SecurityManager getSecurityManager() {

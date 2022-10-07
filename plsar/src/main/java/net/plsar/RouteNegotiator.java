@@ -24,13 +24,16 @@ public class RouteNegotiator {
 
         try {
             ServerResources serverResources = new ServerResources();
-            ExperienceManager experienceManager = new ExperienceManager();
+            UserExperienceManager userExperienceManager = new UserExperienceManager();
 
             RouteAttributes routeAttributes = httpRequest.getRouteAttributes();
             RouteEndpointHolder routeEndpointHolder = routeAttributes.getRouteEndpointHolder();
 
-            RouteEndpoint routeEndpoint = serverResources.getRouteEndpoint(httpRequest.getVerb(), httpRequest.getUriPath(), routeEndpointHolder);
-            Object[] signature = serverResources.getRouteParameters(httpRequest.getUriPath(), routeEndpoint, cache, httpRequest, httpResponse, securityManager);
+            String routeUriPath = httpRequest.getUriPath();
+            String routeVerb = httpRequest.getVerb();
+
+            RouteEndpoint routeEndpoint = serverResources.getRouteEndpoint(routeVerb, routeUriPath, routeEndpointHolder);
+            Object[] signature = serverResources.getRouteParameters(routeUriPath, routeEndpoint, cache, httpRequest, httpResponse, securityManager);
             Method method = routeEndpoint.getRouteMethod();
 
             String design = null, title = null, keywords = null, description = null;
@@ -59,7 +62,7 @@ public class RouteNegotiator {
                 return new RouteResponse("redirect:");
             }
 
-            Path webPath = Paths.get("webux");
+            Path webPath = Paths.get("src", "webapp");
             if(methodResponse.startsWith("/")){
                 methodResponse = methodResponse.replaceFirst("/", "");
             }
@@ -96,10 +99,10 @@ public class RouteNegotiator {
                 }
 
                 if(!designContent.contains("<echo:content/>")){
-                    return new RouteResponse("Your html template file is missing <gigante:content/>");
+                    return new RouteResponse("Your html template file is missing <plsar:content/>");
                 }
 
-                String[] bits = designContent.split("<gigante:content/>");
+                String[] bits = designContent.split("<plsar:content/>");
                 String header = bits[0];
                 String bottom = "";
                 if(bits.length > 1) bottom = bits[1];
@@ -115,11 +118,11 @@ public class RouteNegotiator {
                     completePage = completePage.replace("${description}", description);
                 }
 
-                String designOutput = experienceManager.execute(completePage, cache, httpRequest, viewRenderers);
+                String designOutput = userExperienceManager.execute(completePage, cache, httpRequest, viewRenderers);
                 return new RouteResponse(designOutput);
 
             }else{
-                String pageOutput = experienceManager.execute(pageContent, cache, httpRequest, viewRenderers);
+                String pageOutput = userExperienceManager.execute(pageContent, cache, httpRequest, viewRenderers);
                 return new RouteResponse(pageOutput);
             }
 
