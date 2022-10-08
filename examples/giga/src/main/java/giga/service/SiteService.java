@@ -3,7 +3,7 @@ package giga.service;
 import giga.model.*;
 import giga.repo.CategoryRepo;
 import giga.repo.DesignRepo;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import okhttp3.internal.connection.RouteDatabase;
 import qio.annotate.Inject;
 import qio.annotate.Service;
@@ -26,43 +26,43 @@ public class SiteService {
     @Inject
     CategoryRepo categoryRepo;
 
-    public String getBit(Integer slice, String design, Design blueprint, Category category, Business business, HttpServletRequest req){
+    public String getBit(Integer slice, String design, Design blueprint, Category category, Business business, HttpRequest req){
         if(design.equals("\\{\\{content\\}\\}")) design = " " + design + " ";
         String[] bits = design.split("\\{\\{site.content\\}\\}");
         String bit = bits[slice];
         return setAttributes(bit, blueprint, category, business, req);
     }
 
-    public String getQueryBit(Integer slice, Business business, HttpServletRequest req){
+    public String getQueryBit(Integer slice, Business business, HttpRequest req){
         Design design = designRepo.getBase(business.getId());
         String blueprint = design.getDesign();
         return getBit(slice, blueprint, design, null, business, req);
     }
 
-    public String getBaseBit(Integer slice, Design design, Business business, HttpServletRequest req){
+    public String getBaseBit(Integer slice, Design design, Business business, HttpRequest req){
         String blueprint = design.getDesign();
         return getBit(slice, blueprint, design, null, business, req);
     }
 
-    public String getPageBit(Integer slice, Page page, Business business, HttpServletRequest req){
+    public String getPageBit(Integer slice, Page page, Business business, HttpRequest req){
         Design blueprint = designRepo.get(page.getDesignId());
         String design = blueprint.getDesign();
         return getBit(slice, design, blueprint, null, business, req);
     }
 
-    public String getItemBit(Integer slice, Item item, Category category, Business business, HttpServletRequest req){
+    public String getItemBit(Integer slice, Item item, Category category, Business business, HttpRequest req){
         Design blueprint = designRepo.get(item.getDesignId());
         String design = blueprint.getDesign();
         return getBit(slice, design, blueprint, null, business, req);
     }
 
-    public String getCategoryBit(Integer slice, Category category, Business business, HttpServletRequest req){
+    public String getCategoryBit(Integer slice, Category category, Business business, HttpRequest req){
         Design blueprint = designRepo.get(category.getDesignId());
         String design = blueprint.getDesign();
         return getBit(slice, design, blueprint, category, business, req);
     }
 
-    public String setAttributes(String bit, Design blueprint, Category category, Business business, HttpServletRequest req){
+    public String setAttributes(String bit, Design blueprint, Category category, Business business, HttpRequest req){
         bit = bit.replace("{{categories}}", getMenu(category, business, req));
         bit = bit.replace("{{categories.vertical}}", getMenuVertical(category, business, req));
         bit = bit.replace("{{kart}}", getKart(business, req));
@@ -79,12 +79,12 @@ public class SiteService {
         return bit;
     }
 
-    private String getKart(Business business, HttpServletRequest req) {
+    private String getKart(Business business, HttpRequest req) {
         String href = req.getContextPath() + "/" + business.getUri() + "/cart";
         return "<a href=\"" + href + "\">Kart</a>";
     }
 
-    private String getSignin(Business business, HttpServletRequest req){
+    private String getSignin(Business business, HttpRequest req){
         String href = "";
         if(authService.isAuthenticated()){
             href = req.getContextPath() + "/" + business.getUri() + "/signout";
@@ -94,7 +94,7 @@ public class SiteService {
         return "<a href=\"" + href + "\">Signin</a>";
     }
 
-    private String getSignup(Business business, HttpServletRequest req){
+    private String getSignup(Business business, HttpRequest req){
         if(!authService.isAuthenticated()){
             String href = req.getContextPath() + "/" + business.getUri() + "/signup";
             return "<a href=\"" + href + "\">Register</a>";
@@ -102,12 +102,12 @@ public class SiteService {
         return "";
     }
 
-    private String getActivity(Business business, HttpServletRequest req){
+    private String getActivity(Business business, HttpRequest req){
         String href = req.getContextPath() + "/" + business.getUri() + "/activity";
         return "<a href=\"" + href + "\">My Activity</a>";
     }
 
-    public String getSearch(Business business, HttpServletRequest request){
+    public String getSearch(Business business, HttpRequest request){
         StringBuilder sb = new StringBuilder();
         String action = request.getContextPath() + "/query/" + business.getId();
         String search = "type=\"text\" name=\"q\" placeholder=\"Search...\"";
@@ -133,7 +133,7 @@ public class SiteService {
     }
 
 
-    public String getMenuVertical(Category activeCategory, Business business, HttpServletRequest req){
+    public String getMenuVertical(Category activeCategory, Business business, HttpRequest req){
         List<Category> categories = null;
         if(activeCategory != null) {
             categories = categoryRepo.getList(activeCategory.getId(), business.getId());
@@ -154,7 +154,7 @@ public class SiteService {
         return sb.toString();
     }
 
-    public String getMenu(Category activeCategory, Business business, HttpServletRequest req){
+    public String getMenu(Category activeCategory, Business business, HttpRequest req){
         List<Category> categories = null;
         if(activeCategory != null) {
             categories = categoryRepo.getList(activeCategory.getId(), business.getId());
@@ -173,7 +173,7 @@ public class SiteService {
         return sb.toString();
     }
 
-    public String getUri(Category category, Business business, HttpServletRequest req){
+    public String getUri(Category category, Business business, HttpRequest req){
         return req.getContextPath() + "/" + business.getUri() + "/" + category.getUri() + "/items";
     }
 

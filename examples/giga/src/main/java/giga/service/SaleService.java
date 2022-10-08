@@ -8,7 +8,7 @@ import com.stripe.net.RequestOptions;
 import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import org.ocpsoft.prettytime.PrettyTime;
 import qio.Qio;
 import qio.annotate.Inject;
@@ -56,7 +56,7 @@ public class SaleService {
     @Inject
     CartService cartService;
 
-    public String processSale(Long cartId, String businessUri, HttpServletRequest req){
+    public String processSale(Long cartId, String businessUri, HttpRequest req){
         Business business = businessRepo.get(businessUri);
         Business primaryBusiness = businessRepo.get(business.getPrimaryId());
         System.out.println("set sale business " + business);
@@ -234,7 +234,7 @@ public class SaleService {
         return "[redirect]/" + businessUri + "/sale/" + sale.getId();
     }
 
-    public String getSale(Long id, String businessUri, Cache data, HttpServletRequest req) {
+    public String getSale(Long id, String businessUri, Cache cache, HttpRequest req) {
 
         System.out.println("get sale : " + id + ", " + businessUri + " : " + businessRepo);
         Business business = businessRepo.get(businessUri);
@@ -259,17 +259,17 @@ public class SaleService {
             return "[redirect]/" + businessUri + "/oops";
         }
 
-        data.set("sale", sale);
-        cartService.setData(cart, business, data, req);
+        cache.set("sale", sale);
+        cartService.setData(cart, business, cache, req);
         return "/pages/sale/index.jsp";
     }
 
-    public String list(Long businessId, Cache data) throws Exception {
+    public String list(Long businessId, Cache cache) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
         Business business = businessRepo.get(businessId);
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         List<Sale> sales = new ArrayList<>();
         if(business.getAffiliate() == null ||
@@ -280,9 +280,9 @@ public class SaleService {
         }
 
         setSaleData(sales);
-        data.set("sales", sales);
+        cache.set("sales", sales);
 
-        data.set("page", "/pages/sale/list.jsp");
+        cache.set("page", "/pages/sale/list.jsp");
         return "/designs/auth.jsp";
     }
 

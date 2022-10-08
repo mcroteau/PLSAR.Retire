@@ -4,7 +4,7 @@ import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import jakarta.servlet.http.Part;
 import qio.Qio;
 import qio.annotate.Inject;
@@ -52,20 +52,20 @@ public class ItemService {
     AuthService authService;
 
 
-    public String query(Long id, Cache data, HttpServletRequest req){
+    public String query(Long id, Cache cache, HttpRequest req){
         String q = req.getParameter("q");
         Business business = businessRepo.get(id);
         List<Item> items = itemRepo.q(q, id);
-        data.set("q", q);
-        data.set("items", items);
-        data.set("siteService", siteService);
-        data.set("business", business);
-        data.set("items", items);
-        data.set("request", req);
+        cache.set("q", q);
+        cache.set("items", items);
+        cache.set("siteService", siteService);
+        cache.set("business", business);
+        cache.set("items", items);
+        cache.set("request", req);
         return "/pages/item/q.jsp";
     }
 
-    public String getItem(Long id, String businessUri, Cache data, HttpServletRequest req) {
+    public String getItem(Long id, String businessUri, Cache cache, HttpRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -76,17 +76,17 @@ public class ItemService {
             return "[redirect]/" + businessUri;
         }
 
-        setData(id, data);
+        setData(id, cache);
 
-        data.set("item", item);
-        data.set("business", business);
-        data.set("request", req);
-        data.set("siteService", siteService);
+        cache.set("item", item);
+        cache.set("business", business);
+        cache.set("request", req);
+        cache.set("siteService", siteService);
 
         return "/pages/item/index.jsp";
     }
 
-    public String getItemCategory(Long id, Long categoryId, String businessUri, Cache data, HttpServletRequest req) {
+    public String getItemCategory(Long id, Long categoryId, String businessUri, Cache cache, HttpRequest req) {
         System.out.println(id + " : " + categoryId + " : " + businessUri);
         Business business = businessRepo.get(businessUri);
         if(business == null){
@@ -103,43 +103,43 @@ public class ItemService {
             return "[redirect]/" + businessUri;
         }
 
-        setData(id, data);
+        setData(id, cache);
 
-        data.set("item", item);
-        data.set("category", category);
-        data.set("business", business);
-        data.set("request", req);
-        data.set("siteService", siteService);
+        cache.set("item", item);
+        cache.set("category", category);
+        cache.set("business", business);
+        cache.set("request", req);
+        cache.set("siteService", siteService);
 
         return "/pages/item/index.jsp";
     }
 
 
-    public String create(Long businessId, Cache data){
+    public String create(Long businessId, Cache cache){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         List<Category> categories = categoryRepo.getListAll(businessId);
         if(categories.size() == 0){
-            data.set("message", "You have to walk before you can run... you need to create a category before you can continue.");
+            cache.set("message", "You have to walk before you can run... you need to create a category before you can continue.");
             return "[redirect]/categories/new/" + businessId;
         }
-        data.set("categories", categories);
+        cache.set("categories", categories);
 
         List<Design> designs = designRepo.getList(businessId);
-        data.set("designs", designs);
+        cache.set("designs", designs);
 
         List<Asset> assets = assetRepo.getList(businessId);
-        data.set("assets", assets);
+        cache.set("assets", assets);
 
-        data.set("page", "/pages/item/new.jsp");
+        cache.set("page", "/pages/item/new.jsp");
         return "/designs/auth.jsp";
     }
 
 
-    public String save(Long businessId, HttpServletRequest req) throws IOException, ServletException {
+    public String save(Long businessId, HttpRequest req) throws IOException, ServletException {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -183,40 +183,40 @@ public class ItemService {
         return "[redirect]/items/" + savedItem.getBusinessId();
     }
 
-    public String list(Long businessId, Cache data){
+    public String list(Long businessId, Cache cache){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         List<Item> items = itemRepo.getList(businessId);
-        data.set("items", items);
-        data.set("title", "Active Items");
-        data.set("siteService", siteService);
-        data.set("page", "/pages/item/list.jsp");
+        cache.set("items", items);
+        cache.set("title", "Active Items");
+        cache.set("siteService", siteService);
+        cache.set("page", "/pages/item/list.jsp");
         return "/designs/auth.jsp";
     }
 
 
-    public String getListInactive(Long businessId, Cache data) {
+    public String getListInactive(Long businessId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         List<Item> items = itemRepo.getList(businessId, false);
-        data.set("items", items);
-        data.set("title", "Inactive Items");
-        data.set("siteService", siteService);
-        data.set("page", "/pages/item/list.jsp");
+        cache.set("items", items);
+        cache.set("title", "Inactive Items");
+        cache.set("siteService", siteService);
+        cache.set("page", "/pages/item/list.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String grid(Long businessId, Cache data) {
+    public String grid(Long businessId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         List<Item> items = itemRepo.getList(businessId);
         for(Item item : items){
@@ -230,15 +230,15 @@ public class ItemService {
         }
         List<Design> designs = designRepo.getList(businessId);
         List<Category> categories = categoryRepo.getListAll(businessId);
-        data.set("designs", designs);
-        data.set("categories", categories);
-        data.set("items", items);
-        data.set("siteService", siteService);
-        data.set("page", "/pages/item/grid.jsp");
+        cache.set("designs", designs);
+        cache.set("categories", categories);
+        cache.set("items", items);
+        cache.set("siteService", siteService);
+        cache.set("page", "/pages/item/grid.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String edit(Long id, Long businessId, Cache data) {
+    public String edit(Long id, Long businessId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -246,18 +246,18 @@ public class ItemService {
         String permission = Giga.ITEM_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to edit this item.");
+            cache.set("message", "Unauthorized to edit this item.");
             return "[redirect]/";
         }
 
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         Item item = itemRepo.get(id);
 
-        data.set("item", item);
+        cache.set("item", item);
 
         List<Category> categories = categoryRepo.getListAll(businessId);
-        data.set("categories", categories);
+        cache.set("categories", categories);
 
         List<CategoryItem> categoryItems = categoryRepo.getCategoryItems(item.getId());
         List<Category> activeCategories = new ArrayList<>();
@@ -265,26 +265,26 @@ public class ItemService {
             Category category = categoryRepo.get(categoryItem.getCategoryId());
             activeCategories.add(category);
         }
-        data.set("activeCategories", activeCategories);
+        cache.set("activeCategories", activeCategories);
 
         if(categoryItems != null &&
                 categoryItems.size() > 0){
             CategoryItem categoryItem = categoryItems.get(0);
-            data.set("categoryId", categoryItem.getCategoryId());
+            cache.set("categoryId", categoryItem.getCategoryId());
         }
 
         List<Design> designs = designRepo.getList(businessId);
-        data.set("designs", designs);
+        cache.set("designs", designs);
 
         List<Asset> assets = assetRepo.getList(businessId);
-        data.set("assets", assets);
+        cache.set("assets", assets);
 
-        data.set("page", "/pages/item/edit.jsp");
+        cache.set("page", "/pages/item/edit.jsp");
         return "/designs/auth.jsp";
     }
 
 
-    public String update(Long id, Long businessId, Boolean onGrid, Cache data, HttpServletRequest req) throws IOException, ServletException {
+    public String update(Long id, Long businessId, Boolean onGrid, Cache cache, HttpRequest req) throws IOException, ServletException {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -294,7 +294,7 @@ public class ItemService {
         String permission = Giga.ITEM_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to edit this design.");
+            cache.set("message", "Unauthorized to edit this design.");
             return "[redirect]/";
         }
 
@@ -330,7 +330,7 @@ public class ItemService {
         if(business.getAffiliate() != null &&
                 business.getAffiliate() &&
                 (item.getAffiliatePrice().compareTo(item.getPrice()) == 1)){
-            data.set("message", "Your price may not be lower than the business owners. I get it, you want to buy their products at a lower price. You're a genius. ; )");
+            cache.set("message", "Your price may not be lower than the business owners. I get it, you want to buy their products at a lower price. You're a genius. ; )");
             if(onGrid){
                 return "[redirect]/items/grid/" + businessId;
             }
@@ -338,7 +338,7 @@ public class ItemService {
         }
 
         itemRepo.update(item);
-        data.set("message", "Successfully updated item");
+        cache.set("message", "Successfully updated item");
 
         if(onGrid){
             return "[redirect]/items/grid/" + businessId;
@@ -346,7 +346,7 @@ public class ItemService {
         return "[redirect]/items/edit/" + businessId + "/" + id;
     }
 
-    public String delete(Long id, Long businessId, Cache data) {
+    public String delete(Long id, Long businessId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -354,7 +354,7 @@ public class ItemService {
         String permission = Giga.ITEM_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to delete this item.");
+            cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
 
@@ -365,12 +365,12 @@ public class ItemService {
         }
         itemRepo.deleteOptions(id);
         itemRepo.delete(id);
-        data.set("message", "Successfully deleted item.");
+        cache.set("message", "Successfully deleted item.");
 
         return "[redirect]/items/" + businessId;
     }
 
-    public String options(Long id, Long businessId, Cache data) {
+    public String options(Long id, Long businessId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -378,18 +378,18 @@ public class ItemService {
         String permission = Giga.ITEM_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to delete this item.");
+            cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
 
-        setData(id, data);
-        businessService.setData(businessId, data);
+        setData(id, cache);
+        businessService.setData(businessId, cache);
 
-        data.set("page", "/pages/item/options.jsp");
+        cache.set("page", "/pages/item/options.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String saveOption(Long id, Long businessId, Cache data, HttpServletRequest req) {
+    public String saveOption(Long id, Long businessId, Cache cache, HttpRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -397,7 +397,7 @@ public class ItemService {
         String permission = Giga.ITEM_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to delete this item.");
+            cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
 
@@ -408,7 +408,7 @@ public class ItemService {
     }
 
 
-    public String deleteOption(Long id, Long optionId, Long businessId, Cache data, HttpServletRequest req) {
+    public String deleteOption(Long id, Long optionId, Long businessId, Cache cache, HttpRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -416,7 +416,7 @@ public class ItemService {
         String permission = Giga.ITEM_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to delete this item.");
+            cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
 
@@ -427,7 +427,7 @@ public class ItemService {
         return "[redirect]/items/options/" + businessId + "/" + id;
     }
 
-    public String saveValue(Long id, Long businessId, Cache data, HttpServletRequest req) {
+    public String saveValue(Long id, Long businessId, Cache cache, HttpRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -435,7 +435,7 @@ public class ItemService {
         String permission = Giga.ITEM_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to delete this item.");
+            cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
 
@@ -445,7 +445,7 @@ public class ItemService {
         return "[redirect]/items/options/" + businessId + "/" + id;
     }
 
-    public String deleteValue(Long id, Long valueId, Long businessId, Cache data, HttpServletRequest req) {
+    public String deleteValue(Long id, Long valueId, Long businessId, Cache cache, HttpRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -453,28 +453,28 @@ public class ItemService {
         String permission = Giga.ITEM_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to delete this item.");
+            cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
 
         System.out.println("delete option value ");
         itemRepo.deleteValue(valueId);
 
-        setData(id, data);
-        businessService.setData(businessId, data);
+        setData(id, cache);
+        businessService.setData(businessId, cache);
 
         return "[redirect]/items/options/" + businessId + "/" + id;
     }
 
-    public void setData(Long id, Cache data){
+    public void setData(Long id, Cache cache){
         Item item = itemRepo.get(id);
         List<ItemOption> itemOptions = itemRepo.getOptions(item.getId());
         for(ItemOption itemOption : itemOptions){
             List<OptionValue> optionValues = itemRepo.getValues(itemOption.getId());
             itemOption.setOptionValues(optionValues);
         }
-        data.set("item", item);
-        data.set("itemOptions", itemOptions);
+        cache.set("item", item);
+        cache.set("itemOptions", itemOptions);
     }
 
 }

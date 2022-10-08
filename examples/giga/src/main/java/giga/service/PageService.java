@@ -6,7 +6,7 @@ import giga.repo.BusinessRepo;
 import giga.repo.DesignRepo;
 import giga.repo.PageRepo;
 import giga.repo.UserRepo;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Service;
@@ -38,7 +38,7 @@ public class PageService {
     @Inject
     SiteService siteService;
 
-    public String getPage(String businessUri, String page, Cache data, HttpServletRequest req) {
+    public String getPage(String businessUri, String page, Cache cache, HttpRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]";
@@ -49,27 +49,27 @@ public class PageService {
             return "[redirect]/" + businessUri + "";
         }
 
-        data.set("request", req);
-        data.set("siteService", siteService);
-        data.set("business", business);
-        data.set("page", activePage);
+        cache.set("request", req);
+        cache.set("siteService", siteService);
+        cache.set("business", business);
+        cache.set("page", activePage);
         return "/pages/page/index.jsp";
     }
 
 
-    public String create(Long businessId, Cache data){
+    public String create(Long businessId, Cache cache){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
         List<Design> designs = designRepo.getList(businessId);
-        data.set("designs", designs);
-        data.set("page", "/pages/page/new.jsp");
+        cache.set("designs", designs);
+        cache.set("page", "/pages/page/new.jsp");
         return "/designs/auth.jsp";
     }
 
 
-    public String save(HttpServletRequest req) throws Exception {
+    public String save(HttpRequest req) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -86,19 +86,19 @@ public class PageService {
     }
 
 
-    public String list(Long businessId, Cache data) {
+    public String list(Long businessId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         List<Page> pages = pageRepo.getList(businessId);
-        data.set("pages", pages);
-        data.set("page", "/pages/page/list.jsp");
+        cache.set("pages", pages);
+        cache.set("page", "/pages/page/list.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String delete(Long id, Long businessId, Cache data) {
+    public String delete(Long id, Long businessId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -106,12 +106,12 @@ public class PageService {
         String permission = Giga.PAGE_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Whoa, people might be using this. Lol, this isn't yours.");
+            cache.set("message", "Whoa, people might be using this. Lol, this isn't yours.");
             return "[redirect]/";
         }
 
         pageRepo.delete(id);
-        data.set("message", "Successfully deleted asset.");
+        cache.set("message", "Successfully deleted asset.");
 
         return "[redirect]/pages/" + businessId;
     }

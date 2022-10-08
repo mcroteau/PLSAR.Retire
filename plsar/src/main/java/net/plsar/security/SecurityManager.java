@@ -72,7 +72,7 @@ public class SecurityManager {
         String hashed = hash(passwordUntouched);
         String password = securityAccess.getPassword(username);
 
-        if(!userIsAuthenticated(httpRequest) &&
+        if(!isAuthenticated(httpRequest) &&
                 password.equals(hashed)){
 
             HttpSession oldHttpSession = httpRequest.getSession(true);
@@ -108,7 +108,7 @@ public class SecurityManager {
         httpResponse.getSecurityAttributes().add(securityAttribute);
     }
 
-    public boolean userIsAuthenticated(HttpRequest httpRequest){
+    public boolean isAuthenticated(HttpRequest httpRequest){
         HttpSession httpSession = httpRequest.getSession(true);
 
         if(httpSession != null) {
@@ -139,5 +139,4 @@ public class SecurityManager {
         }
         return passwordHashed.toString();
     }
-
 }

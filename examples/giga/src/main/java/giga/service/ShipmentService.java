@@ -6,7 +6,7 @@ import com.easypost.exception.EasyPostException;
 import com.easypost.model.Address;
 import com.easypost.model.Rate;
 import com.easypost.model.Shipment;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
@@ -43,7 +43,7 @@ public class ShipmentService {
     CartService cartService;
 
 
-    public String begin(String businessUri, Cache data, HttpServletRequest req) {
+    public String begin(String businessUri, Cache cache, HttpRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -55,13 +55,13 @@ public class ShipmentService {
             return "[redirect]/" + businessUri + "/cart";
         }
 
-        cartService.setData(cart, business, data, req);
+        cartService.setData(cart, business, cache, req);
 
         return "/pages/shipment/new.jsp";
 
     }
 
-    public String getRates(String businessUri, Cache data, HttpServletRequest req) {
+    public String getRates(String businessUri, Cache cache, HttpRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -109,9 +109,9 @@ public class ShipmentService {
             }
         }
 
-        data.set("weight", weight);
+        cache.set("weight", weight);
 
-        cartService.setData(cart, business, data, req);
+        cartService.setData(cart, business, cache, req);
 
         EasyPost.apiKey = easypostKey;
 
@@ -160,20 +160,20 @@ public class ShipmentService {
             List<Rate> rates = shipment.getRates();
             Giga.sortRates(rates);
 
-            data.set("message", "Shipping calculated!");
-            data.set("shipment", shipment);
-            data.set("rates", rates);
+            cache.set("message", "Shipping calculated!");
+            cache.set("shipment", shipment);
+            cache.set("rates", rates);
 
         }catch(EasyPostException ex){
             System.out.println("exception : " + ex.getMessage());
-            data.set("message", "your address doesn't add up. will you try again? ");
+            cache.set("message", "your address doesn't add up. will you try again? ");
             return "/pages/shipment/new.jsp";
         }
 
         return "/pages/shipment/choose.jsp";
     }
 
-    public String select(String businessUri, Cache data, HttpServletRequest req) {
+    public String select(String businessUri, Cache cache, HttpRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -257,19 +257,19 @@ public class ShipmentService {
     }
 
 
-    public String createShipment(String businessUri, Cache data, HttpServletRequest req) {
+    public String createShipment(String businessUri, Cache cache, HttpRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
         }
 
         Cart cart = cartService.getCart(business, req);
-        cartService.setData(cart, business, data, req);
+        cartService.setData(cart, business, cache, req);
 
         return "/pages/shipment/create.jsp";
     }
 
-    public String save(String businessUri, Cache data, HttpServletRequest req) {
+    public String save(String businessUri, Cache cache, HttpRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -281,7 +281,7 @@ public class ShipmentService {
                     !user.valid(user.getShipCity()) ||
                         !user.valid(user.getShipState()) ||
                             !user.valid(user.getShipZip())){
-            data.set("message", "address is missing information!");
+            cache.set("message", "address is missing information!");
             return "[redirect]/" + businessUri + "/shipment/create";
         }
 
@@ -333,7 +333,7 @@ public class ShipmentService {
         storedUsername.setShipZip(user.getShipZip());
         userRepo.update(storedUsername);
 
-        data.set("message", "Successfully set your address, you're ready to go!");
+        cache.set("message", "Successfully set your address, you're ready to go!");
         return "[redirect]/" + businessUri + "/checkout";
     }
 

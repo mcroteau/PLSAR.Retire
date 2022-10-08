@@ -5,7 +5,7 @@ import giga.model.Design;
 import giga.repo.BusinessRepo;
 import giga.repo.DesignRepo;
 import giga.service.SiteService;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import giga.service.AuthService;
 import qio.annotate.HttpHandler;
 import qio.annotate.Inject;
@@ -31,9 +31,9 @@ public class AuthHandler {
 
 
 	@Post("/authenticate")
-	public String signin(HttpServletRequest req,
+	public String signin(HttpRequest req,
 							   Cache data){
-		return authService.authenticate(data, req);
+		return authService.authenticate(cache, req);
 	}
 
 	@Get("/signin")
@@ -43,9 +43,9 @@ public class AuthHandler {
 	}
 
 	@Get("/{{shop}}/signin")
-	public String shopSignin(HttpServletRequest qer,
-							 Cache data,
-							 @Variable String shopUri){
+	public String shopSignin(HttpRequest qer,
+							 Cache cache,
+							 @RouteComponent String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 		Design design = designRepo.getBase(business.getId());
@@ -57,10 +57,10 @@ public class AuthHandler {
 	}
 
 	@Post("/{{shop}}/signin")
-	public String shopAuthenticate(HttpServletRequest req,
-							   Cache data,
-							   @Variable String shopUri){
-		authService.authenticate(data, req);
+	public String shopAuthenticate(HttpRequest req,
+							   Cache cache,
+							   @RouteComponent String shopUri){
+		authService.authenticate(cache, req);
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 		return "[redirect]/" + shopUri;
@@ -73,16 +73,16 @@ public class AuthHandler {
 	}
 
 	@Get("/signout")
-	public String signout(HttpServletRequest req,
+	public String signout(HttpRequest req,
 						  Cache data){
-		return authService.deAuthenticate(data, req);
+		return authService.deAuthenticate(cache, req);
 	}
 
 	@Get("/{{shop}}/signout")
-	public String shopSignout(HttpServletRequest req,
-							  Cache data,
-							  @Variable String shopUri){
-		authService.deAuthenticate(data, req);
+	public String shopSignout(HttpRequest req,
+							  Cache cache,
+							  @RouteComponent String shopUri){
+		authService.deAuthenticate(cache, req);
 		return "[redirect]/" + shopUri;
 	}
 

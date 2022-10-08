@@ -5,7 +5,7 @@ import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
 import giga.service.*;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import qio.Qio;
 import qio.annotate.HttpHandler;
 import qio.annotate.Inject;
@@ -59,9 +59,9 @@ public class UserHandler {
 	MailService mailService;
 
 	@Get("/{{shop}}/signup")
-	public String shopSignup(HttpServletRequest req,
-							 Cache data,
-							 @Variable String shopUri){
+	public String shopSignup(HttpRequest req,
+							 Cache cache,
+							 @RouteComponent String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 		Design design = designRepo.getBase(business.getId());
@@ -74,9 +74,9 @@ public class UserHandler {
 
 
 	@Get("/{{shop}}/activity")
-	public String getActivity(HttpServletRequest req,
-							 Cache data,
-							 @Variable String shopUri) throws ParseException {
+	public String getActivity(HttpRequest req,
+							 Cache cache,
+							 @RouteComponent String shopUri) throws ParseException {
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
@@ -106,19 +106,19 @@ public class UserHandler {
 	}
 
 	@Get("/users/edit/{{businessId}}/{{id}}")
-	public String getEdit(Cache data,
-						  @Variable Long businessId,
-						  @Variable Long id){
+	public String getEdit(Cache cache,
+						  @RouteComponent Long businessId,
+						  @RouteComponent Long id){
 		return userService.getEdit(id, businessId, data);
 	}
 
 
 	@Post("/users/update/{{businessId}}/{{id}}")
-	public String update(HttpServletRequest req,
-						 Cache data,
-						 @Variable Long businessId,
-						 @Variable Long id){
-		return userService.update(id, businessId, data, req);
+	public String update(HttpRequest req,
+						 Cache cache,
+						 @RouteComponent Long businessId,
+						 @RouteComponent Long id){
+		return userService.update(id, businessId, cache, req);
 	}
 
 	@Get("/users/reset")
@@ -128,28 +128,28 @@ public class UserHandler {
 	}
 
 	@Post("/users/send")
-	public String send(HttpServletRequest req,
+	public String send(HttpRequest req,
 							Cache data){
-		return userService.send(data, req);
+		return userService.send(cache, req);
 	}
 
 	@Post("/users/reset/{{id}}")
-	public String resetPassword(HttpServletRequest req,
-								Cache data,
-								@Variable Long id){
-    	return userService.resetPassword(id, data, req);
+	public String resetPassword(HttpRequest req,
+								Cache cache,
+								@RouteComponent Long id){
+    	return userService.resetPassword(id, cache, req);
 	}
 
 	@Get("/clients/{{id}}")
-	public String clients(Cache data,
-							@Variable Long id){
+	public String clients(Cache cache,
+							@RouteComponent Long id){
 		return userService.clients(id, data);
 	}
 
 	@Get("/{{shop}}/users/password/get")
-	public String getPassword(HttpServletRequest req,
-							  Cache data,
-							  @Variable String shopUri){
+	public String getPassword(HttpRequest req,
+							  Cache cache,
+							  @RouteComponent String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
@@ -164,9 +164,9 @@ public class UserHandler {
 	}
 
 	@Post("/{{shop}}/users/password/send")
-	public String sendPassword(HttpServletRequest req,
-							   Cache data,
-							   @Variable String shopUri){
+	public String sendPassword(HttpRequest req,
+							   Cache cache,
+							   @RouteComponent String shopUri){
 
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
@@ -191,10 +191,10 @@ public class UserHandler {
 
 
 	@Get("/{{shop}}/users/edit/{{id}}")
-	public String editUser(HttpServletRequest req,
-							 Cache data,
-							 @Variable String shopUri,
-						     @Variable Long id){
+	public String editUser(HttpRequest req,
+							 Cache cache,
+							 @RouteComponent String shopUri,
+						     @RouteComponent Long id){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
@@ -212,9 +212,9 @@ public class UserHandler {
 	}
 
 	@Post("/{{shop}}/users/update")
-	public String updateUser(HttpServletRequest req,
-							   Cache data,
-							   @Variable String shopUri){
+	public String updateUser(HttpRequest req,
+							   Cache cache,
+							   @RouteComponent String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
@@ -226,10 +226,10 @@ public class UserHandler {
 	}
 
 	@Get("/{{shop}}/users/password/edit")
-	public String editPassword(HttpServletRequest req,
-							   Cache data,
-							   @Variable String shopUri,
-							   @Variable Long id){
+	public String editPassword(HttpRequest req,
+							   Cache cache,
+							   @RouteComponent String shopUri,
+							   @RouteComponent Long id){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
@@ -249,9 +249,9 @@ public class UserHandler {
 
 
 	@Post("/{{shop}}/users/password/save")
-	public String savePassword(HttpServletRequest req,
-							  Cache data,
-							  @Variable String shopUri){
+	public String savePassword(HttpRequest req,
+							  Cache cache,
+							  @RouteComponent String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 

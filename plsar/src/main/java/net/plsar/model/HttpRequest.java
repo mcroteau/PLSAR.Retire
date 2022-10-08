@@ -3,6 +3,9 @@ package net.plsar.model;
 import net.plsar.RouteAttributes;
 import net.plsar.resources.ServerResources;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -136,6 +139,55 @@ public class HttpRequest {
                 requestComponents.put(key, requestComponent);
             }
         }
+    }
+
+    public Object inflect(HttpRequest request, Class<?> klass){
+        Object classInstance =  null;
+        try {
+            classInstance = klass.getConstructor().newInstance();
+            Field[] classInstanceFields = klass.getDeclaredFields();
+            for(Field classInstanceField : classInstanceFields){
+                String fieldName = classInstanceField.getName();
+                String fieldValue = request.value(fieldName);
+                if(fieldValue != null &&
+                        !fieldValue.equals("")){
+
+                    classInstanceField.setAccessible(true);
+                    Type fieldType = classInstanceField.getType();
+
+                    if (fieldType.getTypeName().equals("int") ||
+                            fieldType.getTypeName().equals("java.lang.Integer")) {
+                        classInstanceField.set(classInstance, Integer.valueOf(fieldValue));
+                    }
+                    if (fieldType.getTypeName().equals("double") ||
+                            fieldType.getTypeName().equals("java.lang.Double")) {
+                        classInstanceField.set(classInstance, Double.valueOf(fieldValue));
+                    }
+                    if (fieldType.getTypeName().equals("float") ||
+                            fieldType.getTypeName().equals("java.lang.Float")) {
+                        classInstanceField.set(classInstance, Float.valueOf(fieldValue));
+                    }
+                    if (fieldType.getTypeName().equals("long") ||
+                            fieldType.getTypeName().equals("java.lang.Long")) {
+                        classInstanceField.set(classInstance, Long.valueOf(fieldValue));
+                    }
+                    if (fieldType.getTypeName().equals("boolean") ||
+                            fieldType.getTypeName().equals("java.lang.Boolean")) {
+                        classInstanceField.set(classInstance, Boolean.valueOf(fieldValue));
+                    }
+                    if (fieldType.getTypeName().equals("java.math.BigDecimal")) {
+                        classInstanceField.set(classInstance, new BigDecimal(fieldValue));
+                    }
+                    if (fieldType.getTypeName().equals("java.lang.String")) {
+                        classInstanceField.set(classInstance, fieldValue);
+                    }
+                }
+            }
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
+
+        return classInstance;
     }
 
 }

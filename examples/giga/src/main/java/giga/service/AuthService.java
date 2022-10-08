@@ -3,7 +3,7 @@ package giga.service;
 import chico.Chico;
 import giga.repo.BusinessRepo;
 import giga.repo.RoleRepo;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import giga.Giga;
 import giga.model.User;
 import giga.repo.UserRepo;
@@ -70,7 +70,7 @@ public class AuthService {
         return user;
     }
 
-    public String authenticate(Cache data, HttpServletRequest req) {
+    public String authenticate(Cache cache, HttpRequest req) {
 
         try{
 
@@ -81,7 +81,7 @@ public class AuthService {
 
             String passwordDirty = req.getParameter("password");
             if(!signin(credential, passwordDirty)){
-                data.set("message", "Wrong username and password");
+                cache.set("message", "Wrong username and password");
                 return "[redirect]/signin";
             }
 
@@ -95,16 +95,16 @@ public class AuthService {
 
         } catch ( Exception e ) {
             e.printStackTrace();
-            data.set("message", "Please yell at one of us, something is a little off!");
+            cache.set("message", "Please yell at one of us, something is a little off!");
             return "[redirect]/";
         }
 
         return "[redirect]/";
     }
 
-    public String deAuthenticate(Cache data, HttpServletRequest req) {
+    public String deAuthenticate(Cache cache, HttpRequest req) {
         signout();
-        data.set("message", "Successfully signed out");
+        cache.set("message", "Successfully signed out");
         req.getSession().setAttribute("username", "");
         req.getSession().setAttribute("userId", "");
         return "[redirect]/";

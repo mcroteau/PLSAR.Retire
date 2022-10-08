@@ -3,7 +3,7 @@ package giga.service;
 import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 import qio.Qio;
@@ -86,17 +86,17 @@ public class AssetService {
 
 
 
-    public String create(Long businessId, Cache data){
+    public String create(Long businessId, Cache cache){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
-        data.set("page", "/pages/asset/new.jsp");
+        businessService.setData(businessId, cache);
+        cache.set("page", "/pages/asset/new.jsp");
         return "/designs/auth.jsp";
     }
 
 
-    public String save(HttpServletRequest req) throws Exception {
+    public String save(HttpRequest req) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -132,19 +132,19 @@ public class AssetService {
     }
 
 
-    public String list(Long businessId, Cache data) {
+    public String list(Long businessId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         List<Asset> assets = assetRepo.getList(businessId);
-        data.set("assets", assets);
-        data.set("page", "/pages/asset/list.jsp");
+        cache.set("assets", assets);
+        cache.set("page", "/pages/asset/list.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String delete(Long id, Long businessId, Cache data) {
+    public String delete(Long id, Long businessId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -152,12 +152,12 @@ public class AssetService {
         String permission = Giga.ASSET_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Whoa, people might be using this. Lol, this isn't yours.");
+            cache.set("message", "Whoa, people might be using this. Lol, this isn't yours.");
             return "[redirect]/";
         }
 
         assetRepo.delete(id);
-        data.set("message", "Successfully deleted asset.");
+        cache.set("message", "Successfully deleted asset.");
 
         return "[redirect]/assets/" + businessId;
     }

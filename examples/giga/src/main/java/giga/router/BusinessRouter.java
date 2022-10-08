@@ -9,7 +9,7 @@ import giga.model.User;
 import giga.repo.BusinessRepo;
 import giga.repo.RoleRepo;
 import giga.repo.UserRepo;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import giga.service.BusinessService;
 import jakarta.servlet.http.HttpServletResponse;
 import qio.Qio;
@@ -39,9 +39,9 @@ public class BusinessHandler {
     BusinessService businessService;
 
     @Post("/business/signup")
-    public String businessSignup(HttpServletRequest req,
+    public String businessSignup(HttpRequest req,
                                  Cache data) throws Exception {
-        return businessService.businessSignup(data, req);
+        return businessService.businessSignup(cache, req);
     }
 
     @Get("/businesses/setup")
@@ -58,87 +58,87 @@ public class BusinessHandler {
     }
 
     @Get("/snapshot/{{id}}")
-    public String snapshot(Cache data,
-                           @Variable Long id){
+    public String snapshot(Cache cache,
+                           @RouteComponent Long id){
         return businessService.snapshot(id, data);
     }
 
     @Get("/businesses/new/{{id}}")
-    public String create(Cache data,
-                        @Variable Long id){
+    public String create(Cache cache,
+                        @RouteComponent Long id){
         return businessService.create(id, data);
     }
 
 //    @Get("/businesses/{{id}}")
-//    public String list(Cache data,
-//                       @Variable Long id) throws Exception{
+//    public String list(Cache cache,
+//                       @RouteComponent Long id) throws Exception{
 //        return businessService.list(id, data);
 //    }
 
     @Post("/businesses/save")
-    public String save(HttpServletRequest req) throws Exception {
+    public String save(HttpRequest req) throws Exception {
         return businessService.save(req);
     }
 
     //registration -> setup complete
     @Get("/businesses/signup/complete/{{id}}")
-    public String signupComplete(Cache data,
-                                  @Variable Long id){
+    public String signupComplete(Cache cache,
+                                  @RouteComponent Long id){
         return businessService.signupComplete(id, data);
     }
 
 //    @Get("/businesses/edit/{{id}}")
-//    public String edit(Cache data,
-//                       @Variable Long id) throws Exception {
+//    public String edit(Cache cache,
+//                       @RouteComponent Long id) throws Exception {
 //        return businessService.edit(id, data);
 //    }
 //
 //    @Post("/businesses/update/{{id}}")
-//    public String update(HttpServletRequest req,
-//                         Cache data,
-//                         @Variable Long id) throws Exception {
-//        return businessService.update(id, data, req);
+//    public String update(HttpRequest req,
+//                         Cache cache,
+//                         @RouteComponent Long id) throws Exception {
+//        return businessService.update(id, cache, req);
 //    }
 
     @Get("/businesses/settings/{{id}}")
-    public String showSettings(Cache data,
-                           @Variable Long id){
+    public String showSettings(Cache cache,
+                           @RouteComponent Long id){
         return businessService.showSettings(id, data);
     }
 
     @Post("/businesses/settings/save/{{id}}")
-    public String saveSettings(HttpServletRequest req,
-                               Cache data,
-                               @Variable Long id){
-        return businessService.saveSettings(id, data, req);
+    public String saveSettings(HttpRequest req,
+                               Cache cache,
+                               @RouteComponent Long id){
+        return businessService.saveSettings(id, cache, req);
     }
 
     @Get("/businesses/settings/save/{{id}}")
-    public String showSettingsDos(Cache data,
-                               @Variable Long id){
+    public String showSettingsDos(Cache cache,
+                               @RouteComponent Long id){
         return businessService.showSettings(id, data);
     }
 
     @Post("/businesses/delete/{{current}}/{{id}}")
-    public String delete(Cache data,
-                         @Variable Long currentId,
-                         @Variable Long id){
+    public String delete(Cache cache,
+                         @RouteComponent Long currentId,
+                         @RouteComponent Long id){
         return businessService.delete(currentId, id, data);
     }
 
     @Text
     @Get("/stripe/onboarding/setup/{{id}}")
     public String activateStripe(HttpServletResponse resp,
-                              Cache data,
-                              @Variable Long id){
-        return businessService.activateStripe(id, data, resp);
+                              Cache cache,
+                              @RouteComponent Long id){
+        return businessService.activateStripe(id, cache, resp);
     }
 
 
     @Post("/{{shop}}/register")
-    public String shopRegister(HttpServletRequest req,
-                                   Cache data,
-                                   @Variable String shopUri){
+    public String shopRegister(HttpRequest req,
+                                   Cache cache,
+                                   @RouteComponent String shopUri){
         Business business = businessRepo.get(shopUri);
         if(business == null)return "[redirect]/";
 
@@ -200,8 +200,8 @@ public class BusinessHandler {
     }
 
     @Get("/stripe/onboarding/complete/{{id}}")
-    public String onboardingComplete(Cache data,
-                                     @Variable Long id){
+    public String onboardingComplete(Cache cache,
+                                     @RouteComponent Long id){
         return businessService.onboardingComplete(id, data);
     }
 

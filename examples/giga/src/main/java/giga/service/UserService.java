@@ -5,7 +5,7 @@ import giga.model.*;
 import giga.repo.BusinessRepo;
 import chico.Chico;
 import giga.repo.SaleRepo;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import giga.repo.UserRepo;
 import qio.Qio;
 import qio.annotate.Inject;
@@ -45,24 +45,24 @@ public class UserService {
         return Giga.USER_MAINTENANCE + id;
     }
 
-    public String getEdit(Long id, Long businessId, Cache data){
+    public String getEdit(Long id, Long businessId, Cache cache){
         String permission = getPermission(Long.toString(id));
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
             return "[redirect]/";
         }
 
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         User user = userRepo.get(id);
-        data.set("user", user);
+        cache.set("user", user);
 
-        data.set("page", "/pages/user/edit.jsp");
+        cache.set("page", "/pages/user/edit.jsp");
         return "/designs/auth.jsp";
     }
 
 
-    public String update(Long id, Long businessId, Cache data, HttpServletRequest req) {
+    public String update(Long id, Long businessId, Cache cache, HttpRequest req) {
 
         User user = (User) Qio.get(req, User.class);
 
@@ -75,12 +75,12 @@ public class UserService {
         user.setPhone(Giga.getSpaces(user.getPhone()));
         userRepo.update(user);
 
-        data.set("message", "Your account was successfully updated");
+        cache.set("message", "Your account was successfully updated");
         return "[redirect]/users/edit/" + businessId + "/" + id;
     }
 
 
-    public String send(Cache data, HttpServletRequest req) {
+    public String send(Cache cache, HttpRequest req) {
 
         try {
             String phone = req.getParameter("phone");
@@ -106,7 +106,7 @@ public class UserService {
         return "[redirect]/signin";
     }
 
-    public String resetPassword(Long id, Cache data, HttpServletRequest req) {
+    public String resetPassword(Long id, Cache cache, HttpRequest req) {
 
         User user = userRepo.get(id);
         User reqUser = (User) Qio.get(req, User.class);
@@ -128,14 +128,14 @@ public class UserService {
         return "[redirect]/signin";
     }
 
-    public String clients(Long businessId, Cache data){
+    public String clients(Long businessId, Cache cache){
         if(!authService.isAuthenticated()){
             return "[redirect]/snapshot/" + businessId;
         }
 
         String businessPermission = Giga.BUSINESS_MAINTENANCE + businessId;
         if(!authService.hasPermission(businessPermission)){
-            data.set("message", "whaoo... ");
+            cache.set("message", "whaoo... ");
             return "[redirect]/snapshot/" + businessId;
         }
 
@@ -154,11 +154,11 @@ public class UserService {
 
         }
 
-        data.set("siteService", siteService);
-        data.set("clients", clients);
-        data.set("page", "/pages/user/list.jsp");
+        cache.set("siteService", siteService);
+        cache.set("clients", clients);
+        cache.set("page", "/pages/user/list.jsp");
 
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
         return "/designs/auth.jsp";
     }
 

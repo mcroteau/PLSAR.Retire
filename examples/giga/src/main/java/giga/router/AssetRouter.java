@@ -1,7 +1,7 @@
 package giga.router;
 
 import giga.service.AssetService;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import qio.annotate.*;
 import qio.annotate.verbs.Get;
@@ -17,7 +17,7 @@ public class AssetHandler {
     @Text
     @Get("/go/{{n}}")
     public String getAsset(HttpServletResponse resp,
-                         @Variable String meta) throws Exception {
+                         @RouteComponent String meta) throws Exception {
         System.out.println("get.");
         return assetService.getAsset(meta, resp);
     }
@@ -25,33 +25,33 @@ public class AssetHandler {
     @Media
     @Get("/media/{{n}}")
     public String getMedia(HttpServletResponse resp,
-                           @Variable String meta) throws Exception {
+                           @RouteComponent String meta) throws Exception {
         System.out.println("media.");
         return assetService.getMedia(meta, resp);
     }
 
     @Get("/assets/new/{{businessId}}")
-    public String configure(Cache data,
-                            @Variable Long businessId){
+    public String configure(Cache cache,
+                            @RouteComponent Long businessId){
         return assetService.create(businessId, data);
     }
 
     @Get("/assets/{{businessId}}")
-    public String list(Cache data,
-                       @Variable Long businessId){
+    public String list(Cache cache,
+                       @RouteComponent Long businessId){
         System.out.println("assets.");
         return assetService.list(businessId, data);
     }
 
     @Post("/assets/save")
-    public String save(HttpServletRequest req) throws Exception {
+    public String save(HttpRequest req) throws Exception {
         return assetService.save(req);
     }
 
     @Post("/assets/delete/{{businessId}}/{{id}}")
-    public String delete(Cache data,
-                         @Variable Long businessId,
-                         @Variable Long id){
+    public String delete(Cache cache,
+                         @RouteComponent Long businessId,
+                         @RouteComponent Long id){
         return assetService.delete(id, businessId, data);
     }
 }

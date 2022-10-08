@@ -1,7 +1,7 @@
 package giga.router;
 
 import giga.service.ShipmentService;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import qio.annotate.HttpHandler;
 import qio.annotate.Inject;
 import qio.annotate.Variable;
@@ -16,42 +16,42 @@ public class ShipmentHandler {
     ShipmentService shipmentService;
 
     @Get("{{business}}/shipment")
-    public String begin(HttpServletRequest req,
-                           Cache data,
-                           @Variable String businessUri){
-        return shipmentService.begin(businessUri.toLowerCase(), data, req);
+    public String begin(HttpRequest req,
+                           Cache cache,
+                           @RouteComponent String businessUri){
+        return shipmentService.begin(businessUri.toLowerCase(), cache, req);
     }
 
     @Get("{{business}}/shipment/rates")
-    public String redirect(@Variable String businessUri){
+    public String redirect(@RouteComponent String businessUri){
         return "[redirect]/" + businessUri + "/shipment";
     }
 
     @Post("{{business}}/shipment/rates")
-    public String getRates(HttpServletRequest req,
-                           Cache data,
-                           @Variable String businessUri){
-        return shipmentService.getRates(businessUri.toLowerCase(), data, req);
+    public String getRates(HttpRequest req,
+                           Cache cache,
+                           @RouteComponent String businessUri){
+        return shipmentService.getRates(businessUri.toLowerCase(), cache, req);
     }
 
     @Post("{{business}}/shipment/add")
-    public String select(HttpServletRequest req,
-                        Cache data,
-                        @Variable String businessUri){
-        return shipmentService.select(businessUri.toLowerCase(), data, req);
+    public String select(HttpRequest req,
+                        Cache cache,
+                        @RouteComponent String businessUri){
+        return shipmentService.select(businessUri.toLowerCase(), cache, req);
     }
 
     @Get("{{business}}/shipment/create")
-    public String createShipment(HttpServletRequest req,
-                           Cache data,
-                           @Variable String businessUri){
-        return shipmentService.createShipment(businessUri.toLowerCase(), data, req);
+    public String createShipment(HttpRequest req,
+                           Cache cache,
+                           @RouteComponent String businessUri){
+        return shipmentService.createShipment(businessUri.toLowerCase(), cache, req);
     }
 
     @Post("{{business}}/shipment/save")
-    public String save(HttpServletRequest req,
-                           Cache data,
-                           @Variable String businessUri){
-        return shipmentService.save(businessUri.toLowerCase(), data, req);
+    public String save(HttpRequest req,
+                           Cache cache,
+                           @RouteComponent String businessUri){
+        return shipmentService.save(businessUri.toLowerCase(), cache, req);
     }
 }

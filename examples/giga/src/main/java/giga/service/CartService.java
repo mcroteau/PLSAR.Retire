@@ -6,7 +6,7 @@ import giga.repo.BusinessRepo;
 import giga.repo.CartRepo;
 import giga.repo.DesignRepo;
 import giga.repo.ItemRepo;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import qio.annotate.Inject;
 import qio.annotate.Service;
 import qio.model.web.Cache;
@@ -39,36 +39,36 @@ public class CartService {
     ShipmentService shipmentService;
 
 
-    public String view(String businessUri, Cache data, HttpServletRequest req) {
+    public String view(String businessUri, Cache cache, HttpRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
         }
 
         Cart cart = getCart(business, req);
-        setData(cart, business, data, req);
+        setData(cart, business, cache, req);
 
         String oops = req.getParameter("oops");
         if(oops != null && oops.equals("true")){
-            data.set("message", "Something went wrong while processing your order.");
+            cache.set("message", "Something went wrong while processing your order.");
         }
 
         return "/pages/cart/index.jsp";
     }
 
-    public String viewCheckout(String businessUri, Cache data, HttpServletRequest req) {
+    public String viewCheckout(String businessUri, Cache cache, HttpRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
         }
 
         Cart cart = getCart(business, req);
-        setData(cart, business, data, req);
+        setData(cart, business, cache, req);
 
         return "/pages/cart/checkout.jsp";
     }
 
-    public String add(Long id, String businessUri, Cache data, HttpServletRequest req) {
+    public String add(Long id, String businessUri, Cache cache, HttpRequest req) {
 
         List<Business> businesses = businessRepo.getList();
         for(Business item: businesses){
@@ -131,7 +131,7 @@ public class CartService {
 
         cartRepo.deleteRate(cart.getId());
 
-        setData(cart, business, data, req);
+        setData(cart, business, cache, req);
 
         if(shipmentService.validateAddress(cart, business)){
             cart.setValidAddress(true);
@@ -144,7 +144,7 @@ public class CartService {
         System.out.println("added");
         System.out.println("////////////////////////////////\n\n");
 
-        data.set("message", "Added " + activeItem.getName() + " to Kart");
+        cache.set("message", "Added " + activeItem.getName() + " to Kart");
 
         if(cart.getValidAddress() != null &&
                 cart.getValidAddress()){
@@ -153,7 +153,7 @@ public class CartService {
         return "[redirect]/" + businessUri + "/cart";
     }
 
-    public Cart getCart(Business business, HttpServletRequest req){
+    public Cart getCart(Business business, HttpRequest req){
         Cart cart;
         User user = null;
         String sessionId = req.getSession().getId();
@@ -216,7 +216,7 @@ public class CartService {
     }
 
 
-    public void setData(Cart cart, Business business, Cache data, HttpServletRequest req){
+    public void setData(Cart cart, Business business, Cache cache, HttpRequest req){
         BigDecimal subtotal = new BigDecimal(0);
         List<CartItem> cartItems = cartRepo.getListItems(cart.getId());
         System.out.println("ci " + cartItems.size());
@@ -264,7 +264,7 @@ public class CartService {
                 cart.setTotal(total);
                 cart.setValidAddress(true);
                 cartRepo.update(cart);
-                data.set("rate", rate);
+                cache.set("rate", rate);
             }
         }
 
@@ -273,21 +273,21 @@ public class CartService {
         System.out.println("business: " + business);
         System.out.println("design: " + design);
 
-        data.set("design", design);
-        data.set("request", req);
-        data.set("business", business);
-        data.set("cart", cart);
-        data.set("items", cartItems);
-        data.set("siteService", siteService);
+        cache.set("design", design);
+        cache.set("request", req);
+        cache.set("business", business);
+        cache.set("cart", cart);
+        cache.set("items", cartItems);
+        cache.set("siteService", siteService);
     }
 
-    public String minus(Long id, String businessUri, Cache data) {
+    public String minus(Long id, String businessUri, Cache cache) {
         CartItem cartItem = cartRepo.getItem(id);
         cartRepo.deleteOption(id);
         cartRepo.deleteItem(id);
         Cart cart = cartRepo.get(cartItem.getCartId());
         cartRepo.update(cart);
-        data.set("message", "Removed item from cart.");
+        cache.set("message", "Removed item from cart.");
         return "[redirect]/" + businessUri + "/cart";
     }
 

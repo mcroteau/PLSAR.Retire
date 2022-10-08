@@ -3,7 +3,7 @@ package giga.service;
 import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Service;
@@ -44,7 +44,7 @@ public class CategoryService {
 
 
 
-    public String getItems(String businessUri, String categoryUri, Cache data, HttpServletRequest req) {
+    public String getItems(String businessUri, String categoryUri, Cache cache, HttpRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -63,36 +63,36 @@ public class CategoryService {
         }
 
         System.out.println("category " + category);
-        data.set("siteService", siteService);
-        data.set("business", business);
-        data.set("category", category);
-        data.set("items", items);
-        data.set("request", req);
+        cache.set("siteService", siteService);
+        cache.set("business", business);
+        cache.set("category", category);
+        cache.set("items", items);
+        cache.set("request", req);
 
         return "/pages/category/index.jsp";
     }
 
-    public String create(Long businessId, Cache data){
+    public String create(Long businessId, Cache cache){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         List<Category> categories = categoryRepo.getListAll(businessId);
-        data.set("categories", categories);
+        cache.set("categories", categories);
 
         List<Design> designs = designRepo.getList(businessId);
-        data.set("designs", designs);
+        cache.set("designs", designs);
 
         List<Asset> assets = assetRepo.getList(businessId);
-        data.set("assets", assets);
+        cache.set("assets", assets);
 
-        data.set("page", "/pages/category/new.jsp");
+        cache.set("page", "/pages/category/new.jsp");
         return "/designs/auth.jsp";
     }
 
 
-    public String save(HttpServletRequest req) {
+    public String save(HttpRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -115,19 +115,19 @@ public class CategoryService {
     }
 
 
-    public String list(Long businessId, Cache data) throws Exception {
+    public String list(Long businessId, Cache cache) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         List<Category> categories = categoryRepo.getListAll(businessId);
-        data.set("categories", categories);
-        data.set("page", "/pages/category/list.jsp");
+        cache.set("categories", categories);
+        cache.set("page", "/pages/category/list.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String edit(Long id, Long businessId, Cache data) {
+    public String edit(Long id, Long businessId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -135,11 +135,11 @@ public class CategoryService {
         String permission = Giga.CATEGORY_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to edit this category.");
+            cache.set("message", "Unauthorized to edit this category.");
             return "[redirect]/";
         }
         Category category = categoryRepo.get(id);
-        data.set("category", category);
+        cache.set("category", category);
 
         List<Category> categoriesPre = categoryRepo.getListAll(businessId);
         List<Category> categories = new ArrayList<>();
@@ -148,21 +148,21 @@ public class CategoryService {
                 categories.add(activeCategory);
             }
         }
-        data.set("categories", categories);
+        cache.set("categories", categories);
 
         List<Design> designs = designRepo.getList(businessId);
-        data.set("designs", designs);
+        cache.set("designs", designs);
 
         List<Asset> assets = assetRepo.getList(businessId);
-        data.set("assets", assets);
+        cache.set("assets", assets);
 
-        businessService.setData(businessId, data);
-        data.set("page", "/pages/category/edit.jsp");
+        businessService.setData(businessId, cache);
+        cache.set("page", "/pages/category/edit.jsp");
         return "/designs/auth.jsp";
     }
 
 
-    public String update(Long id, Long businessId, Cache data, HttpServletRequest req) {
+    public String update(Long id, Long businessId, Cache cache, HttpRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -170,7 +170,7 @@ public class CategoryService {
         String permission = Giga.CATEGORY_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to edit this design.");
+            cache.set("message", "Unauthorized to edit this design.");
             return "[redirect]/";
         }
 
@@ -187,7 +187,7 @@ public class CategoryService {
 
 
 
-    public String delete(Long id, Long businessId, Cache data) {
+    public String delete(Long id, Long businessId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -195,12 +195,12 @@ public class CategoryService {
         String permission = Giga.CATEGORY_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to delete this category.");
+            cache.set("message", "Unauthorized to delete this category.");
             return "[redirect]/";
         }
 
         categoryRepo.delete(id);
-        data.set("message", "Successfully deleted category.");
+        cache.set("message", "Successfully deleted category.");
 
         return "[redirect]/categories/" + businessId;
     }

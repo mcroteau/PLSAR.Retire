@@ -1,7 +1,7 @@
 package net.plsar;
 
 import net.plsar.annotations.HttpRouter;
-import net.plsar.annotations.RouteComponent;
+import net.plsar.annotations.Component;
 import net.plsar.annotations.http.Get;
 import net.plsar.annotations.http.Delete;
 import net.plsar.annotations.http.Post;
@@ -112,7 +112,7 @@ public class RouteEndpointsResolver {
         Class<?>[] paramTypes = routeMethod.getParameterTypes();
         for (int foo = 0; foo < paramAnnotations.length; foo++) {
             for (Annotation annotation : paramAnnotations[foo]) {
-                if (annotation instanceof RouteComponent) {
+                if (annotation instanceof Component) {
                     TypeAttributes typeAttributes = new TypeAttributes();
                     typeAttributes.setQualifiedName(paramTypes[foo].getTypeName());
                     typeAttributes.setTypeKlass(paramTypes[foo].getTypeName());

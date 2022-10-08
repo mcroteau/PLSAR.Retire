@@ -6,13 +6,13 @@ import giga.model.Sale;
 import giga.model.User;
 import giga.repo.*;
 import giga.service.AffiliateService;
-import giga.service.AuthService;
 import giga.service.BusinessService;
 import net.plsar.annotations.HttpRouter;
 import net.plsar.annotations.Inject;
 import net.plsar.annotations.Meta;
-import net.plsar.annotations.RouteComponent;
+import net.plsar.annotations.Component;
 import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
 import net.plsar.model.Cache;
 
 import java.math.BigDecimal;
@@ -44,9 +44,9 @@ public class AffiliateRouter {
     @Get("/affiliates/{id}")
     public String getAffiliates(Cache cache,
                                 HttpRequest httpRequest,
-                                @RouteComponent Long id,
+                                @Component Long id,
                                 SecurityManager security){
-        if(!security.userIsAuthenticated(httpRequest)){
+        if(!security.isAuthenticated(httpRequest)){
             return "[redirect]/";
         }
 
@@ -77,63 +77,58 @@ public class AffiliateRouter {
         return "/pages/affiliate/list.jsp";
     }
 
-    @Meta(design="/designs/guest.jsp")
     @Get("/affiliates/onboarding")
-    public String getOnboarding(HttpRequest httpRequest,
+    public String getOnboarding(HttpRequest req,
                                 Cache data){
-        List<Business> businesses = businessRepo.getListPrimary();
-        data.set("businesses", businesses);
-        data.set("title", "Giga! Partners Signup");
-        return "/pages/affiliate/onboarding.jsp";
+        return affiliateService.getOnboarding(cache, req);
     }
 
     @Get("/affiliates/requests/{{id}}")
-    public String getRequests(Cache data,
-                                @Variable Long id){
-        return affiliateService.getRequests(id, data);
+    public String getRequests(@Component Long id,
+                                Cache cache,
+                                HttpRequest httpRequest,
+                                SecurityManager security){
+        return affiliateService.getRequests(id, cache, httpRequest, security);
     }
 
     @Get("/affiliates/onboarding/status/{{guid}}")
-    public String status(Cache data,
-                        @Variable String guid){
+    public String status(Cache cache,
+                        @Component String guid){
         return affiliateService.status(guid, data);
     }
 
     @Post("/affiliates/onboarding/begin")
-    public String begin(HttpServletRequest req,
+    public String begin(HttpRequest req,
                        Cache data){
-        return affiliateService.begin(data, req);
+        return affiliateService.begin(cache, req);
     }
 
-    @Post("/affiliates/onboarding/approve/{{id}}")
-    public String approve(Cache data,
-                          @Variable Long id){
+    @Post("/affiliates/onboarding/approve/{id}")
+    public String approve(Cache cache,
+                          @Component Long id){
         return affiliateService.approve(id, data);
     }
 
-    @Post("/affiliates/onboarding/pass/{{guid}}")
-    public String deny(Cache data,
-                       @Variable Long id){
+    @Post("/affiliates/onboarding/pass/{guid}")
+    public String deny(Cache cache,
+                       @Component Long id){
         return affiliateService.deny(id, data);
     }
 
-    @Post("/affiliate/setup/{{id}}")
-    public String setupAffiliate(Cache data,
-                                 @Variable Long id){
-        return affiliateService.setupAffiliate(id, data);
+    @Post("/affiliate/setup/{id}")
+    public String setupAffiliate(@Component Long id){
+        return affiliateService.setupAffiliate(id);
     }
 
-    @Get("/affiliates/onboarding/finalize/{{id}}")
-    public String finalizeOnboarding(Cache data,
-                                    @Variable Long id){
+    @Get("/affiliates/onboarding/finalize/{id}")
+    public String finalizeOnboarding(Cache cache,
+                                    @Component Long id){
         return affiliateService.finalizeOnboarding(id, data);
     }
 
-    @Post("/affiliates/onboarding/finalize/{{id}}")
-    public String finalizeOnboarding(HttpServletRequest req,
-                                     Cache data,
-                                     @Variable Long id) throws Exception {
-        return affiliateService.finalizeOnboarding(data, req);
+    @Post("/affiliates/onboarding/finalize/{id}")
+    public String finalizeOnboarding(Cache cache, HttpRequest req, SecurityManager security) throws Exception {
+        return affiliateService.finalizeOnboarding(cache, req, security);
     }
 
 }

@@ -3,9 +3,13 @@ package giga.service;
 import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
+import net.plsar.annotations.Inject;
+import net.plsar.model.Cache;
+import net.plsar.model.HttpRequest;
+import net.plsar.security.SecurityManager;
+
 import java.util.List;
 
-@Service
 public class AffiliateService {
 
     @Inject
@@ -27,50 +31,45 @@ public class AffiliateService {
     CategoryRepo categoryRepo;
 
     @Inject
-    AuthService authService;
-
-    @Inject
     BusinessRepo businessRepo;
 
-    @Inject
     BusinessService businessService;
 
-    public String getAffiliates(Long id, Cache data){
-
+    public AffiliateService(){
+        this.businessService = new BusinessService();
     }
 
-
-    public String getOnboarding(Cache data, HttpServletRequest req) {
+    public String getOnboarding(Cache cache, HttpRequest req) {
         List<Business> businesses = businessRepo.getListPrimary();
-        data.set("businesses", businesses);
-        data.set("title", "Giga! Partners Signup");
-        data.set("page", "/pages/affiliate/onboarding.jsp");
+        cache.set("businesses", businesses);
+        cache.set("title", "Giga! Partners Signup");
+        cache.set("page", "/pages/affiliate/onboarding.jsp");
         return "/designs/guest.jsp";
     }
 
-    public String getRequests(Long id, Cache data) {
-        if(!authService.isAuthenticated()){
+    public String getRequests(Long id, Cache cache, HttpRequest httpRequest, SecurityManager security) {
+        if(!security.isAuthenticated(httpRequest)){
             return "[redirect]/";
         }
         List<BusinessRequest> businessRequests = businessRepo.getRequests(id);
-        data.set("businessRequests", businessRequests);
-        businessService.setData(id, data);
-        data.set("page", "/pages/affiliate/requests.jsp");
+        cache.set("businessRequests", businessRequests);
+        businessService.setData(id, cache);
+        cache.set("page", "/pages/affiliate/requests.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String status(String guid, Cache data) {
+    public String status(String guid, Cache cache) {
         BusinessRequest businessRequest = businessRepo.getRequest(guid);
         Business business = businessRepo.get(businessRequest.getBusinessId());
         User user = userRepo.get(business.getUserId());
-        data.set("user", user);
-        data.set("business", business);
-        data.set("businessRequest", businessRequest);
-        data.set("page", "/pages/affiliate/status.jsp");
+        cache.set("user", user);
+        cache.set("business", business);
+        cache.set("businessRequest", businessRequest);
+        cache.set("page", "/pages/affiliate/status.jsp");
         return "/designs/partners.jsp";
     }
 
-    public String begin(Cache data, HttpServletRequest req) {
+    public String begin(Cache cache, HttpRequest req) {
         BusinessRequest businessRequest = (BusinessRequest) Qio.get(req, BusinessRequest.class);
         businessRequest.setGuid(Giga.getString(7));
         businessRepo.saveRequest(businessRequest);
@@ -81,21 +80,43 @@ public class AffiliateService {
         String requestPermission = Giga.REQUEST_MAINTENANCE + savedRequest.getId();
         userRepo.savePermission(user.getId(), requestPermission);
 
-        data.set("message", "Successfully submitted your application to become an business partner!");
+        cache.set("message", "Successfully submitted your application to become an business partner!");
         return "[redirect]/affiliates/onboarding/status/" + businessRequest.getGuid();
     }
 
-    public String deny(Long id, Cache data) {
+    public String approve(Long id, Cache cache, HttpRequest httpRequest, SecurityManager security) {
         BusinessRequest businessRequest = businessRepo.getRequest(id);
-        data.set("businessRequest", businessRequest);
+        cache.set("businessRequest", businessRequest);
 
-        if(!authService.isAuthenticated()){
+        if(!security.userIsAuthenticated(httpRequest)){
             return "[redirect]/";
         }
 
         String permission = Giga.REQUEST_MAINTENANCE + businessRequest.getId();
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, httpRequest) &&
+                !security.hasPermission(permission, httpRequest)){
+            return "[redirect]/";
+        }
+
+        businessRequest.setApproved(true);
+        businessRequest.setDenied(false);
+        businessRequest.setPending(false);
+        businessRepo.updateRequest(businessRequest);
+
+        return "[redirect]/affiliates/onboarding/status/" + businessRequest.getGuid();
+    }
+
+    public String deny(Long id, Cache cache, HttpRequest httpRequest, SecurityManager security) {
+        BusinessRequest businessRequest = businessRepo.getRequest(id);
+        cache.set("businessRequest", businessRequest);
+
+        if(!security.isAuthenticated(httpRequest)){
+            return "[redirect]/";
+        }
+
+        String permission = Giga.REQUEST_MAINTENANCE + businessRequest.getId();
+        if(!security.hasRole(Giga.SUPER_ROLE, httpRequest) &&
+                !security.hasPermission(permission, httpRequest)){
             return "[redirect]/";
         }
 
@@ -108,29 +129,7 @@ public class AffiliateService {
 
     }
 
-    public String approve(Long id, Cache data) {
-        BusinessRequest businessRequest = businessRepo.getRequest(id);
-        data.set("businessRequest", businessRequest);
-
-        if(!authService.isAuthenticated()){
-            return "[redirect]/";
-        }
-
-        String permission = Giga.REQUEST_MAINTENANCE + businessRequest.getId();
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
-            return "[redirect]/";
-        }
-
-        businessRequest.setApproved(true);
-        businessRequest.setDenied(false);
-        businessRequest.setPending(false);
-        businessRepo.updateRequest(businessRequest);
-
-        return "[redirect]/affiliates/onboarding/status/" + businessRequest.getGuid();
-    }
-
-    public String setupAffiliate(Long id, Cache data) {
+    public String setupAffiliate(Long id) {
         BusinessRequest businessRequest = businessRepo.getRequest(id);
         Business primaryBusiness = businessRepo.get(businessRequest.getBusinessId());
 
@@ -156,23 +155,23 @@ public class AffiliateService {
     }
 
 
-    public String finalizeOnboarding(Long id, Cache data) {
+    public String finalizeOnboarding(Long id, Cache cache) {
         Business business = businessRepo.get(id);
-        data.set("business", business);
+        cache.set("business", business);
 
-        data.set("page","/pages/affiliate/finalize.jsp");
+        cache.set("page","/pages/affiliate/finalize.jsp");
         return "/designs/partners.jsp";
     }
 
 
-    public String finalizeOnboarding(Cache data, HttpServletRequest req) {
-        Business business = (Business) Qio.get(req, Business.class);
+    public String finalizeOnboarding(Cache cache, HttpRequest req, SecurityManager securityManager) {
+        Business business = (Business) req.inflect(req, Business.class);
 
         try {
 
             User storedUser = userRepo.get(business.getEmail());
             if (storedUser != null) {
-                data.set("message", "Did you forget where you placed your keys? " +
+                cache.set("message", "Did you forget where you placed your keys? " +
                         "A user already exists with this email. Please use a different email. " +
                         "Please contact us if you have any questions.");
                 return "[redirect]/affiliates/onboarding/finalize/" + business.getId();
@@ -183,7 +182,7 @@ public class AffiliateService {
             user.setPhone(Giga.getPhone(business.getPhone()));
             user.setUsername(Giga.getSpaces(business.getEmail()));
             user.setName(business.getOwner());
-            user.setPassword(Chico.dirty(business.getPassword()));
+            user.setPassword(security.dirty(business.getPassword()));
             userRepo.save(user);
 
             User savedUser = userRepo.getSaved();
@@ -253,14 +252,14 @@ public class AffiliateService {
 
 //add permissions
 
-            data.set("message", "You excited? Signin with your new credentials! Good luck!");
+            cache.set("message", "You excited? Signin with your new credentials! Good luck!");
 
         }catch(Exception ex){
             ex.printStackTrace();
             return "[redirect]/" + business.getUri();
         }
 
-        data.set("congratulations", "you did it!");
+        cache.set("congratulations", "you did it!");
         return "[redirect]/signin";
     }
 

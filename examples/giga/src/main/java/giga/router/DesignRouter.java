@@ -1,7 +1,7 @@
 package giga.router;
 
 import giga.service.DesignService;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import qio.annotate.HttpHandler;
 import qio.annotate.Inject;
 import qio.annotate.Variable;
@@ -16,38 +16,38 @@ public class DesignHandler {
     DesignService designService;
     
     @Get("/designs/new/{{id}}")
-    public String configure(Cache data,
-                            @Variable Long id){
+    public String configure(Cache cache,
+                            @RouteComponent Long id){
         return designService.configure(id, data);
     }
 
     @Get("/designs/{{id}}")
-    public String list(Cache data,
-                       @Variable Long id) throws Exception{
+    public String list(Cache cache,
+                       @RouteComponent Long id) throws Exception{
         return designService.list(id, data);
     }
 
     @Post("/designs/save")
-    public String save(HttpServletRequest req){
+    public String save(HttpRequest req){
         return designService.save(req);
     }
 
     @Get("/designs/edit/{{id}}")
-    public String showcase(Cache data,
-                           @Variable Long id) throws Exception {
+    public String showcase(Cache cache,
+                           @RouteComponent Long id) throws Exception {
         return designService.edit(id, data);
     }
 
     @Post("/designs/update/{{id}}")
-    public String update(HttpServletRequest req,
-                         Cache data,
-                         @Variable Long id){
-        return designService.update(id, data, req);
+    public String update(HttpRequest req,
+                         Cache cache,
+                         @RouteComponent Long id){
+        return designService.update(id, cache, req);
     }
 
     @Post("/designs/delete/{{id}}")
-    public String delete(Cache data,
-                         @Variable Long id){
+    public String delete(Cache cache,
+                         @RouteComponent Long id){
         return designService.delete(id, data);
     }
 

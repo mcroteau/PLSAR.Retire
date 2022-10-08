@@ -5,7 +5,7 @@ import giga.model.*;
 import giga.repo.AssetRepo;
 import giga.repo.DesignRepo;
 import giga.repo.UserRepo;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Service;
@@ -31,32 +31,32 @@ public class DesignService {
     @Inject
     BusinessService businessService;
 
-    public String configure(Long id, Cache data){
+    public String configure(Long id, Cache cache){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(id, data);
+        businessService.setData(id, cache);
 
         List<Asset> assets = assetRepo.getList(id);
-        data.set("assets", assets);
+        cache.set("assets", assets);
 
-        data.set("page", "/pages/design/new.jsp");
+        cache.set("page", "/pages/design/new.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String list(Long id, Cache data) throws Exception {
+    public String list(Long id, Cache cache) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(id, data);
+        businessService.setData(id, cache);
 
         List<Design> designs = designRepo.getList(id);
-        data.set("designs", designs);
-        data.set("page", "/pages/design/list.jsp");
+        cache.set("designs", designs);
+        cache.set("page", "/pages/design/list.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String save(HttpServletRequest req) {
+    public String save(HttpRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -74,7 +74,7 @@ public class DesignService {
     }
 
 
-    public String edit(Long id, Cache data) {
+    public String edit(Long id, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -82,22 +82,22 @@ public class DesignService {
         String permission = Giga.DESIGN_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to edit this design.");
+            cache.set("message", "Unauthorized to edit this design.");
             return "[redirect]/";
         }
         Design design = designRepo.get(id);
-        data.set("design", design);
+        cache.set("design", design);
 
         List<Asset> assets = assetRepo.getList(id);
-        data.set("assets", assets);
+        cache.set("assets", assets);
 
-        businessService.setData(design.getBusinessId(), data);
-        data.set("page", "/pages/design/edit.jsp");
+        businessService.setData(design.getBusinessId(), cache);
+        cache.set("page", "/pages/design/edit.jsp");
         return "/designs/auth.jsp";
     }
 
 
-    public String update(Long id, Cache data, HttpServletRequest req) {
+    public String update(Long id, Cache cache, HttpRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -105,7 +105,7 @@ public class DesignService {
         String permission = Giga.DESIGN_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to edit this design.");
+            cache.set("message", "Unauthorized to edit this design.");
             return "[redirect]/";
         }
 
@@ -115,7 +115,7 @@ public class DesignService {
         return "[redirect]/designs/edit/" + id;
     }
 
-    public String delete(Long id, Cache data) {
+    public String delete(Long id, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -123,18 +123,18 @@ public class DesignService {
         String permission = Giga.DESIGN_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to delete this design.");
+            cache.set("message", "Unauthorized to delete this design.");
             return "[redirect]/";
         }
 
         Design design = designRepo.get(id);
         if(design.getBaseDesign()){
-            data.set("message", "The base design is important. It is used everywhere.");
+            cache.set("message", "The base design is important. It is used everywhere.");
             return "[redirect]/designs/" + design.getBusinessId();
         }
 
         designRepo.delete(id);
-        data.set("message", "Successfully deleted design.");
+        cache.set("message", "Successfully deleted design.");
 
         return "[redirect]/designs/" + design.getBusinessId();
     }

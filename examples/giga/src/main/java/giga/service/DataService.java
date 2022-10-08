@@ -3,7 +3,7 @@ package giga.service;
 import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import jakarta.servlet.http.Part;
 import qio.Qio;
 import qio.annotate.Inject;
@@ -45,20 +45,20 @@ public class DataService {
     @Inject
     BusinessService businessService;
 
-    public String viewImportMedia(Long businessId, Cache data) {
+    public String viewImportMedia(Long businessId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
-        data.set("page", "/pages/data/media_import.jsp");
+        businessService.setData(businessId, cache);
+        cache.set("page", "/pages/data/media_import.jsp");
         return "/designs/auth.jsp";//shes gone.
     }
 
-    public String importMedia(Long businessId, Cache data, HttpServletRequest req) throws Exception{
+    public String importMedia(Long businessId, Cache cache, HttpRequest req) throws Exception{
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         List<Part> fileParts = req.getParts()
                 .stream()
@@ -134,46 +134,46 @@ public class DataService {
 
         }catch(Exception ex){
             ex.printStackTrace();
-            data.set("message", "Sorry, had issue with " + activeMedia + " please try again. " + issue);
+            cache.set("message", "Sorry, had issue with " + activeMedia + " please try again. " + issue);
             return "[redirect]/imports/media/"+ businessId;
         }
 
-        data.set("message", "All set! Everything imported. Check out the grid by clicking Power Grid.");
+        cache.set("message", "All set! Everything imported. Check out the grid by clicking Power Grid.");
         return "[redirect]/imports/media/" + businessId;
     }
 
-    public String viewImportsMedia(Long businessId, Cache data) {
+    public String viewImportsMedia(Long businessId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         List<DataImport> dataImports = dataRepo.getList(businessId, "media");
-        data.set("dataImports", dataImports);
-        data.set("page", "/pages/data/data_imports_list.jsp");
+        cache.set("dataImports", cacheImports);
+        cache.set("page", "/pages/data/data_imports_list.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String viewMedias(Long businessId, Long importId, Cache data) {
+    public String viewMedias(Long businessId, Long importId, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        businessService.setData(businessId, data);
+        businessService.setData(businessId, cache);
 
         DataImport dataImport = dataRepo.get(importId);
-        data.set("dataImport", dataImport);
+        cache.set("dataImport", cacheImport);
 
         List<MediaImport> mediaImports = dataRepo.getListMedia(importId);
-        data.set("mediaImports", mediaImports);
+        cache.set("mediaImports", mediaImports);
 
         List<Category> categories = categoryRepo.getListAll(businessId);
-        data.set("categories", categories);
+        cache.set("categories", categories);
 
-        data.set("page", "/pages/data/media_imports_list.jsp");
+        cache.set("page", "/pages/data/media_imports_list.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String updateMedia(Long businessId, Long importId, Cache data, HttpServletRequest req) {
+    public String updateMedia(Long businessId, Long importId, Cache cache, HttpRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -182,16 +182,16 @@ public class DataService {
         String permission = Giga.MEDIA_IMPORT_MAINTENANCE + mediaImport.getId();
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to edit this category.");
+            cache.set("message", "Unauthorized to edit this category.");
             return "[redirect]/";
         }
 
         dataRepo.updateMedia(mediaImport);
-        data.set("message", "Successfully updated " + mediaImport.getName() + "!");
+        cache.set("message", "Successfully updated " + mediaImport.getName() + "!");
         return "[redirect]/imports/media/" + businessId + "/" + importId;
     }
 
-    public String deleteImport(Long businessId, Long importId, Cache data, HttpServletRequest req) {
+    public String deleteImport(Long businessId, Long importId, Cache cache, HttpRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -199,7 +199,7 @@ public class DataService {
         String permission = Giga.DATA_IMPORT_MAINTENANCE + importId;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "You don't have access to delete this import.");
+            cache.set("message", "You don't have access to delete this import.");
             return "[redirect]/";
         }
 
@@ -207,11 +207,11 @@ public class DataService {
         dataRepo.deleteMediaImports(importId);
         dataRepo.delete(importId);
 
-        data.set("message", "Successfully deleted the import and removed all items");
+        cache.set("message", "Successfully deleted the import and removed all items");
         return "[redirect]/imports/media/" + businessId;
     }
 
-    public String convertItems(Long businessId, Long importId, Cache data, HttpServletRequest req) {
+    public String convertItems(Long businessId, Long importId, Cache cache, HttpRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -219,7 +219,7 @@ public class DataService {
         String permission = Giga.DATA_IMPORT_MAINTENANCE + importId;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "You don't have access to convert this import.");
+            cache.set("message", "You don't have access to convert this import.");
             return "[redirect]/";
         }
 
@@ -258,7 +258,7 @@ public class DataService {
             }
         }
 
-        data.set("message", "Successfully converted all media imports into items!");
+        cache.set("message", "Successfully converted all media imports into items!");
         return "[redirect]/imports/media/" + businessId + "/" + importId;
     }
 

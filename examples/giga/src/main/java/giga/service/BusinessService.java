@@ -11,7 +11,7 @@ import com.stripe.param.AccountLinkCreateParams;
 import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import net.plsar.model.Cache;
 import qio.Qio;
@@ -82,25 +82,25 @@ public class BusinessService {
     @Inject
     SmsService smsService;
 
-    public String businessSignup(Cache data, HttpServletRequest request) throws Exception {
+    public String businessSignup(Cache cache, HttpRequest request) throws Exception {
 
         Business business = (Business) Qio.get(request, Business.class);
 
         if(business.getName() == null ||
                 business.getName().equals("")){
-            data.set("message", "You got to give your business a name, ha! Come on now.");
+            cache.set("message", "You got to give your business a name, ha! Come on now.");
             return "[redirect]/signup";
         }
 
         if(business.getPhone() == null ||
                 business.getPhone().equals("")){
-            data.set("message", "Please enter a valid cell phone number!");
+            cache.set("message", "Please enter a valid cell phone number!");
             return "[redirect]/signup";
         }
 
         if(business.getEmail() == null ||
                 business.getEmail().equals("")){
-            data.set("message", "Please enter a valid email address.");
+            cache.set("message", "Please enter a valid email address.");
             return "[redirect]/signup";
         }
 
@@ -108,7 +108,7 @@ public class BusinessService {
         business.setUri(uri);
         Business storedBusiness = businessRepo.get(business.getUri());
         if(storedBusiness != null){
-            data.set("message", "Business exists with same name. Please try a different business name...");
+            cache.set("message", "Business exists with same name. Please try a different business name...");
             return "[redirect]/signup";
         }
 
@@ -116,18 +116,18 @@ public class BusinessService {
         business.setEmail(email);
         User storedUser = userRepo.get(email);
         if(storedUser != null){
-            data.set("message", "User exists with same email. Maybe its a mistake? ");
+            cache.set("message", "User exists with same email. Maybe its a mistake? ");
             return "[redirect]/signup";
         }
 
         if(business.getPassword() == null ||
                 business.getPassword().equals("")) {
-            data.set("message", "Please enter a valid password 6 characters long at least.");
+            cache.set("message", "Please enter a valid password 6 characters long at least.");
             return "[redirect]/signup";
         }
 
         if(business.getPassword().length() < 7){
-            data.set("message", "Please enter a valid password 6 characters long at least.");
+            cache.set("message", "Please enter a valid password 6 characters long at least.");
             return "[redirect]/signup";
         }
 
@@ -166,13 +166,13 @@ public class BusinessService {
         userRepo.update(savedUser);
 
         if(!authService.signin(business.getEmail(), business.getPassword())){
-            data.set("message", "Rock on! Signin to continue...");
+            cache.set("message", "Rock on! Signin to continue...");
             return "[redirect]/signin";
         }
 
         User authUser = authService.getUser();
 
-        data.set("message", "Go Rock! Good luck!");
+        cache.set("message", "Go Rock! Good luck!");
         request.getSession().setAttribute("username", business.getEmail());
         request.getSession().setAttribute("userId", authUser.getId());
 
@@ -183,16 +183,16 @@ public class BusinessService {
     }
 
 
-    public String setup(Cache data){
+    public String setup(Cache cache){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
         User authdUser = authService.getUser();
-        data.set("authUser", authdUser);
+        cache.set("authUser", authdUser);
         return "/pages/business/setup.jsp";
     }
 
-    public String snapshot(Long id, Cache data) {
+    public String snapshot(Long id, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -200,7 +200,7 @@ public class BusinessService {
         String permission = Giga.BUSINESS_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Whoa! Not authorized to view this business.");
+            cache.set("message", "Whoa! Not authorized to view this business.");
             return "[redirect]/";
         }
 
@@ -225,30 +225,30 @@ public class BusinessService {
         if(sales.size() > 0) {
             Long totalCarts = cartRepo.getTotal(id);
             BigDecimal conversionRate = new BigDecimal(sales.size()).divide(new BigDecimal(totalCarts), 3, RoundingMode.HALF_UP).movePointRight(2);
-            data.set("conversionRate", conversionRate);
-            data.set("salesCarts", sales.size());
-            data.set("totalCarts", totalCarts);
+            cache.set("conversionRate", conversionRate);
+            cache.set("salesCarts", sales.size());
+            cache.set("totalCarts", totalCarts);
         }
-        data.set("salesTotal", salesTotal);
-        data.set("commissionTotal", commissionTotal);
+        cache.set("salesTotal", salesTotal);
+        cache.set("commissionTotal", commissionTotal);
 
-        setData(id, data);
+        setData(id, cache);
 
-        data.set("page", "/pages/business/snapshot.jsp");
+        cache.set("page", "/pages/business/snapshot.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String create(Long id, Cache data){
+    public String create(Long id, Cache cache){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
-        setData(id, data);
+        setData(id, cache);
 
-        data.set("page", "/pages/business/new.jsp");
+        cache.set("page", "/pages/business/new.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String save(HttpServletRequest req) throws Exception {
+    public String save(HttpRequest req) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -274,7 +274,7 @@ public class BusinessService {
     }
 
 
-    public String signupComplete(Long id, Cache data) {
+    public String signupComplete(Long id, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -282,47 +282,47 @@ public class BusinessService {
         String permission = Giga.BUSINESS_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to edit this business.");
+            cache.set("message", "Unauthorized to edit this business.");
             return "[redirect]/";
         }
 
-        setData(id, data);
-        data.set("page", "/pages/business/start.jsp");
+        setData(id, cache);
+        cache.set("page", "/pages/business/start.jsp");
         return "/designs/auth.jsp";
     }
 
-//    public String list(Long id, Cache data) throws Exception {
+//    public String list(Long id, Cache cache) throws Exception {
 //        System.out.println("get list");
 //        if(!authService.isAuthenticated()){
 //            System.out.println("not authenticated");
 //            return "[redirect]/";
 //        }
-//        setData(id, data);
+//        setData(id, cache);
 //
 //        User authUser = authService.getUser();
 //        List<Business> businesses = businessRepo.getList(authUser.getId());
-//        data.set("businesses", businesses);
+//        cache.set("businesses", businesses);
 //
-//        data.set("page", "/pages/business/list.jsp");
+//        cache.set("page", "/pages/business/list.jsp");
 //        return "/designs/auth.jsp";
 //    }
 
-//    public String edit(Long id, Cache data) throws Exception {
+//    public String edit(Long id, Cache cache) throws Exception {
 //        if(!authService.isAuthenticated()){
 //            return "[redirect]/";
 //        }
 //
 //        Business business = businessRepo.get(id);
-//        data.set("editBusiness", business);
+//        cache.set("editBusiness", business);
 //
-//        setData(id, data);
+//        setData(id, cache);
 //
-//        data.set("page", "/pages/business/edit.jsp");
+//        cache.set("page", "/pages/business/edit.jsp");
 //        return "/designs/auth.jsp";
 //    }
 
 
-//    public String update(Long id, Cache data, HttpServletRequest req) {
+//    public String update(Long id, Cache cache, HttpRequest req) {
 //        if(!authService.isAuthenticated()){
 //            return "[redirect]/";
 //        }
@@ -330,7 +330,7 @@ public class BusinessService {
 //        String permission = Giga.BUSINESS_MAINTENANCE + id;
 //        if(!authService.isAdministrator() &&
 //                !authService.hasPermission(permission)){
-//            data.set("message", "Unauthorized to edit this business.");
+//            cache.set("message", "Unauthorized to edit this business.");
 //            return "[redirect]/";
 //        }
 //
@@ -340,7 +340,7 @@ public class BusinessService {
 //        return "[redirect]/businesses/edit/" + id;
 //    }
 
-    public String showSettings(Long id, Cache data) {
+    public String showSettings(Long id, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -348,15 +348,15 @@ public class BusinessService {
         String permission = Giga.BUSINESS_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to edit this business.");
+            cache.set("message", "Unauthorized to edit this business.");
             return "[redirect]/";
         }
-        setData(id, data);
-        data.set("page", "/pages/business/settings.jsp");
+        setData(id, cache);
+        cache.set("page", "/pages/business/settings.jsp");
         return "/designs/auth.jsp";
     }
 
-    public String saveSettings(Long id, Cache data, HttpServletRequest req) {
+    public String saveSettings(Long id, Cache cache, HttpRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -364,7 +364,7 @@ public class BusinessService {
         String permission = Giga.BUSINESS_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "Unauthorized to edit this business.");
+            cache.set("message", "Unauthorized to edit this business.");
             return "[redirect]/";
         }
 
@@ -388,22 +388,22 @@ public class BusinessService {
         verificationList.add("delivery");
         addressHash.put("verify_strict", verificationList);
 
-        setData(id, data);
+        setData(id, cache);
 
         try {
             Address.createAndVerify(addressHash);
         }catch (com.easypost.exception.EasyPostException e) {
-            data.set("message", "Address ain't right! Please make sure you enter a valid business address.");
-            data.set("page", "/pages/business/settings.jsp");
+            cache.set("message", "Address ain't right! Please make sure you enter a valid business address.");
+            cache.set("page", "/pages/business/settings.jsp");
             return "/designs/auth.jsp";
         }
 
         business.setInitial(false);
         businessRepo.update(business);
-        setData(business.getId(), data);
+        setData(business.getId(), cache);
 
-        data.set("message", "Updated business settings.");
-        data.set("page", "/pages/business/settings.jsp");
+        cache.set("message", "Updated business settings.");
+        cache.set("page", "/pages/business/settings.jsp");
         return "/designs/auth.jsp";
     }
 
@@ -437,7 +437,7 @@ public class BusinessService {
         }
     }
 
-    public String activateStripe(Long id, Cache data, HttpServletResponse resp) {
+    public String activateStripe(Long id, Cache cache, HttpServletResponse resp) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -445,7 +445,7 @@ public class BusinessService {
         String permission = Giga.BUSINESS_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "not your account buddy...");
+            cache.set("message", "not your account buddy...");
             return "[redirect]/";
         }
 
@@ -483,14 +483,14 @@ public class BusinessService {
 
         }catch(Exception ex){
             ex.printStackTrace();
-            data.set("message", "Something went wrong, will you contact us and let us know?");
+            cache.set("message", "Something went wrong, will you contact us and let us know?");
             return "[redirect]/";
         }
 
         return "";
     }
 
-    public String onboardingComplete(Long id, Cache data) {
+    public String onboardingComplete(Long id, Cache cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -498,7 +498,7 @@ public class BusinessService {
         String permission = Giga.BUSINESS_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            data.set("message", "not your account buddy...");
+            cache.set("message", "not your account buddy...");
             return "[redirect]/";
         }
 
@@ -506,9 +506,9 @@ public class BusinessService {
         business.setActivationComplete(true);
         businessRepo.update(business);
 
-        setData(id, data);
+        setData(id, cache);
 
-        data.set("message", "Successfully configured your Stripe account! <br/>Congratulations. Good times!");
+        cache.set("message", "Successfully configured your Stripe account! <br/>Congratulations. Good times!");
         return "[redirect]/snapshot/" + id;
     }
 
@@ -526,9 +526,9 @@ public class BusinessService {
         cache.set("siteService", siteService);
     }
 
-    public String get(String businessUri, Cache data) {
+    public String get(String businessUri, Cache cache) {
         Business business = businessRepo.get(businessUri);
-        data.set("business", business);
+        cache.set("business", business);
         return "/pages/business/index.jsp";
     }
 
