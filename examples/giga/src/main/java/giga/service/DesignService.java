@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Service;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ public class DesignService {
     @Inject
     BusinessService businessService;
 
-    public String configure(Long id, ResponseData data){
+    public String configure(Long id, Cache data){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -44,7 +44,7 @@ public class DesignService {
         return "/designs/auth.jsp";
     }
 
-    public String list(Long id, ResponseData data) throws Exception {
+    public String list(Long id, Cache data) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -74,7 +74,7 @@ public class DesignService {
     }
 
 
-    public String edit(Long id, ResponseData data) {
+    public String edit(Long id, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -97,7 +97,7 @@ public class DesignService {
     }
 
 
-    public String update(Long id, ResponseData data, HttpServletRequest req) {
+    public String update(Long id, Cache data, HttpServletRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -115,7 +115,7 @@ public class DesignService {
         return "[redirect]/designs/edit/" + id;
     }
 
-    public String delete(Long id, ResponseData data) {
+    public String delete(Long id, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }

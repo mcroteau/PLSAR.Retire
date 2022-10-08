@@ -1,64 +1,66 @@
 package giga.repo;
 
 import giga.model.Page;
-import qio.Qio;
-import qio.annotate.DataStore;
-import qio.annotate.Inject;
+import net.plsar.Dao;
+import net.plsar.annotations.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@DataStore
+@Repository
 public class PageRepo {
 
-    @Inject
-    Qio qio;
+    Dao dao;
+
+    public PageRepo(Dao dao){
+        this.dao = dao;
+    }
 
     public Page getSaved() {
         String idSql = "select max(id) from pages";
-        long id = qio.getLong(idSql, new Object[]{});
+        long id = dao.getLong(idSql, new Object[]{});
         return get(id);
     }
 
     public long getCount() {
         String sql = "select count(*) from pages";
-        Long count = (Long) qio.getLong(sql, new Object[] { });
+        Long count = (Long) dao.getLong(sql, new Object[] { });
         return count;
     }
 
     public Page get(long id){
         String sql = "select * from pages where id = [+]";
-        Page page = (Page) qio.get(sql, new Object[] { id }, Page.class);
+        Page page = (Page) dao.get(sql, new Object[] { id }, Page.class);
         return page;
     }
 
     public Page get(long id, long businessId){
         String sql = "select * from pages where id = [+] and business_id = [+]";
-        Page page = (Page) qio.get(sql, new Object[] { id, businessId }, Page.class);
+        Page page = (Page) dao.get(sql, new Object[] { id, businessId }, Page.class);
         return page;
     }
 
     public Page get(long id, String uri){
         String sql = "select * from pages where business_id = [+] and uri = '[+]'";
-        Page page = (Page) qio.get(sql, new Object[] { id, uri }, Page.class);
+        Page page = (Page) dao.get(sql, new Object[] { id, uri }, Page.class);
         return page;
     }
 
     public List<Page> getList(){
         String sql = "select * from pages order by id desc";
-        List<Page> pages = (ArrayList) qio.getList(sql, new Object[]{}, Page.class);
+        List<Page> pages = (ArrayList) dao.getList(sql, new Object[]{}, Page.class);
         return pages;
     }
 
     public List<Page> getList(long id){
         String sql = "select * from pages where business_id = [+] order by id desc";
-        List<Page> pages = (ArrayList) qio.getList(sql, new Object[]{ id }, Page.class);
+        List<Page> pages = (ArrayList) dao.getList(sql, new Object[]{ id }, Page.class);
         return pages;
     }
 
     public Boolean save(Page page){
         String sql = "insert into pages (name, uri, content, design_id, business_id) values ('[+]','[+]','[+]',[+],[+])";
-        qio.save(sql, new Object[] {
+        dao.save(sql, new Object[] {
                 page.getName(),
                 page.getUri(),
                 page.getContent(),
@@ -70,13 +72,13 @@ public class PageRepo {
 
     public boolean delete(long id){
         String sql = "delete from pages where id = [+]";
-        qio.delete(sql, new Object[] { id });
+        dao.delete(sql, new Object[] { id });
         return true;
     }
 
     public boolean deletePages(long id){
         String sql = "delete from pages where business_id = [+]";
-        qio.delete(sql, new Object[] { id });
+        dao.delete(sql, new Object[] { id });
         return true;
     }
 }

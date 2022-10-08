@@ -14,7 +14,7 @@ import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Property;
 import qio.annotate.Service;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -43,7 +43,7 @@ public class ShipmentService {
     CartService cartService;
 
 
-    public String begin(String businessUri, ResponseData data, HttpServletRequest req) {
+    public String begin(String businessUri, Cache data, HttpServletRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -61,7 +61,7 @@ public class ShipmentService {
 
     }
 
-    public String getRates(String businessUri, ResponseData data, HttpServletRequest req) {
+    public String getRates(String businessUri, Cache data, HttpServletRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -173,7 +173,7 @@ public class ShipmentService {
         return "/pages/shipment/choose.jsp";
     }
 
-    public String select(String businessUri, ResponseData data, HttpServletRequest req) {
+    public String select(String businessUri, Cache data, HttpServletRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -257,7 +257,7 @@ public class ShipmentService {
     }
 
 
-    public String createShipment(String businessUri, ResponseData data, HttpServletRequest req) {
+    public String createShipment(String businessUri, Cache data, HttpServletRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -269,7 +269,7 @@ public class ShipmentService {
         return "/pages/shipment/create.jsp";
     }
 
-    public String save(String businessUri, ResponseData data, HttpServletRequest req) {
+    public String save(String businessUri, Cache data, HttpServletRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";

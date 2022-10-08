@@ -13,11 +13,12 @@ import giga.model.*;
 import giga.repo.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import net.plsar.model.Cache;
 import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Property;
 import qio.annotate.Service;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -81,7 +82,7 @@ public class BusinessService {
     @Inject
     SmsService smsService;
 
-    public String businessSignup(ResponseData data, HttpServletRequest request) throws Exception {
+    public String businessSignup(Cache data, HttpServletRequest request) throws Exception {
 
         Business business = (Business) Qio.get(request, Business.class);
 
@@ -182,7 +183,7 @@ public class BusinessService {
     }
 
 
-    public String setup(ResponseData data){
+    public String setup(Cache data){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -191,7 +192,7 @@ public class BusinessService {
         return "/pages/business/setup.jsp";
     }
 
-    public String snapshot(Long id, ResponseData data) {
+    public String snapshot(Long id, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -237,7 +238,7 @@ public class BusinessService {
         return "/designs/auth.jsp";
     }
 
-    public String create(Long id, ResponseData data){
+    public String create(Long id, Cache data){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -273,7 +274,7 @@ public class BusinessService {
     }
 
 
-    public String signupComplete(Long id, ResponseData data) {
+    public String signupComplete(Long id, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -290,7 +291,7 @@ public class BusinessService {
         return "/designs/auth.jsp";
     }
 
-//    public String list(Long id, ResponseData data) throws Exception {
+//    public String list(Long id, Cache data) throws Exception {
 //        System.out.println("get list");
 //        if(!authService.isAuthenticated()){
 //            System.out.println("not authenticated");
@@ -306,7 +307,7 @@ public class BusinessService {
 //        return "/designs/auth.jsp";
 //    }
 
-//    public String edit(Long id, ResponseData data) throws Exception {
+//    public String edit(Long id, Cache data) throws Exception {
 //        if(!authService.isAuthenticated()){
 //            return "[redirect]/";
 //        }
@@ -321,7 +322,7 @@ public class BusinessService {
 //    }
 
 
-//    public String update(Long id, ResponseData data, HttpServletRequest req) {
+//    public String update(Long id, Cache data, HttpServletRequest req) {
 //        if(!authService.isAuthenticated()){
 //            return "[redirect]/";
 //        }
@@ -339,7 +340,7 @@ public class BusinessService {
 //        return "[redirect]/businesses/edit/" + id;
 //    }
 
-    public String showSettings(Long id, ResponseData data) {
+    public String showSettings(Long id, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -355,7 +356,7 @@ public class BusinessService {
         return "/designs/auth.jsp";
     }
 
-    public String saveSettings(Long id, ResponseData data, HttpServletRequest req) {
+    public String saveSettings(Long id, Cache data, HttpServletRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -407,7 +408,7 @@ public class BusinessService {
     }
 
 
-    public String delete(Long currentId, Long id, ResponseData responseData) {
+    public String delete(Long currentId, Long id, Cache Cache) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -415,7 +416,7 @@ public class BusinessService {
         String permission = Giga.BUSINESS_MAINTENANCE + id;
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
-            responseData.put("message", "This business doesn't belong to you, you cannot delete this business.");
+            Cache.put("message", "This business doesn't belong to you, you cannot delete this business.");
             return "[redirect]/";
         }
 
@@ -427,7 +428,7 @@ public class BusinessService {
         designRepo.deleteDesigns(id);
 
         businessRepo.delete(id);
-        responseData.put("message", "Successfully deleted business.");
+        Cache.put("message", "Successfully deleted business.");
 
         if(id != currentId){
             return "[redirect]/businesses/" + currentId;
@@ -436,7 +437,7 @@ public class BusinessService {
         }
     }
 
-    public String activateStripe(Long id, ResponseData data, HttpServletResponse resp) {
+    public String activateStripe(Long id, Cache data, HttpServletResponse resp) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -489,7 +490,7 @@ public class BusinessService {
         return "";
     }
 
-    public String onboardingComplete(Long id, ResponseData data) {
+    public String onboardingComplete(Long id, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -511,7 +512,7 @@ public class BusinessService {
         return "[redirect]/snapshot/" + id;
     }
 
-    public void setData(Long id, ResponseData data){
+    public void setData(Long id, Cache cache){
         User authdUser = authService.getUser();
         Business currentBusiness = businessRepo.get(id);
         Business primaryBusiness = businessRepo.get(currentBusiness.getPrimaryId());
@@ -519,13 +520,13 @@ public class BusinessService {
         List<Business> businesses = businessRepo.getList(authdUser.getId());
         Giga.sort(businesses);
 
-        data.set("authUser", authdUser);
-        data.set("business", currentBusiness);
-        data.set("businessOptions", businesses);
-        data.set("siteService", siteService);
+        cache.set("authUser", authdUser);
+        cache.set("business", currentBusiness);
+        cache.set("businessOptions", businesses);
+        cache.set("siteService", siteService);
     }
 
-    public String get(String businessUri, ResponseData data) {
+    public String get(String businessUri, Cache data) {
         Business business = businessRepo.get(businessUri);
         data.set("business", business);
         return "/pages/business/index.jsp";

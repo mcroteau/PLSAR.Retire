@@ -1,7 +1,7 @@
 package plsar;
 
 import net.plsar.Dao;
-import net.plsar.annotations.RepositoryComponent;
+import net.plsar.annotations.Repository;
 import plsar.model.User;
 import plsar.model.UserPermission;
 import plsar.model.UserRole;
@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@RepositoryComponent
+@Repository
 public class UserRepo {
 
     Dao dao;

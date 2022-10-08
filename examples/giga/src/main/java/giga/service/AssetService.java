@@ -9,7 +9,7 @@ import jakarta.servlet.http.Part;
 import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Service;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -86,7 +86,7 @@ public class AssetService {
 
 
 
-    public String create(Long businessId, ResponseData data){
+    public String create(Long businessId, Cache data){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -132,7 +132,7 @@ public class AssetService {
     }
 
 
-    public String list(Long businessId, ResponseData data) {
+    public String list(Long businessId, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -144,7 +144,7 @@ public class AssetService {
         return "/designs/auth.jsp";
     }
 
-    public String delete(Long id, Long businessId, ResponseData data) {
+    public String delete(Long id, Long businessId, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }

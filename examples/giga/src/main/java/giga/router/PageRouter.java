@@ -1,4 +1,4 @@
-package giga.web;
+package giga.router;
 
 import giga.service.PageService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,7 +7,7 @@ import qio.annotate.Inject;
 import qio.annotate.Variable;
 import qio.annotate.verbs.Get;
 import qio.annotate.verbs.Post;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 @HttpHandler
 public class PageHandler {
@@ -17,14 +17,14 @@ public class PageHandler {
 
     @Get("/{{business}}")
     public String getHome(HttpServletRequest req,
-                          ResponseData data,
+                          Cache data,
                           @Variable String business){
         return pageService.getPage(business.toLowerCase(), "home", data, req);
     }
 
     @Get("/{{business}}/asset/{{page}}")
     public String getPage(HttpServletRequest req,
-                          ResponseData data,
+                          Cache data,
                           @Variable String business,
                           @Variable String page){
         System.out.println("get page");
@@ -32,13 +32,13 @@ public class PageHandler {
     }
 
     @Get("/pages/new/{{businessId}}")
-    public String configure(ResponseData data,
+    public String configure(Cache data,
                             @Variable Long businessId){
         return pageService.create(businessId, data);
     }
 
     @Get("/pages/{{businessId}}")
-    public String list(ResponseData data,
+    public String list(Cache data,
                        @Variable Long businessId){
         return pageService.list(businessId, data);
     }
@@ -49,7 +49,7 @@ public class PageHandler {
     }
 
     @Post("/pages/delete/{{businessId}}/{{id}}")
-    public String delete(ResponseData data,
+    public String delete(Cache data,
                          @Variable Long businessId,
                          @Variable Long id){
         return pageService.delete(id, businessId, data);

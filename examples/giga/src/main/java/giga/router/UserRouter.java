@@ -1,4 +1,4 @@
-package giga.web;
+package giga.router;
 
 import chico.Chico;
 import giga.Giga;
@@ -12,7 +12,7 @@ import qio.annotate.Inject;
 import qio.annotate.Variable;
 import qio.annotate.verbs.Get;
 import qio.annotate.verbs.Post;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ public class UserHandler {
 
 	@Get("/{{shop}}/signup")
 	public String shopSignup(HttpServletRequest req,
-							 ResponseData data,
+							 Cache data,
 							 @Variable String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
@@ -75,7 +75,7 @@ public class UserHandler {
 
 	@Get("/{{shop}}/activity")
 	public String getActivity(HttpServletRequest req,
-							 ResponseData data,
+							 Cache data,
 							 @Variable String shopUri) throws ParseException {
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
@@ -106,7 +106,7 @@ public class UserHandler {
 	}
 
 	@Get("/users/edit/{{businessId}}/{{id}}")
-	public String getEdit(ResponseData data,
+	public String getEdit(Cache data,
 						  @Variable Long businessId,
 						  @Variable Long id){
 		return userService.getEdit(id, businessId, data);
@@ -115,40 +115,40 @@ public class UserHandler {
 
 	@Post("/users/update/{{businessId}}/{{id}}")
 	public String update(HttpServletRequest req,
-						 ResponseData data,
+						 Cache data,
 						 @Variable Long businessId,
 						 @Variable Long id){
 		return userService.update(id, businessId, data, req);
 	}
 
 	@Get("/users/reset")
-	public String reset(ResponseData data){
+	public String reset(Cache data){
 		data.set("page", "/pages/user/reset.jsp");
 		return "/designs/guest.jsp";
 	}
 
 	@Post("/users/send")
 	public String send(HttpServletRequest req,
-							ResponseData data){
+							Cache data){
 		return userService.send(data, req);
 	}
 
 	@Post("/users/reset/{{id}}")
 	public String resetPassword(HttpServletRequest req,
-								ResponseData data,
+								Cache data,
 								@Variable Long id){
     	return userService.resetPassword(id, data, req);
 	}
 
 	@Get("/clients/{{id}}")
-	public String clients(ResponseData data,
+	public String clients(Cache data,
 							@Variable Long id){
 		return userService.clients(id, data);
 	}
 
 	@Get("/{{shop}}/users/password/get")
 	public String getPassword(HttpServletRequest req,
-							  ResponseData data,
+							  Cache data,
 							  @Variable String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
@@ -165,7 +165,7 @@ public class UserHandler {
 
 	@Post("/{{shop}}/users/password/send")
 	public String sendPassword(HttpServletRequest req,
-							   ResponseData data,
+							   Cache data,
 							   @Variable String shopUri){
 
 		Business business = businessRepo.get(shopUri);
@@ -192,7 +192,7 @@ public class UserHandler {
 
 	@Get("/{{shop}}/users/edit/{{id}}")
 	public String editUser(HttpServletRequest req,
-							 ResponseData data,
+							 Cache data,
 							 @Variable String shopUri,
 						     @Variable Long id){
 		Business business = businessRepo.get(shopUri);
@@ -213,7 +213,7 @@ public class UserHandler {
 
 	@Post("/{{shop}}/users/update")
 	public String updateUser(HttpServletRequest req,
-							   ResponseData data,
+							   Cache data,
 							   @Variable String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
@@ -227,7 +227,7 @@ public class UserHandler {
 
 	@Get("/{{shop}}/users/password/edit")
 	public String editPassword(HttpServletRequest req,
-							   ResponseData data,
+							   Cache data,
 							   @Variable String shopUri,
 							   @Variable Long id){
 		Business business = businessRepo.get(shopUri);
@@ -250,7 +250,7 @@ public class UserHandler {
 
 	@Post("/{{shop}}/users/password/save")
 	public String savePassword(HttpServletRequest req,
-							  ResponseData data,
+							  Cache data,
 							  @Variable String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";

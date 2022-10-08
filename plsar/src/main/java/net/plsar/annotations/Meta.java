@@ -5,6 +5,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.TYPE})
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RepositoryComponent {}
+public @interface Meta {
+    public String design() default "";
+    public String title() default "";
+    public String description() default "";
+    public String keywords() default "";
+}

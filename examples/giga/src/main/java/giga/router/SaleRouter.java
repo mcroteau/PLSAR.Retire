@@ -1,4 +1,4 @@
-package giga.web;
+package giga.router;
 
 import giga.service.SaleService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,7 +7,7 @@ import qio.annotate.Inject;
 import qio.annotate.Variable;
 import qio.annotate.verbs.Get;
 import qio.annotate.verbs.Post;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 @HttpHandler
 public class SaleHandler {
@@ -16,7 +16,7 @@ public class SaleHandler {
     SaleService saleService;
 
     @Get("/sales/{{businessId}}")
-    public String list(ResponseData data,
+    public String list(Cache data,
                        @Variable Long businessId) throws Exception{
         return saleService.list(businessId, data);
     }
@@ -30,7 +30,7 @@ public class SaleHandler {
 
     @Get("/{{business}}/sale/{{id}}")
     public String getSale(HttpServletRequest req,
-                          ResponseData data,
+                          Cache data,
                           @Variable String businessUri,
                           @Variable Long id){
         return saleService.getSale(id, businessUri.toLowerCase(), data, req);

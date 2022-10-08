@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Service;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 import java.util.List;
 
@@ -38,7 +38,7 @@ public class PageService {
     @Inject
     SiteService siteService;
 
-    public String getPage(String businessUri, String page, ResponseData data, HttpServletRequest req) {
+    public String getPage(String businessUri, String page, Cache data, HttpServletRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]";
@@ -57,7 +57,7 @@ public class PageService {
     }
 
 
-    public String create(Long businessId, ResponseData data){
+    public String create(Long businessId, Cache data){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -86,7 +86,7 @@ public class PageService {
     }
 
 
-    public String list(Long businessId, ResponseData data) {
+    public String list(Long businessId, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -98,7 +98,7 @@ public class PageService {
         return "/designs/auth.jsp";
     }
 
-    public String delete(Long id, Long businessId, ResponseData data) {
+    public String delete(Long id, Long businessId, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }

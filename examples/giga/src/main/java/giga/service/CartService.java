@@ -9,7 +9,7 @@ import giga.repo.ItemRepo;
 import jakarta.servlet.http.HttpServletRequest;
 import qio.annotate.Inject;
 import qio.annotate.Service;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -39,7 +39,7 @@ public class CartService {
     ShipmentService shipmentService;
 
 
-    public String view(String businessUri, ResponseData data, HttpServletRequest req) {
+    public String view(String businessUri, Cache data, HttpServletRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -56,7 +56,7 @@ public class CartService {
         return "/pages/cart/index.jsp";
     }
 
-    public String viewCheckout(String businessUri, ResponseData data, HttpServletRequest req) {
+    public String viewCheckout(String businessUri, Cache data, HttpServletRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -68,7 +68,7 @@ public class CartService {
         return "/pages/cart/checkout.jsp";
     }
 
-    public String add(Long id, String businessUri, ResponseData data, HttpServletRequest req) {
+    public String add(Long id, String businessUri, Cache data, HttpServletRequest req) {
 
         List<Business> businesses = businessRepo.getList();
         for(Business item: businesses){
@@ -216,7 +216,7 @@ public class CartService {
     }
 
 
-    public void setData(Cart cart, Business business, ResponseData data, HttpServletRequest req){
+    public void setData(Cart cart, Business business, Cache data, HttpServletRequest req){
         BigDecimal subtotal = new BigDecimal(0);
         List<CartItem> cartItems = cartRepo.getListItems(cart.getId());
         System.out.println("ci " + cartItems.size());
@@ -281,7 +281,7 @@ public class CartService {
         data.set("siteService", siteService);
     }
 
-    public String minus(Long id, String businessUri, ResponseData data) {
+    public String minus(Long id, String businessUri, Cache data) {
         CartItem cartItem = cartRepo.getItem(id);
         cartRepo.deleteOption(id);
         cartRepo.deleteItem(id);

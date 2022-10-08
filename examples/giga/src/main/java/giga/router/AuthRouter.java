@@ -1,4 +1,4 @@
-package giga.web;
+package giga.router;
 
 import giga.model.Business;
 import giga.model.Design;
@@ -12,7 +12,7 @@ import qio.annotate.Inject;
 import qio.annotate.Variable;
 import qio.annotate.verbs.Get;
 import qio.annotate.verbs.Post;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 @HttpHandler
 public class AuthHandler {
@@ -32,19 +32,19 @@ public class AuthHandler {
 
 	@Post("/authenticate")
 	public String signin(HttpServletRequest req,
-							   ResponseData data){
+							   Cache data){
 		return authService.authenticate(data, req);
 	}
 
 	@Get("/signin")
-	public String signin(ResponseData data){
+	public String signin(Cache data){
 		data.set("page", "/pages/signin.jsp");
 		return "/designs/guest.jsp";
 	}
 
 	@Get("/{{shop}}/signin")
 	public String shopSignin(HttpServletRequest qer,
-							 ResponseData data,
+							 Cache data,
 							 @Variable String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
@@ -58,7 +58,7 @@ public class AuthHandler {
 
 	@Post("/{{shop}}/signin")
 	public String shopAuthenticate(HttpServletRequest req,
-							   ResponseData data,
+							   Cache data,
 							   @Variable String shopUri){
 		authService.authenticate(data, req);
 		Business business = businessRepo.get(shopUri);
@@ -67,20 +67,20 @@ public class AuthHandler {
 	}
 
 	@Get("/signup")
-	public String signup(ResponseData data){
+	public String signup(Cache data){
 		data.set("page", "/pages/signup.jsp");
 		return "/designs/guest.jsp";
 	}
 
 	@Get("/signout")
 	public String signout(HttpServletRequest req,
-						  ResponseData data){
+						  Cache data){
 		return authService.deAuthenticate(data, req);
 	}
 
 	@Get("/{{shop}}/signout")
 	public String shopSignout(HttpServletRequest req,
-							  ResponseData data,
+							  Cache data,
 							  @Variable String shopUri){
 		authService.deAuthenticate(data, req);
 		return "[redirect]/" + shopUri;

@@ -1,4 +1,4 @@
-package giga.web;
+package giga.router;
 
 import chico.Chico;
 import com.google.gson.Gson;
@@ -16,7 +16,7 @@ import qio.Qio;
 import qio.annotate.*;
 import qio.annotate.verbs.Get;
 import qio.annotate.verbs.Post;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 @HttpHandler
 public class BusinessHandler {
@@ -40,37 +40,37 @@ public class BusinessHandler {
 
     @Post("/business/signup")
     public String businessSignup(HttpServletRequest req,
-                                 ResponseData data) throws Exception {
+                                 Cache data) throws Exception {
         return businessService.businessSignup(data, req);
     }
 
     @Get("/businesses/setup")
-    public String setup(ResponseData data){
+    public String setup(Cache data){
         return businessService.setup(data);
     }
 
 
     @JsonOutput
     @Get("/{{business}}/oops")
-    public String oops(ResponseData data){
+    public String oops(Cache data){
         data.set("message", "sorry, something went wrong");
         return gson.toJson(data);
     }
 
     @Get("/snapshot/{{id}}")
-    public String snapshot(ResponseData data,
+    public String snapshot(Cache data,
                            @Variable Long id){
         return businessService.snapshot(id, data);
     }
 
     @Get("/businesses/new/{{id}}")
-    public String create(ResponseData data,
+    public String create(Cache data,
                         @Variable Long id){
         return businessService.create(id, data);
     }
 
 //    @Get("/businesses/{{id}}")
-//    public String list(ResponseData data,
+//    public String list(Cache data,
 //                       @Variable Long id) throws Exception{
 //        return businessService.list(id, data);
 //    }
@@ -82,45 +82,45 @@ public class BusinessHandler {
 
     //registration -> setup complete
     @Get("/businesses/signup/complete/{{id}}")
-    public String signupComplete(ResponseData data,
+    public String signupComplete(Cache data,
                                   @Variable Long id){
         return businessService.signupComplete(id, data);
     }
 
 //    @Get("/businesses/edit/{{id}}")
-//    public String edit(ResponseData data,
+//    public String edit(Cache data,
 //                       @Variable Long id) throws Exception {
 //        return businessService.edit(id, data);
 //    }
 //
 //    @Post("/businesses/update/{{id}}")
 //    public String update(HttpServletRequest req,
-//                         ResponseData data,
+//                         Cache data,
 //                         @Variable Long id) throws Exception {
 //        return businessService.update(id, data, req);
 //    }
 
     @Get("/businesses/settings/{{id}}")
-    public String showSettings(ResponseData data,
+    public String showSettings(Cache data,
                            @Variable Long id){
         return businessService.showSettings(id, data);
     }
 
     @Post("/businesses/settings/save/{{id}}")
     public String saveSettings(HttpServletRequest req,
-                               ResponseData data,
+                               Cache data,
                                @Variable Long id){
         return businessService.saveSettings(id, data, req);
     }
 
     @Get("/businesses/settings/save/{{id}}")
-    public String showSettingsDos(ResponseData data,
+    public String showSettingsDos(Cache data,
                                @Variable Long id){
         return businessService.showSettings(id, data);
     }
 
     @Post("/businesses/delete/{{current}}/{{id}}")
-    public String delete(ResponseData data,
+    public String delete(Cache data,
                          @Variable Long currentId,
                          @Variable Long id){
         return businessService.delete(currentId, id, data);
@@ -129,7 +129,7 @@ public class BusinessHandler {
     @Text
     @Get("/stripe/onboarding/setup/{{id}}")
     public String activateStripe(HttpServletResponse resp,
-                              ResponseData data,
+                              Cache data,
                               @Variable Long id){
         return businessService.activateStripe(id, data, resp);
     }
@@ -137,7 +137,7 @@ public class BusinessHandler {
 
     @Post("/{{shop}}/register")
     public String shopRegister(HttpServletRequest req,
-                                   ResponseData data,
+                                   Cache data,
                                    @Variable String shopUri){
         Business business = businessRepo.get(shopUri);
         if(business == null)return "[redirect]/";
@@ -195,12 +195,12 @@ public class BusinessHandler {
     }
 
     @Get("/stripe/onboarding/refresh")
-    public String noop(ResponseData data){
+    public String noop(Cache data){
         return "";
     }
 
     @Get("/stripe/onboarding/complete/{{id}}")
-    public String onboardingComplete(ResponseData data,
+    public String onboardingComplete(Cache data,
                                      @Variable Long id){
         return businessService.onboardingComplete(id, data);
     }

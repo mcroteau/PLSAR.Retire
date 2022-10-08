@@ -1,4 +1,4 @@
-package giga.web;
+package giga.router;
 
 import giga.service.CategoryService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,7 +7,7 @@ import qio.annotate.Inject;
 import qio.annotate.Variable;
 import qio.annotate.verbs.Get;
 import qio.annotate.verbs.Post;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 @HttpHandler
 public class CategoryHandler {
@@ -17,20 +17,20 @@ public class CategoryHandler {
 
     @Get("/{{business}}/{{category}}/items")
     public String getPage(HttpServletRequest req,
-                          ResponseData data,
+                          Cache data,
                           @Variable String business,
                           @Variable String category){
         return categoryService.getItems(business.toLowerCase(), category.toLowerCase(), data, req);
     }
 
     @Get("/categories/new/{{businessId}}")
-    public String configure(ResponseData data,
+    public String configure(Cache data,
                             @Variable Long businessId){
         return categoryService.create(businessId, data);
     }
 
     @Get("/categories/{{businessId}}")
-    public String list(ResponseData data,
+    public String list(Cache data,
                        @Variable Long businessId) throws Exception{
         return categoryService.list(businessId, data);
     }
@@ -41,7 +41,7 @@ public class CategoryHandler {
     }
 
     @Get("/categories/edit/{{businessId}}/{{id}}")
-    public String showcase(ResponseData data,
+    public String showcase(Cache data,
                            @Variable Long businessId,
                            @Variable Long id) throws Exception {
         return categoryService.edit(id, businessId, data);
@@ -49,14 +49,14 @@ public class CategoryHandler {
 
     @Post("/categories/update/{{businessId}}/{{id}}")
     public String update(HttpServletRequest req,
-                         ResponseData data,
+                         Cache data,
                          @Variable Long businessId,
                          @Variable Long id){
         return categoryService.update(id, businessId, data, req);
     }
 
     @Post("/categories/delete/{{businessId}}/{{id}}")
-    public String delete(ResponseData data,
+    public String delete(Cache data,
                          @Variable Long businessId,
                          @Variable Long id){
         return categoryService.delete(id, businessId, data);

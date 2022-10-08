@@ -10,7 +10,7 @@ import giga.repo.UserRepo;
 import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Service;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class UserService {
         return Giga.USER_MAINTENANCE + id;
     }
 
-    public String getEdit(Long id, Long businessId, ResponseData data){
+    public String getEdit(Long id, Long businessId, Cache data){
         String permission = getPermission(Long.toString(id));
         if(!authService.isAdministrator() &&
                 !authService.hasPermission(permission)){
@@ -62,7 +62,7 @@ public class UserService {
     }
 
 
-    public String update(Long id, Long businessId, ResponseData data, HttpServletRequest req) {
+    public String update(Long id, Long businessId, Cache data, HttpServletRequest req) {
 
         User user = (User) Qio.get(req, User.class);
 
@@ -80,7 +80,7 @@ public class UserService {
     }
 
 
-    public String send(ResponseData data, HttpServletRequest req) {
+    public String send(Cache data, HttpServletRequest req) {
 
         try {
             String phone = req.getParameter("phone");
@@ -106,7 +106,7 @@ public class UserService {
         return "[redirect]/signin";
     }
 
-    public String resetPassword(Long id, ResponseData data, HttpServletRequest req) {
+    public String resetPassword(Long id, Cache data, HttpServletRequest req) {
 
         User user = userRepo.get(id);
         User reqUser = (User) Qio.get(req, User.class);
@@ -128,7 +128,7 @@ public class UserService {
         return "[redirect]/signin";
     }
 
-    public String clients(Long businessId, ResponseData data){
+    public String clients(Long businessId, Cache data){
         if(!authService.isAuthenticated()){
             return "[redirect]/snapshot/" + businessId;
         }

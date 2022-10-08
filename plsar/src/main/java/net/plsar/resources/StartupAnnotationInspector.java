@@ -1,6 +1,5 @@
 package net.plsar.resources;
 
-import net.plsar.annotations.RepositoryComponent;
 import net.plsar.annotations.ServerStartup;
 
 import java.io.File;

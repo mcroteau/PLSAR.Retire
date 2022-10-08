@@ -9,7 +9,7 @@ import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Media;
 import qio.annotate.Service;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -45,7 +45,7 @@ public class DataService {
     @Inject
     BusinessService businessService;
 
-    public String viewImportMedia(Long businessId, ResponseData data) {
+    public String viewImportMedia(Long businessId, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -54,7 +54,7 @@ public class DataService {
         return "/designs/auth.jsp";//shes gone.
     }
 
-    public String importMedia(Long businessId, ResponseData data, HttpServletRequest req) throws Exception{
+    public String importMedia(Long businessId, Cache data, HttpServletRequest req) throws Exception{
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -142,7 +142,7 @@ public class DataService {
         return "[redirect]/imports/media/" + businessId;
     }
 
-    public String viewImportsMedia(Long businessId, ResponseData data) {
+    public String viewImportsMedia(Long businessId, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -154,7 +154,7 @@ public class DataService {
         return "/designs/auth.jsp";
     }
 
-    public String viewMedias(Long businessId, Long importId, ResponseData data) {
+    public String viewMedias(Long businessId, Long importId, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -173,7 +173,7 @@ public class DataService {
         return "/designs/auth.jsp";
     }
 
-    public String updateMedia(Long businessId, Long importId, ResponseData data, HttpServletRequest req) {
+    public String updateMedia(Long businessId, Long importId, Cache data, HttpServletRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -191,7 +191,7 @@ public class DataService {
         return "[redirect]/imports/media/" + businessId + "/" + importId;
     }
 
-    public String deleteImport(Long businessId, Long importId, ResponseData data, HttpServletRequest req) {
+    public String deleteImport(Long businessId, Long importId, Cache data, HttpServletRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -211,7 +211,7 @@ public class DataService {
         return "[redirect]/imports/media/" + businessId;
     }
 
-    public String convertItems(Long businessId, Long importId, ResponseData data, HttpServletRequest req) {
+    public String convertItems(Long businessId, Long importId, Cache data, HttpServletRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }

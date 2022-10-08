@@ -1,4 +1,4 @@
-package giga.web;
+package giga.router;
 
 import giga.service.DesignService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,7 +7,7 @@ import qio.annotate.Inject;
 import qio.annotate.Variable;
 import qio.annotate.verbs.Get;
 import qio.annotate.verbs.Post;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 @HttpHandler
 public class DesignHandler {
@@ -16,13 +16,13 @@ public class DesignHandler {
     DesignService designService;
     
     @Get("/designs/new/{{id}}")
-    public String configure(ResponseData data,
+    public String configure(Cache data,
                             @Variable Long id){
         return designService.configure(id, data);
     }
 
     @Get("/designs/{{id}}")
-    public String list(ResponseData data,
+    public String list(Cache data,
                        @Variable Long id) throws Exception{
         return designService.list(id, data);
     }
@@ -33,20 +33,20 @@ public class DesignHandler {
     }
 
     @Get("/designs/edit/{{id}}")
-    public String showcase(ResponseData data,
+    public String showcase(Cache data,
                            @Variable Long id) throws Exception {
         return designService.edit(id, data);
     }
 
     @Post("/designs/update/{{id}}")
     public String update(HttpServletRequest req,
-                         ResponseData data,
+                         Cache data,
                          @Variable Long id){
         return designService.update(id, data, req);
     }
 
     @Post("/designs/delete/{{id}}")
-    public String delete(ResponseData data,
+    public String delete(Cache data,
                          @Variable Long id){
         return designService.delete(id, data);
     }

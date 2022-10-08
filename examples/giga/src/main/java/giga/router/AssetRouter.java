@@ -1,4 +1,4 @@
-package giga.web;
+package giga.router;
 
 import giga.service.AssetService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import qio.annotate.*;
 import qio.annotate.verbs.Get;
 import qio.annotate.verbs.Post;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 @HttpHandler
 public class AssetHandler {
@@ -31,13 +31,13 @@ public class AssetHandler {
     }
 
     @Get("/assets/new/{{businessId}}")
-    public String configure(ResponseData data,
+    public String configure(Cache data,
                             @Variable Long businessId){
         return assetService.create(businessId, data);
     }
 
     @Get("/assets/{{businessId}}")
-    public String list(ResponseData data,
+    public String list(Cache data,
                        @Variable Long businessId){
         System.out.println("assets.");
         return assetService.list(businessId, data);
@@ -49,7 +49,7 @@ public class AssetHandler {
     }
 
     @Post("/assets/delete/{{businessId}}/{{id}}")
-    public String delete(ResponseData data,
+    public String delete(Cache data,
                          @Variable Long businessId,
                          @Variable Long id){
         return assetService.delete(id, businessId, data);

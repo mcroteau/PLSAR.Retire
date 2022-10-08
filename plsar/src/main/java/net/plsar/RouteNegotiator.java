@@ -1,7 +1,7 @@
 package net.plsar;
 
 import net.plsar.annotations.Inject;
-import net.plsar.annotations.Metadata;
+import net.plsar.annotations.Meta;
 import net.plsar.model.Cache;
 import net.plsar.model.HttpRequest;
 import net.plsar.model.HttpResponse;
@@ -42,11 +42,11 @@ public class RouteNegotiator {
             Method routeMethod = routeEndpoint.getRouteMethod();
 
             String design = null, title = null, keywords = null, description = null;
-            if(routeMethod.isAnnotationPresent(Metadata.class)){
-                Metadata metadataAnnotation = routeMethod.getAnnotation(Metadata.class);
-                title = metadataAnnotation.title();
-                keywords = metadataAnnotation.keywords();
-                description = metadataAnnotation.description();
+            if(routeMethod.isAnnotationPresent(Meta.class)){
+                Meta metaAnnotation = routeMethod.getAnnotation(Meta.class);
+                title = metaAnnotation.title();
+                keywords = metaAnnotation.keywords();
+                description = metaAnnotation.description();
             }
 
             routeMethod.setAccessible(true);

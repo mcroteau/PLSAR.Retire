@@ -9,7 +9,7 @@ import jakarta.servlet.http.Part;
 import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Service;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +52,7 @@ public class ItemService {
     AuthService authService;
 
 
-    public String query(Long id, ResponseData data, HttpServletRequest req){
+    public String query(Long id, Cache data, HttpServletRequest req){
         String q = req.getParameter("q");
         Business business = businessRepo.get(id);
         List<Item> items = itemRepo.q(q, id);
@@ -65,7 +65,7 @@ public class ItemService {
         return "/pages/item/q.jsp";
     }
 
-    public String getItem(Long id, String businessUri, ResponseData data, HttpServletRequest req) {
+    public String getItem(Long id, String businessUri, Cache data, HttpServletRequest req) {
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -86,7 +86,7 @@ public class ItemService {
         return "/pages/item/index.jsp";
     }
 
-    public String getItemCategory(Long id, Long categoryId, String businessUri, ResponseData data, HttpServletRequest req) {
+    public String getItemCategory(Long id, Long categoryId, String businessUri, Cache data, HttpServletRequest req) {
         System.out.println(id + " : " + categoryId + " : " + businessUri);
         Business business = businessRepo.get(businessUri);
         if(business == null){
@@ -115,7 +115,7 @@ public class ItemService {
     }
 
 
-    public String create(Long businessId, ResponseData data){
+    public String create(Long businessId, Cache data){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -183,7 +183,7 @@ public class ItemService {
         return "[redirect]/items/" + savedItem.getBusinessId();
     }
 
-    public String list(Long businessId, ResponseData data){
+    public String list(Long businessId, Cache data){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -198,7 +198,7 @@ public class ItemService {
     }
 
 
-    public String getListInactive(Long businessId, ResponseData data) {
+    public String getListInactive(Long businessId, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -212,7 +212,7 @@ public class ItemService {
         return "/designs/auth.jsp";
     }
 
-    public String grid(Long businessId, ResponseData data) {
+    public String grid(Long businessId, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -238,7 +238,7 @@ public class ItemService {
         return "/designs/auth.jsp";
     }
 
-    public String edit(Long id, Long businessId, ResponseData data) {
+    public String edit(Long id, Long businessId, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -284,7 +284,7 @@ public class ItemService {
     }
 
 
-    public String update(Long id, Long businessId, Boolean onGrid, ResponseData data, HttpServletRequest req) throws IOException, ServletException {
+    public String update(Long id, Long businessId, Boolean onGrid, Cache data, HttpServletRequest req) throws IOException, ServletException {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -346,7 +346,7 @@ public class ItemService {
         return "[redirect]/items/edit/" + businessId + "/" + id;
     }
 
-    public String delete(Long id, Long businessId, ResponseData data) {
+    public String delete(Long id, Long businessId, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -370,7 +370,7 @@ public class ItemService {
         return "[redirect]/items/" + businessId;
     }
 
-    public String options(Long id, Long businessId, ResponseData data) {
+    public String options(Long id, Long businessId, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -389,7 +389,7 @@ public class ItemService {
         return "/designs/auth.jsp";
     }
 
-    public String saveOption(Long id, Long businessId, ResponseData data, HttpServletRequest req) {
+    public String saveOption(Long id, Long businessId, Cache data, HttpServletRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -408,7 +408,7 @@ public class ItemService {
     }
 
 
-    public String deleteOption(Long id, Long optionId, Long businessId, ResponseData data, HttpServletRequest req) {
+    public String deleteOption(Long id, Long optionId, Long businessId, Cache data, HttpServletRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -427,7 +427,7 @@ public class ItemService {
         return "[redirect]/items/options/" + businessId + "/" + id;
     }
 
-    public String saveValue(Long id, Long businessId, ResponseData data, HttpServletRequest req) {
+    public String saveValue(Long id, Long businessId, Cache data, HttpServletRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -445,7 +445,7 @@ public class ItemService {
         return "[redirect]/items/options/" + businessId + "/" + id;
     }
 
-    public String deleteValue(Long id, Long valueId, Long businessId, ResponseData data, HttpServletRequest req) {
+    public String deleteValue(Long id, Long valueId, Long businessId, Cache data, HttpServletRequest req) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -466,7 +466,7 @@ public class ItemService {
         return "[redirect]/items/options/" + businessId + "/" + id;
     }
 
-    public void setData(Long id, ResponseData data){
+    public void setData(Long id, Cache data){
         Item item = itemRepo.get(id);
         List<ItemOption> itemOptions = itemRepo.getOptions(item.getId());
         for(ItemOption itemOption : itemOptions){

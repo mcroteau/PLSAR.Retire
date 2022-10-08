@@ -14,7 +14,7 @@ import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Property;
 import qio.annotate.Service;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -234,7 +234,7 @@ public class SaleService {
         return "[redirect]/" + businessUri + "/sale/" + sale.getId();
     }
 
-    public String getSale(Long id, String businessUri, ResponseData data, HttpServletRequest req) {
+    public String getSale(Long id, String businessUri, Cache data, HttpServletRequest req) {
 
         System.out.println("get sale : " + id + ", " + businessUri + " : " + businessRepo);
         Business business = businessRepo.get(businessUri);
@@ -264,7 +264,7 @@ public class SaleService {
         return "/pages/sale/index.jsp";
     }
 
-    public String list(Long businessId, ResponseData data) throws Exception {
+    public String list(Long businessId, Cache data) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }

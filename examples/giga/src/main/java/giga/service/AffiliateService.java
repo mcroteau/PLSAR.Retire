@@ -1,16 +1,8 @@
 package giga.service;
 
-import chico.Chico;
 import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
-import jakarta.servlet.http.HttpServletRequest;
-import qio.Qio;
-import qio.annotate.Inject;
-import qio.annotate.Service;
-import qio.model.web.ResponseData;
-
-import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -43,40 +35,12 @@ public class AffiliateService {
     @Inject
     BusinessService businessService;
 
-    public String getAffiliates(Long id, ResponseData data){
-        if(!authService.isAuthenticated()){
-            return "[redirect]/";
-        }
+    public String getAffiliates(Long id, Cache data){
 
-        String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
-            return "[redirect]/";
-        }
-
-        Business business = businessRepo.get(id);
-        User user = userRepo.get(business.getUserId());
-        List<Business> affiliates = businessRepo.getListAffiliate(id);
-        for(Business affiliate : affiliates){
-            List<Sale> sales = saleRepo.getListAffiliate(affiliate.getId());
-            BigDecimal salesTotal = new BigDecimal(0);
-            for(Sale sale: sales){
-                BigDecimal affiliateAmount = new BigDecimal(sale.getAffiliateAmount());
-                affiliateAmount = affiliateAmount.movePointLeft(2);
-                System.out.println("am " + affiliateAmount);
-                salesTotal.add(affiliateAmount);
-            }
-            affiliate.setSalesTotal(salesTotal);
-        }
-
-        data.set("affiliates", affiliates);
-        businessService.setData(id, data);
-        data.set("page", "/pages/affiliate/list.jsp");
-        return "/designs/auth.jsp";
     }
 
 
-    public String getOnboarding(ResponseData data, HttpServletRequest req) {
+    public String getOnboarding(Cache data, HttpServletRequest req) {
         List<Business> businesses = businessRepo.getListPrimary();
         data.set("businesses", businesses);
         data.set("title", "Giga! Partners Signup");
@@ -84,7 +48,7 @@ public class AffiliateService {
         return "/designs/guest.jsp";
     }
 
-    public String getRequests(Long id, ResponseData data) {
+    public String getRequests(Long id, Cache data) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -95,7 +59,7 @@ public class AffiliateService {
         return "/designs/auth.jsp";
     }
 
-    public String status(String guid, ResponseData data) {
+    public String status(String guid, Cache data) {
         BusinessRequest businessRequest = businessRepo.getRequest(guid);
         Business business = businessRepo.get(businessRequest.getBusinessId());
         User user = userRepo.get(business.getUserId());
@@ -106,7 +70,7 @@ public class AffiliateService {
         return "/designs/partners.jsp";
     }
 
-    public String begin(ResponseData data, HttpServletRequest req) {
+    public String begin(Cache data, HttpServletRequest req) {
         BusinessRequest businessRequest = (BusinessRequest) Qio.get(req, BusinessRequest.class);
         businessRequest.setGuid(Giga.getString(7));
         businessRepo.saveRequest(businessRequest);
@@ -121,7 +85,7 @@ public class AffiliateService {
         return "[redirect]/affiliates/onboarding/status/" + businessRequest.getGuid();
     }
 
-    public String deny(Long id, ResponseData data) {
+    public String deny(Long id, Cache data) {
         BusinessRequest businessRequest = businessRepo.getRequest(id);
         data.set("businessRequest", businessRequest);
 
@@ -144,7 +108,7 @@ public class AffiliateService {
 
     }
 
-    public String approve(Long id, ResponseData data) {
+    public String approve(Long id, Cache data) {
         BusinessRequest businessRequest = businessRepo.getRequest(id);
         data.set("businessRequest", businessRequest);
 
@@ -166,7 +130,7 @@ public class AffiliateService {
         return "[redirect]/affiliates/onboarding/status/" + businessRequest.getGuid();
     }
 
-    public String setupAffiliate(Long id, ResponseData data) {
+    public String setupAffiliate(Long id, Cache data) {
         BusinessRequest businessRequest = businessRepo.getRequest(id);
         Business primaryBusiness = businessRepo.get(businessRequest.getBusinessId());
 
@@ -192,7 +156,7 @@ public class AffiliateService {
     }
 
 
-    public String finalizeOnboarding(Long id, ResponseData data) {
+    public String finalizeOnboarding(Long id, Cache data) {
         Business business = businessRepo.get(id);
         data.set("business", business);
 
@@ -201,7 +165,7 @@ public class AffiliateService {
     }
 
 
-    public String finalizeOnboarding(ResponseData data, HttpServletRequest req) {
+    public String finalizeOnboarding(Cache data, HttpServletRequest req) {
         Business business = (Business) Qio.get(req, Business.class);
 
         try {

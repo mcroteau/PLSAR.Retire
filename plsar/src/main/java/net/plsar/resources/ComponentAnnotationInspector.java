@@ -1,6 +1,6 @@
 package net.plsar.resources;
 
-import net.plsar.annotations.RepositoryComponent;
+import net.plsar.annotations.Repository;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -50,7 +50,7 @@ public class ComponentAnnotationInspector {
 
                 if (klass.isAnnotation() || klass.isInterface()) continue;
 
-                if(klass.isAnnotationPresent(RepositoryComponent.class)){
+                if(klass.isAnnotationPresent(Repository.class)){
                     AnnotationComponent annotationComponent = new AnnotationComponent();
                     annotationComponent.setKlass(klass);
                     String[] componentElements = klass.getName().split("\\.");

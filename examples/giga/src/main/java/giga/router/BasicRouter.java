@@ -1,4 +1,4 @@
-package giga.web;
+package giga.router;
 
 import giga.model.Business;
 import giga.model.User;
@@ -9,7 +9,7 @@ import qio.annotate.HttpHandler;
 import qio.annotate.Inject;
 import qio.annotate.Property;
 import qio.annotate.verbs.Get;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 import java.util.List;
 
@@ -45,7 +45,7 @@ public class BasicHandler {
 	}
 
 	@Get("/home")
-	public String home(ResponseData data){
+	public String home(Cache data){
 		List<Business> businesses = businessRepo.getList();
 		data.put("businesses", businesses);
 		data.set("title", "A Marketplace for Marketplaces.");

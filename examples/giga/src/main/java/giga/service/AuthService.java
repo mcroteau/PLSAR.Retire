@@ -10,7 +10,7 @@ import giga.repo.UserRepo;
 import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Service;
-import qio.model.web.ResponseData;
+import qio.model.web.Cache;
 
 @Service
 public class AuthService {
@@ -70,7 +70,7 @@ public class AuthService {
         return user;
     }
 
-    public String authenticate(ResponseData data, HttpServletRequest req) {
+    public String authenticate(Cache data, HttpServletRequest req) {
 
         try{
 
@@ -102,7 +102,7 @@ public class AuthService {
         return "[redirect]/";
     }
 
-    public String deAuthenticate(ResponseData data, HttpServletRequest req) {
+    public String deAuthenticate(Cache data, HttpServletRequest req) {
         signout();
         data.set("message", "Successfully signed out");
         req.getSession().setAttribute("username", "");
