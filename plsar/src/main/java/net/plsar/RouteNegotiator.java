@@ -1,13 +1,17 @@
 package net.plsar;
 
+import net.plsar.annotations.Inject;
 import net.plsar.annotations.Metadata;
 import net.plsar.model.Cache;
 import net.plsar.model.HttpRequest;
 import net.plsar.model.HttpResponse;
+import net.plsar.resources.ComponentsHolder;
 import net.plsar.security.SecurityManager;
 import net.plsar.resources.ServerResources;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +23,7 @@ public class RouteNegotiator {
 
     String guid;//love.
     RouteAttributes routeAttributes;
+    ComponentsHolder componentsHolder;
 
     public RouteResponse negotiate(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, SecurityManager securityManager, List<Class<?>> viewRenderers){
 
@@ -34,24 +39,41 @@ public class RouteNegotiator {
 
             RouteEndpoint routeEndpoint = serverResources.getRouteEndpoint(routeVerb, routeUriPath, routeEndpointHolder);
             Object[] signature = serverResources.getRouteParameters(routeUriPath, routeEndpoint, cache, httpRequest, httpResponse, securityManager);
-            Method method = routeEndpoint.getRouteMethod();
+            Method routeMethod = routeEndpoint.getRouteMethod();
 
             String design = null, title = null, keywords = null, description = null;
-            if(method.isAnnotationPresent(Metadata.class)){
-                Metadata metadataAnnotation = method.getAnnotation(Metadata.class);
+            if(routeMethod.isAnnotationPresent(Metadata.class)){
+                Metadata metadataAnnotation = routeMethod.getAnnotation(Metadata.class);
                 title = metadataAnnotation.title();
                 keywords = metadataAnnotation.keywords();
                 description = metadataAnnotation.description();
             }
 
-            method.setAccessible(true);
-            Object object = routeEndpoint.getKlass().getConstructor().newInstance();
+            routeMethod.setAccessible(true);
+            Object routeInstance = routeEndpoint.getKlass().getConstructor().newInstance();
 
             PersistenceConfig persistenceConfig = routeAttributes.getPersistenceConfig();
-            Method setPersistenceMethod = object.getClass().getMethod("setPersistence", Persistence.class);
-            setPersistenceMethod.invoke(object, new Persistence(persistenceConfig));
 
-            String methodResponse = String.valueOf(method.invoke(object, signature));
+            Dao routeDao = new Dao(persistenceConfig);
+
+            Field[] routeFields = routeInstance.getClass().getDeclaredFields();
+            for(Field routeField : routeFields){
+                if(routeField.isAnnotationPresent(Inject.class)){
+                    String fieldKey = routeField.getName().toLowerCase();
+                    Class<?> componentKlass = componentsHolder.getComponents().get(fieldKey);
+                    Constructor<?> componentKlassConstructor = componentKlass.getConstructor(Dao.class);
+                    Object componentInstance = componentKlassConstructor.newInstance(routeDao);
+                    routeField.setAccessible(true);
+                    routeField.set(routeInstance, componentInstance);
+                }
+            }
+
+            try {
+                Method setPersistenceMethod = routeInstance.getClass().getMethod("setPersistence", Dao.class);
+                setPersistenceMethod.invoke(routeInstance, new Dao(persistenceConfig));
+            }catch(NoSuchMethodException nsme){ }
+
+            String methodResponse = String.valueOf(routeMethod.invoke(routeInstance, signature));
             if(methodResponse == null){
                 return new RouteResponse("404");
             }
@@ -70,7 +92,7 @@ public class RouteNegotiator {
             String htmlPath = webPath.toFile().getAbsolutePath().concat(File.separator + methodResponse);
             File viewFile = new File(htmlPath);
             ByteArrayOutputStream unebaos = new ByteArrayOutputStream();
-            String pageContent = "";
+            String pageContent;
 
             InputStream pageInput = new FileInputStream(viewFile);
             byte[] bytes = new byte[1024 * 13];
@@ -82,7 +104,7 @@ public class RouteNegotiator {
 
 
             if(design != null) {
-                String designPath = "/webux/" + design;
+                String designPath = "/webapp/" + design;
                 InputStream designInput = this.getClass().getResourceAsStream(designPath);
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -98,7 +120,7 @@ public class RouteNegotiator {
                     return new RouteResponse("501");
                 }
 
-                if(!designContent.contains("<echo:content/>")){
+                if(!designContent.contains("<plsar:content/>")){
                     return new RouteResponse("Your html template file is missing <plsar:content/>");
                 }
 
@@ -157,16 +179,19 @@ public class RouteNegotiator {
         return guid;
     }
 
-    public void setGuid(String guid) {
-        this.guid = guid;
+    public RouteAttributes getRouteAttributes() {
+        return routeAttributes;
     }
 
-    public void setRouteAttributes(RouteAttributes routeAttributes){
+    public void setRouteAttributes(RouteAttributes routeAttributes) {
         this.routeAttributes = routeAttributes;
     }
 
-    public RouteAttributes getRouteAttributes(){
-        return this.routeAttributes;
+    public ComponentsHolder getComponentsHolder() {
+        return componentsHolder;
     }
 
+    public void setComponentsHolder(ComponentsHolder componentsHolder) {
+        this.componentsHolder = componentsHolder;
+    }
 }

@@ -2,6 +2,7 @@ package net.plsar;
 
 import net.plsar.implement.ViewRenderer;
 import net.plsar.model.HttpSession;
+import net.plsar.resources.ComponentsHolder;
 import net.plsar.security.SecurityManager;
 
 import java.util.HashMap;

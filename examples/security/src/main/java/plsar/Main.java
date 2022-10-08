@@ -22,6 +22,9 @@ public class Main {
         schemaConfig.setEnvironment(Environments.DEVELOPMENT);
 
         PLSAR plsar = new PLSAR(1234);
+        plsar.setNumberOfPartitions(40);
+        plsar.setNumberOfRequestExecutors(100);
+
         plsar.setPersistenceConfig(persistenceConfig);
         plsar.setSchemaConfig(schemaConfig);
 

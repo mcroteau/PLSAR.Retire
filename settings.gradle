@@ -1,4 +1,4 @@
-rootProject.name = 'PLSAR'
-include 'plsar'
-include 'examples:security'
+rootProject.name = "PLSAR"
+include "plsar"
+include "examples:security"
 

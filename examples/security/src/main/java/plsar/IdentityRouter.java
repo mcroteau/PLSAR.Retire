@@ -1,19 +1,20 @@
 package plsar;
 
-import net.plsar.Persistence;
+import net.plsar.annotations.Inject;
 import net.plsar.model.HttpResponse;
-import net.plsar.annotations.Router;
+import net.plsar.annotations.HttpRouter;
 import net.plsar.annotations.http.Get;
 import net.plsar.annotations.http.Post;
 import net.plsar.model.HttpRequest;
-import net.plsar.implement.PersistenceRouter;
 import net.plsar.model.Cache;
 import net.plsar.security.SecurityManager;
+import plsar.model.User;
 
-@Router
-public class IdentityRouter implements PersistenceRouter {
+@HttpRouter
+public class IdentityRouter {
 
-    Persistence persistence;
+    @Inject
+    UserRepo userRepo;
 
     @Get("/")
     public String signin(Cache cache, HttpRequest httpRequest, SecurityManager securityManager) {
@@ -54,8 +55,4 @@ public class IdentityRouter implements PersistenceRouter {
         return "[redirect]/";
     }
 
-    @Override
-    public void setPersistence(Persistence persistence) {
-        this.persistence = persistence;
-    }
 }

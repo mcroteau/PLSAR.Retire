@@ -1,6 +1,6 @@
 package net.plsar;
 
-import net.plsar.annotations.Router;
+import net.plsar.annotations.HttpRouter;
 import net.plsar.annotations.RouteComponent;
 import net.plsar.annotations.http.Get;
 import net.plsar.annotations.http.Delete;
@@ -64,7 +64,7 @@ public class RouteEndpointsResolver {
 
                 if (klass.isAnnotation() || klass.isInterface()) continue;
 
-                if(klass.isAnnotationPresent(Router.class)) {
+                if(klass.isAnnotationPresent(HttpRouter.class)) {
                     Method[] routeMethods = klass.getDeclaredMethods();
                     for(Method routeMethod: routeMethods){
 

@@ -1,6 +1,7 @@
 package plsar;
 
-import net.plsar.Persistence;
+import net.plsar.Dao;
+import net.plsar.annotations.RepositoryComponent;
 import plsar.model.User;
 import plsar.model.UserPermission;
 import plsar.model.UserRole;
@@ -10,35 +11,36 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@RepositoryComponent
 public class UserRepo {
 
-    Persistence persistence;
+    Dao dao;
 
-    public UserRepo(Persistence persistence){
-        this.persistence = persistence;
+    public UserRepo(Dao dao){
+        this.dao = dao;
     }
 
     public User getSaved() {
         String idSql = "select max(id) from users";
-        long id = persistence.getLong(idSql, new Object[]{});
+        long id = dao.getLong(idSql, new Object[]{});
         return get(id);
     }
 
     public long getId() {
         String sql = "select max(id) from users";
-        long id = persistence.getLong(sql, new Object[]{});
+        long id = dao.getLong(sql, new Object[]{});
         return id;
     }
 
     public long getCount() {
         String sql = "select count(*) from users";
-        Long count = persistence.getLong(sql, new Object[] { });
+        Long count = dao.getLong(sql, new Object[] { });
         return count;
     }
 
     public User get(long id) {
         String sql = "select * from users where id = [+]";
-        User user = (User) persistence.get(sql, new Object[] { id }, User.class);
+        User user = (User) dao.get(sql, new Object[] { id }, User.class);
 
         if(user == null) user = new User();
         return user;
@@ -46,25 +48,25 @@ public class UserRepo {
 
     public User getPhone(String phone) {
         String sql = "select * from users where phone = '[+]'";
-        User user = (User) persistence.get(sql, new Object[] { phone }, User.class);
+        User user = (User) dao.get(sql, new Object[] { phone }, User.class);
         return user;
     }
 
     public User getEmail(String email) {
         String sql = "select * from users where email = '[+]'";
-        User user = (User) persistence.get(sql, new Object[] { email }, User.class);
+        User user = (User) dao.get(sql, new Object[] { email }, User.class);
         return user;
     }
 
     public List<User> getList() {
         String sql = "select * from users";
-        List<User> users = (ArrayList) persistence.getList(sql, new Object[]{}, User.class);
+        List<User> users = (ArrayList) dao.getList(sql, new Object[]{}, User.class);
         return users;
     }
 
     public Boolean save(User user) {
         String sql = "insert into users (phone, password) values ('[+]','[+]')";
-        persistence.save(sql, new Object[]{
+        dao.save(sql, new Object[]{
             user.getPhone(),
             user.getPassword()
         });
@@ -73,7 +75,7 @@ public class UserRepo {
 
     public boolean update(User user) {
         String sql = "update users set phone = '[+]', password = '[+]' where id = [+]";
-        persistence.update(sql, new Object[]{
+        dao.update(sql, new Object[]{
                 user.getPhone(),
                 user.getPassword(),
                 user.getId()
@@ -83,7 +85,7 @@ public class UserRepo {
 
     public boolean updatePassword(User user) {
         String sql = "update users set password = '[+]' where id = [+]";
-        persistence.update(sql, new Object[]{
+        dao.update(sql, new Object[]{
                 user.getPassword(),
                 user.getId()
         });
@@ -92,13 +94,13 @@ public class UserRepo {
 
     public User getReset(String username, String uuid){
         String sql = "select * from users where username = '[+]' and uuid = '[+]'";
-        User user = (User) persistence.get(sql, new Object[] { username, uuid }, User.class);
+        User user = (User) dao.get(sql, new Object[] { username, uuid }, User.class);
         return user;
     }
 
     public boolean delete(long id) {
         String sql = "delete from users where id = [+]";
-        persistence.update(sql, new Object[] { id });
+        dao.update(sql, new Object[] { id });
         return true;
     }
 
@@ -109,19 +111,19 @@ public class UserRepo {
 
     public boolean saveUserRole(long userId, long roleId){
         String sql = "insert into user_roles (role_id, user_id) values ([+], [+])";
-        persistence.save(sql, new Object[]{roleId, userId});
+        dao.save(sql, new Object[]{roleId, userId});
         return true;
     }
 
     public boolean savePermission(long accountId, String permission){
         String sql = "insert into user_permissions (user_id, permission) values ([+], '[+]')";
-        persistence.save(sql, new Object[]{ accountId,  permission });
+        dao.save(sql, new Object[]{ accountId,  permission });
         return true;
     }
 
     public Set<String> getUserRoles(long id) {
         String sql = "select r.name as name from user_roles ur inner join roles r on r.id = ur.role_id where ur.user_id = [+]";
-        List<UserRole> rolesList = (ArrayList) persistence.getList(sql, new Object[]{ id }, UserRole.class);
+        List<UserRole> rolesList = (ArrayList) dao.getList(sql, new Object[]{ id }, UserRole.class);
         Set<String> roles = new HashSet<>();
         for(UserRole role: rolesList){
             roles.add(role.getName());
@@ -131,7 +133,7 @@ public class UserRepo {
 
     public Set<String> getUserPermissions(long id) {
         String sql = "select permission from user_permissions where user_id = [+]";
-        List<UserPermission> permissionsList = (ArrayList) persistence.getList(sql, new Object[]{ id }, UserPermission.class);
+        List<UserPermission> permissionsList = (ArrayList) dao.getList(sql, new Object[]{ id }, UserPermission.class);
         Set<String> permissions = new HashSet<>();
         for(UserPermission permission: permissionsList){
             permissions.add(permission.getPermission());

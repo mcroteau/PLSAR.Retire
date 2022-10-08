@@ -1,6 +1,6 @@
 package net.plsar.security;
 
-import net.plsar.Persistence;
+import net.plsar.Dao;
 
 import java.util.Set;
 
@@ -33,6 +33,6 @@ public interface SecurityAccess {
      */
     public Set<String> getPermissions(String user);
 
-    public void setPersistence(Persistence persistence);
+    public void setPersistence(Dao dao);
 }
 

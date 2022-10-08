@@ -27,8 +27,8 @@ public class PLSAR {
 
     Integer port;
     SchemaConfig schemaConfig;
-    Integer NUMBER_PARTITIONS = 2;
-    Integer NUMBER_REQUEST_EXECUTORS = 4;
+    Integer numberOfPartitions = 2;
+    Integer numberOfRequestExecutors = 4;
     PersistenceConfig persistenceConfig;
     Class<?> securityAccessClass;
     List<Class<?>> viewRenderers;
@@ -40,26 +40,27 @@ public class PLSAR {
 
     public void start(){
         try {
-            Integer TOTAL_NUMBER_EXECUTORS = NUMBER_PARTITIONS * NUMBER_REQUEST_EXECUTORS;
+            Integer TOTAL_NUMBER_EXECUTORS = numberOfPartitions * numberOfRequestExecutors;
 
             DatabaseEnvironmentManager databaseEnvironmentManager = new DatabaseEnvironmentManager();
             databaseEnvironmentManager.configure(schemaConfig, persistenceConfig);
 
             ServerResources serverResources = new ServerResources();
-            AnnotationInspector annotationInspector = new AnnotationInspector(new AnnotationElementHolder());
-            annotationInspector.retroInspect();
-            AnnotationElementHolder annotationElementHolder = annotationInspector.getAnnotationElementHolder();
+            StartupAnnotationInspector startupAnnotationInspector = new StartupAnnotationInspector(new ComponentsHolder());
+            startupAnnotationInspector.inspect();
+            ComponentsHolder componentsHolder = startupAnnotationInspector.getComponentsHolder();
+            AnnotationComponent serverStartup = componentsHolder.getServerStartup();
 
             Log.info("Registering route negotiators, please wait...");
-            List<RouteNegotiator> routeNegotiators = getRouteNegotiators(TOTAL_NUMBER_EXECUTORS, serverResources, annotationElementHolder);
+            List<RouteNegotiator> routeNegotiators = getRouteNegotiators(TOTAL_NUMBER_EXECUTORS, serverResources, serverStartup);
             ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry = registerRouteDirectors(routeNegotiators);
 
             RedirectRegistry redirectRegistry = new RedirectRegistry();
 
             ServerSocket serverSocket = new ServerSocket(port);
             serverSocket.setPerformancePreferences(0, 1, 2);
-            ExecutorService executors = Executors.newFixedThreadPool(NUMBER_PARTITIONS);
-            executors.execute(new PartitionedExecutor(NUMBER_REQUEST_EXECUTORS, serverSocket, redirectRegistry, routeDirectorRegistry, viewRenderers));
+            ExecutorService executors = Executors.newFixedThreadPool(numberOfPartitions);
+            executors.execute(new PartitionedExecutor(numberOfRequestExecutors, serverSocket, redirectRegistry, routeDirectorRegistry, viewRenderers));
 
             Log.info("Ready!");
 
@@ -76,10 +77,9 @@ public class PLSAR {
         return routeDirectorRegistry;
     }
 
-    List<RouteNegotiator> getRouteNegotiators(Integer TOTAL_NUMBER_EXECUTORS, ServerResources serverResources, AnnotationElementHolder annotationElementHolder) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    List<RouteNegotiator> getRouteNegotiators(Integer TOTAL_NUMBER_EXECUTORS, ServerResources serverResources, AnnotationComponent serverStartup) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         List<RouteNegotiator> routeNegotiators = new ArrayList();
         for(Integer activeIndex = 0; activeIndex < TOTAL_NUMBER_EXECUTORS; activeIndex++){//todo:set guid
-            AnnotationElement serverStartup = annotationElementHolder.getServerStartup();
             Method startupMethod = serverStartup.getKlass().getMethod("startup");
 
             RouteAttributes routeAttributes = (RouteAttributes) startupMethod.invoke(serverResources.getInstance(serverStartup.getKlass()));
@@ -94,20 +94,24 @@ public class PLSAR {
             persistenceConfig.setUser(this.persistenceConfig.getUser());
             persistenceConfig.setConnections(this.persistenceConfig.getConnections());
             persistenceConfig.setPassword(this.persistenceConfig.getPassword());
-
             routeAttributes.setPersistenceConfig(persistenceConfig);
 
-            Persistence persistence = new Persistence(persistenceConfig);
+            Dao dao = new Dao(persistenceConfig);
             SecurityAccess securityAccessInstance = (SecurityAccess) securityAccessClass.getConstructor().newInstance();
-            Method setPersistence = securityAccessInstance.getClass().getMethod("setPersistence", Persistence.class);
-            setPersistence.invoke(securityAccessInstance, persistence);
+            Method setPersistence = securityAccessInstance.getClass().getMethod("setPersistence", Dao.class);
+            setPersistence.invoke(securityAccessInstance, dao);
             SecurityManager securityManager = new SecurityManager(securityAccessInstance);
             routeAttributes.setSecurityManager(securityManager);
 
             routeAttributes.setSecurityAccess(this.securityAccessClass);
 
+            ComponentAnnotationInspector componentAnnotationInspector = new ComponentAnnotationInspector(new ComponentsHolder());
+            componentAnnotationInspector.inspect();
+            ComponentsHolder componentsHolder = componentAnnotationInspector.getComponentsHolder();
+
             RouteNegotiator routeNegotiator = new RouteNegotiator();
             routeNegotiator.setRouteAttributes(routeAttributes);
+            routeNegotiator.setComponentsHolder(componentsHolder);
 
             routeNegotiators.add(routeNegotiator);
         }
@@ -134,13 +138,6 @@ public class PLSAR {
             this.guid = String.valueOf(random.nextFloat());
             this.sessionRouteRegistry = new ConcurrentHashMap<>();
         }
-
-        /**
-         *
-         *
-         * session
-         *
-         */
 
         @Override
         public void run() {
@@ -370,6 +367,15 @@ public class PLSAR {
 
     public void setSchemaConfig(SchemaConfig schemaConfig) {
         this.schemaConfig = schemaConfig;
+    }
+
+
+    public void setNumberOfPartitions(int numberOfPartitions){
+        this.numberOfPartitions = numberOfPartitions;
+    }
+
+    public void setNumberOfRequestExecutors(int numberOfRequestExecutors){
+        this.numberOfRequestExecutors = numberOfRequestExecutors;
     }
 
     public PLSAR addViewRenderer(Class<?> viewRenderer){

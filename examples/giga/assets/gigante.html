@@ -1,0 +1,49 @@
+<html>
+<head>
+    <title>{{business.name}}</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="icon" type="image/png" href="">
+    <link rel="stylesheet" href="/benefit/css/default.css">
+    <link rel="stylesheet" href="../src/main/webapp/benefit/css/default.css">
+    <style>
+        body{text-align: center}
+        #site-wrapper{width:590px;margin:10px auto 170px;}
+        #site-content{text-align:left;padding:20px}
+        .gigante{font-size: 102px;line-height: 1.0em}
+        h1,h2,h3{text-align: center}
+        #top-nav{margin-top:20px;}
+        #top-nav, #top-nav a{ font-size:17px;text-decoration: none;}
+        #top-nav a{border-bottom: dotted 1px #000;display:inline-block;margin-right:6px;}
+        #top-nav .orange a{border:none;}
+        #top-nav .orange a:hover{color:#000;}
+        #nav a{display: inline-block; font-size:21px;margin:10px 10px; text-decoration: none; border-bottom: dotted 2px #000;}
+        #menu li{display:inline-block;float:left;margin:10px 10px;}
+        #menu a{display: inline-block; font-size:21px;text-decoration: none; border-bottom: dotted 2px #000;}
+        #menu a:hover{background-color: #fff;}
+    </style>
+</head>
+<body>
+<div id="site-wrapper">
+    <div id="top-nav">
+        {{greeting}}
+        {{signin.signout.href}}
+        {{signup.href}}
+        <span class="button orange">
+            {{kart}}
+            </span>
+    </div>
+    <h1 class="gigante">{{business.name}}</h1>
+    <div id="nav">
+        <a href="/{{business.uri}}/">Home</a>
+        <a href="/{{business.uri}}/asset/about">About</a>
+        {{categories}}
+        <br class="clear"/>
+    </div>
+    <div id="site-content">
+        {{site.content}}
+    </div>
+</div>
+</body>
+</html>

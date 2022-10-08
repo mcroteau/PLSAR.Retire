@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group "io.giga"
+version "1.0"
+
+application{
+    mainClass.set("plsar.Main")
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":plsar")
+    implementation "com.google.code.gson:gson:2.8.6"
+    implementation "commons-validator:commons-validator:1.5.1"
+    implementation "org.apache.commons:commons-lang3:3.6"
+    implementation "org.ocpsoft.prettytime:prettytime:4.0.1.Final"
+    implementation "com.stripe:stripe-java:20.43.0"
+    implementation "commons-io:commons-io:2.4"
+    implementation "com.easypost:easypost-api-client:4.0.4"
+    implementation "com.amazonaws:aws-java-sdk-s3:1.11.946"
+    implementation "org.quartz-scheduler:quartz:2.3.2"
+}
