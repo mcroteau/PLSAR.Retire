@@ -8,7 +8,7 @@ public class RequestComponent {
     String value;
     boolean hasFiles;
 
-    List<FileComponent> files;
+    List<FileComponent> fileComponents;
     List<String> values;
 
     public String getName() {
@@ -35,12 +35,12 @@ public class RequestComponent {
         this.hasFiles = hasFiles;
     }
 
-    public List<FileComponent> getFiles() {
-        return files;
+    public List<FileComponent> getFileComponents() {
+        return fileComponents;
     }
 
-    public void setFiles(List<FileComponent> files) {
-        this.files = files;
+    public void setFileComponents(List<FileComponent> fileComponents) {
+        this.fileComponents = fileComponents;
     }
 
     public List<String> getValues() {
@@ -53,6 +53,6 @@ public class RequestComponent {
 
     public RequestComponent(){
         this.values = new ArrayList<>();
-        this.files = new ArrayList<>();
+        this.fileComponents = new ArrayList<>();
     }
 }

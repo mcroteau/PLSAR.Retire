@@ -128,7 +128,7 @@ public class ComponentCompiler {
                     requestComponent.setName(nameElement);
                     FileComponent fileComponent = getFileComponent(component, componentContent);
                     if(fileComponent != null) {
-                        requestComponent.getFiles().add(fileComponent);
+                        requestComponent.getFileComponents().add(fileComponent);
                         requestComponentMap.put(nameElement, requestComponent);
                     }
                 }else{
@@ -136,7 +136,7 @@ public class ComponentCompiler {
                     requestComponent.setName(nameElement);
                     FileComponent fileComponent = getFileComponent(component, componentContent);
                     if(fileComponent != null) {
-                        requestComponent.getFiles().add(fileComponent);
+                        requestComponent.getFileComponents().add(fileComponent);
                         requestComponentMap.put(nameElement, requestComponent);
                     }
                 }

@@ -3,10 +3,9 @@ package giga.service;
 import giga.model.*;
 import giga.repo.CategoryRepo;
 import giga.repo.DesignRepo;
-import jakarta.servlet.http.HttpRequest;
-import okhttp3.internal.connection.RouteDatabase;
-import qio.annotate.Inject;
-import qio.annotate.Service;
+import giga.repo.UserRepo;
+import net.plsar.model.HttpRequest;
+import net.plsar.security.SecurityManager;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -14,17 +13,22 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.List;
 
-@Service
 public class SiteService {
 
-    @Inject
-    AuthService authService;
+    SecurityManager security;
 
-    @Inject
+    UserRepo userRepo;
+
     DesignRepo designRepo;
 
-    @Inject
     CategoryRepo categoryRepo;
+
+    public SiteService(SecurityManager security, DesignRepo designRepo, UserRepo userRepo, CategoryRepo categoryRepo){
+        this.security = security;
+        this.userRepo = userRepo;
+        this.designRepo = designRepo;
+        this.categoryRepo = categoryRepo;
+    }
 
     public String getBit(Integer slice, String design, Design blueprint, Category category, Business business, HttpRequest req){
         if(design.equals("\\{\\{content\\}\\}")) design = " " + design + " ";
@@ -68,7 +72,7 @@ public class SiteService {
         bit = bit.replace("{{kart}}", getKart(business, req));
         bit = bit.replace("{{css}}", blueprint.getCss());
         bit = bit.replace("{{js}}", blueprint.getJavascript());
-        bit = bit.replace("{{greeting}}", getGreeting());
+        bit = bit.replace("{{greeting}}", getGreeting(req));
         bit = bit.replace("{{business.name}}", business.getName());
         bit = bit.replace("{{business.phone}}", business.getPhone());
         bit = bit.replace("{{business.uri}}", business.getUri());
@@ -80,36 +84,36 @@ public class SiteService {
     }
 
     private String getKart(Business business, HttpRequest req) {
-        String href = req.getContextPath() + "/" + business.getUri() + "/cart";
+        String href = "/" + business.getUri() + "/cart";
         return "<a href=\"" + href + "\">Kart</a>";
     }
 
     private String getSignin(Business business, HttpRequest req){
         String href = "";
-        if(authService.isAuthenticated()){
-            href = req.getContextPath() + "/" + business.getUri() + "/signout";
+        if(security.isAuthenticated(req)){
+            href = "/" + business.getUri() + "/signout";
             return "<a href=\"" + href + "\">Signout</a>";
         }
-        href = req.getContextPath() + "/" + business.getUri() + "/signin";
+        href = "/" + business.getUri() + "/signin";
         return "<a href=\"" + href + "\">Signin</a>";
     }
 
     private String getSignup(Business business, HttpRequest req){
-        if(!authService.isAuthenticated()){
-            String href = req.getContextPath() + "/" + business.getUri() + "/signup";
+        if(!security.isAuthenticated(req)){
+            String href = "/" + business.getUri() + "/signup";
             return "<a href=\"" + href + "\">Register</a>";
         }
         return "";
     }
 
     private String getActivity(Business business, HttpRequest req){
-        String href = req.getContextPath() + "/" + business.getUri() + "/activity";
+        String href = "/" + business.getUri() + "/activity";
         return "<a href=\"" + href + "\">My Activity</a>";
     }
 
     public String getSearch(Business business, HttpRequest request){
         StringBuilder sb = new StringBuilder();
-        String action = request.getContextPath() + "/query/" + business.getId();
+        String action = "/query/" + business.getId();
         String search = "type=\"text\" name=\"q\" placeholder=\"Search...\"";
         sb.append("<form action=\"" + action + "\">");
         sb.append("<input " + search + "/>");
@@ -117,9 +121,13 @@ public class SiteService {
         return sb.toString();
     }
 
-    public String getGreeting(){
-        if(authService.isAuthenticated()){
-            User authUser = authService.getUser();
+    public String getGreeting(HttpRequest req){
+        if(security.isAuthenticated(req)){
+            String credential = security.getUser(req);
+            User authUser = userRepo.get(credential);
+            if(authUser == null){
+                authUser = userRepo.getPhone(credential);
+            }
             StringBuilder sb = new StringBuilder();
             sb.append("Welcome back ");
             if(authUser.getName() != null){
@@ -174,7 +182,7 @@ public class SiteService {
     }
 
     public String getUri(Category category, Business business, HttpRequest req){
-        return req.getContextPath() + "/" + business.getUri() + "/" + category.getUri() + "/items";
+        return "/" + business.getUri() + "/" + category.getUri() + "/items";
     }
 
     public String getPrice(BigDecimal pre){

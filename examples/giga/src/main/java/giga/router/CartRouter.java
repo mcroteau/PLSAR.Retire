@@ -2,15 +2,17 @@ package giga.router;
 
 import giga.Giga;
 import giga.model.*;
-import giga.repo.BusinessRepo;
-import giga.repo.CartRepo;
-import giga.repo.ItemRepo;
+import giga.repo.*;
+import giga.service.ShipmentService;
+import giga.service.SiteService;
 import net.plsar.annotations.Component;
 import net.plsar.annotations.HttpRouter;
 import net.plsar.annotations.Inject;
 import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
 import net.plsar.model.Cache;
 import net.plsar.model.HttpRequest;
+import net.plsar.model.RequestComponent;
 import net.plsar.security.SecurityManager;
 
 import java.math.BigDecimal;
@@ -20,14 +22,27 @@ import java.util.List;
 public class CartRouter {
 
     @Inject
+    UserRepo userRepo;
+    @Inject
     ItemRepo itemRepo;
 
     @Inject
     CartRepo cartRepo;
 
     @Inject
+    CategoryRepo categoryRepo;
+
+    @Inject
+    DesignRepo designRepo;
+
+    @Inject
     BusinessRepo businessRepo;
 
+    ShipmentService shipmentService;
+
+    public CartRouter(){
+        this.shipmentService = new ShipmentService();
+    }
 
     @Get("/{{business}}/cart")
     public String view(Cache cache,
@@ -40,7 +55,7 @@ public class CartRouter {
         }
 
         Cart cart = getCart(business, req, security);
-        setData(cart, business, cache, req);
+        setData(cart, business, cache, req, security);
 
         String oops = req.getValue("oops");
         if(oops != null && oops.equals("true")){
@@ -61,14 +76,15 @@ public class CartRouter {
         }
 
         Cart cart = getCart(business, req, security);
-        setData(cart, business, cache, req);
+        setData(cart, business, cache, req, security);
 
         return "/pages/cart/checkout.jsp";
     }
 
-    @Post("/{{business}}/cart/add/{{id}}")
-    public String add(HttpRequest req,
-                      Cache cache,
+    @Post("/{business}/cart/add/{id}")
+    public String add(Cache cache,
+                      HttpRequest req,
+                      SecurityManager security,
                       @Component String businessUri,
                       @Component Long id){
         System.out.println("\n\n////////////////////////////////");
@@ -110,7 +126,8 @@ public class CartRouter {
         CartItem savedCartItem = cartRepo.getSavedItem();
         System.out.println("z item: " + savedCartItem.getId());
 
-        String[] optionIds = req.("optionId");
+        RequestComponent requestComponent = req.getRequestComponent("optionId");
+        List<String> optionIds = requestComponent.getValues();
         if(optionIds != null) {
             for (String optionId : optionIds) {
                 OptionValue optionValue = itemRepo.getValue(Long.valueOf(optionId));
@@ -134,7 +151,7 @@ public class CartRouter {
 
         cartRepo.deleteRate(cart.getId());
 
-        setData(cart, business, cache, req);
+        setData(cart, business, cache, req, security);
 
         if(shipmentService.validateAddress(cart, business)){
             cart.setValidAddress(true);
@@ -173,10 +190,14 @@ public class CartRouter {
     public Cart getCart(Business business, HttpRequest req, SecurityManager security){
         Cart cart;
         User user = null;
-        String sessionId = req.getSession().getId();
+        String sessionId = req.getSession(true).getGuid();
 
-        if(authService.isAuthenticated()){
-            user = authService.getUser();
+        if(security.isAuthenticated(req)){
+            String credential = security.getUser(req);
+            user = userRepo.get(credential);
+            if(user == null){
+                user = userRepo.getPhone(credential);
+            }
             cart = cartRepo.getActive(user.getId(), business.getId());
         }else{
             cart = cartRepo.getActive(sessionId, business.getId());
@@ -204,7 +225,7 @@ public class CartRouter {
             cart.setShipping(new BigDecimal(0));
         }
 
-        if(authService.isAuthenticated()){
+        if(security.isAuthenticated(req)){
             cart.setShipName(user.getName());
             cart.setShipPhone(user.getPhone());
             cart.setShipEmail(user.getUsername());
@@ -233,7 +254,7 @@ public class CartRouter {
     }
 
 
-    public void setData(Cart cart, Business business, Cache cache, HttpRequest req){
+    public void setData(Cart cart, Business business, Cache cache, HttpRequest req, SecurityManager security){
         BigDecimal subtotal = new BigDecimal(0);
         List<CartItem> cartItems = cartRepo.getListItems(cart.getId());
         System.out.println("ci " + cartItems.size());
@@ -295,6 +316,8 @@ public class CartRouter {
         cache.set("business", business);
         cache.set("cart", cart);
         cache.set("items", cartItems);
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
         cache.set("siteService", siteService);
     }
 

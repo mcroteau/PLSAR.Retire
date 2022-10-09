@@ -2,14 +2,21 @@ package giga.router;
 
 import giga.Giga;
 import giga.model.*;
-import giga.service.DataService;
-import jakarta.servlet.http.HttpRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import qio.annotate.*;
-import qio.annotate.verbs.Get;
-import qio.annotate.verbs.Post;
-import qio.model.web.Cache;
+import giga.repo.*;
+import giga.service.BusinessService;
+import giga.service.SeaService;
+import net.plsar.annotations.Component;
+import net.plsar.annotations.HttpRouter;
+import net.plsar.annotations.Inject;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.Cache;
+import net.plsar.model.FileComponent;
+import net.plsar.model.HttpRequest;
+import net.plsar.model.RequestComponent;
+import net.plsar.security.SecurityManager;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Paths;
@@ -21,12 +28,32 @@ import java.util.stream.Collectors;
 public class DataRouter {
 
     @Inject
-    DataService dataService;
+    ItemRepo itemRepo;
+
+    @Inject
+    DesignRepo designRepo;
+
+    @Inject
+    UserRepo userRepo;
+
+    @Inject
+    CategoryRepo categoryRepo;
+
+    @Inject
+    DataRepo dataRepo;
+
+    BusinessService businessService;
+
+    public DataRouter(){
+        this.businessService = new BusinessService();
+    }
 
     @Get("/import/media/{{businessId}}")
     public String viewImport(Cache cache,
+                             HttpRequest req,
+                             SecurityManager security,
                              @Component Long businessId) {
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
         businessService.setData(businessId, cache);
@@ -35,20 +62,23 @@ public class DataRouter {
     }
 
     @Post("/import/media/{{businessId}}")
-    public String importMedia(HttpRequest req,
-                              Cache cache,
+    public String importMedia(Cache cache,
+                              HttpRequest req,
+                              SecurityManager security,
                               @Component Long businessId) throws Exception {
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
         businessService.setData(businessId, cache);
 
-        List<Part> fileParts = req.getParts()
-                .stream()
-                .filter(part -> "media".equals(part.getName()) && part.getSize() > 0)
-                .collect(Collectors.toList());
+        RequestComponent requestComponent = req.getRequestComponent("media");
+        List<FileComponent> fileComponents = requestComponent.getFileComponents();
 
-        User authUser = authService.getUser();
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
 
         DataImport dataImport = new DataImport();
         dataImport.setBusinessId(businessId);
@@ -68,8 +98,8 @@ public class DataRouter {
             MediaImport mediaImport = new MediaImport();
             mediaImport.setImportId(savedImport.getId());
 
-            for (Part part : fileParts) {
-                String original = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+            for (FileComponent fileComponent : fileComponents) {
+                String original = fileComponent.getFileName();
                 activeMedia = original;
 
                 List<String> mediaBits = Arrays.asList(original.split("\\."));
@@ -101,9 +131,11 @@ public class DataRouter {
                     mediaImport.setWeight(new BigDecimal(itemWeight));
                 }
 
-                InputStream is = part.getInputStream();
+                InputStream is = new ByteArrayInputStream(fileComponent.getFileBytes());
                 String ext = Giga.getExt(original);
                 String name = Giga.getString(9) + "." + ext;
+
+                SeaService seaService = new SeaService();
                 seaService.send(name, is);
 
                 mediaImport.setMeta(name);
@@ -127,29 +159,33 @@ public class DataRouter {
 
     @Get("/imports/media/{{businessId}}")
     public String viewImports(Cache cache,
-                             @Component Long businessId) {
-        if(!authService.isAuthenticated()){
+                              HttpRequest req,
+                              SecurityManager security,
+                              @Component Long businessId) {
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
         businessService.setData(businessId, cache);
 
         List<DataImport> dataImports = dataRepo.getList(businessId, "media");
-        cache.set("dataImports", cacheImports);
+        cache.set("dataImports", dataImports);
         cache.set("page", "/pages/data/data_imports_list.jsp");
         return "/designs/auth.jsp";
     }
 
     @Get("/imports/media/{{businessId}}/{{importId}}")
     public String viewImports(Cache cache,
+                              HttpRequest req,
+                              SecurityManager security,
                               @Component Long businessId,
                               @Component Long importId) {
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
         businessService.setData(businessId, cache);
 
         DataImport dataImport = dataRepo.get(importId);
-        cache.set("dataImport", cacheImport);
+        cache.set("dataImport", dataImport);
 
         List<MediaImport> mediaImports = dataRepo.getListMedia(importId);
         cache.set("mediaImports", mediaImports);
@@ -162,18 +198,19 @@ public class DataRouter {
     }
 
     @Post("/import/media/update/{{businessId}}/{{importId}}")
-    public String importMedia(HttpRequest req,
-                              Cache cache,
+    public String importMedia(Cache cache,
+                              HttpRequest req,
+                              SecurityManager security,
                               @Component Long businessId,
                               @Component Long importId) throws Exception {
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
-        MediaImport mediaImport = (MediaImport) Qio.get(req, MediaImport.class);
+        MediaImport mediaImport = (MediaImport) req.inflect(req, MediaImport.class);
         String permission = Giga.MEDIA_IMPORT_MAINTENANCE + mediaImport.getId();
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to edit this category.");
             return "[redirect]/";
         }
@@ -185,17 +222,18 @@ public class DataRouter {
 
 
     @Post("/import/media/convert/{{businessId}}/{{importId}}")
-    public String convertItems(HttpRequest req,
-                               Cache cache,
+    public String convertItems(Cache cache,
+                               HttpRequest req,
+                               SecurityManager security,
                                @Component Long businessId,
                                @Component Long importId){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.DATA_IMPORT_MAINTENANCE + importId;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "You don't have access to convert this import.");
             return "[redirect]/";
         }
@@ -216,7 +254,11 @@ public class DataRouter {
             itemRepo.save(item);
 
             Item savedItem = itemRepo.getSaved();
-            User authUser = authService.getUser();
+            String credential = security.getUser(req);
+            User authUser = userRepo.get(credential);
+            if(authUser == null){
+                authUser = userRepo.getPhone(credential);
+            }
 
             String itemPermission = Giga.ITEM_MAINTENANCE + savedItem.getId();
             userRepo.savePermission(authUser.getId(), itemPermission);
@@ -240,17 +282,18 @@ public class DataRouter {
     }
 
     @Post("/import/media/delete/{{businessId}}/{{importId}}")
-    public String deleteImport(HttpRequest req,
-                              Cache cache,
-                              @Component Long businessId,
-                              @Component Long importId){
-        if(!authService.isAuthenticated()){
+    public String deleteImport(Cache cache,
+                               HttpRequest req,
+                               SecurityManager security,
+                               @Component Long businessId,
+                               @Component Long importId){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.DATA_IMPORT_MAINTENANCE + importId;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "You don't have access to delete this import.");
             return "[redirect]/";
         }
@@ -261,5 +304,19 @@ public class DataRouter {
 
         cache.set("message", "Successfully deleted the import and removed all items");
         return "[redirect]/imports/media/" + businessId;
+    }
+
+    private void saveGuidanceCategory(Item savedItem, Category category){
+        Category guidanceCategory = categoryRepo.get(category.getCategoryId());
+
+        if(guidanceCategory != null) {
+            CategoryItem categoryItem = new CategoryItem();
+            categoryItem.setItemId(savedItem.getId());
+            categoryItem.setCategoryId(guidanceCategory.getId());
+
+            if (category.getCategoryId() != null) {
+                saveGuidanceCategory(savedItem, guidanceCategory);
+            }
+        }
     }
 }
