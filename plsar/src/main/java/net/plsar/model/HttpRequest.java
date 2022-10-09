@@ -88,7 +88,7 @@ public class HttpRequest {
         this.requestComponents.put(key, requestComponent);
     }
 
-    public String value(String key){
+    public String getValue(String key){
         if(requestComponents.containsKey(key)){
             return requestComponents.get(key).getValue();
         }

@@ -1,11 +1,13 @@
 package giga.router;
 
+import com.amazonaws.Request;
 import giga.Giga;
 import giga.model.Asset;
 import giga.model.User;
 import giga.repo.AssetRepo;
 import giga.repo.UserRepo;
 import giga.service.BusinessService;
+import giga.service.SeaService;
 import net.plsar.annotations.*;
 import net.plsar.annotations.Component;
 import net.plsar.annotations.http.Get;
@@ -118,13 +120,13 @@ public class AssetRouter {
 
     @Post("/assets/save")
     public String save(HttpRequest req, SecurityManager security) throws Exception {
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
-        String credential = security.getUser(req)
+        String credential = security.getUser(req);
         User authUser = userRepo.get(credential);
-        if(user == null){
+        if(authUser == null){
             authUser = userRepo.getPhone(credential);
         }
 
@@ -132,18 +134,14 @@ public class AssetRouter {
         asset.setDateAdded(Giga.getDate());
         asset.setUserId(authUser.getId());
 
-        List<Part> fileParts = req.getParts()
-                .stream()
-                .filter(part -> "asset".equals(part.getName()) && part.getSize() > 0)
-                .collect(Collectors.toList());
+        RequestComponent requestComponent = new RequestComponent();
+        List<FileComponent> fileComponents = requestComponent.getFiles();
 
-        RequestComponent requestComponent = req.getRequestComponent("asset");
-        List<FileComponent> fileComponents = 
+        SeaService seaService = new SeaService();
 
-
-        for (Part part : fileParts) {
-            String original = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-            InputStream is = part.getInputStream();
+        for (FileComponent fileComponent : fileComponents) {
+            String original = fileComponent.getFileName();
+            InputStream is = new ByteArrayInputStream(fileComponent.getFileBytes());
             String ext = Giga.getExt(original);
             String name = Giga.getString(6) + "." + ext;
             seaService.send(name, is);
@@ -162,15 +160,17 @@ public class AssetRouter {
 
     @Post("/assets/delete/{{businessId}}/{{id}}")
     public String delete(Cache cache,
+                         HttpRequest httpRequest,
+                         SecurityManager security,
                          @Component Long businessId,
                          @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(httpRequest)){
             return "[redirect]/";
         }
 
         String permission = Giga.ASSET_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, httpRequest) &&
+                !security.hasPermission(permission, httpRequest)){
             cache.set("message", "Whoa, people might be using this. Lol, this isn't yours.");
             return "[redirect]/";
         }

@@ -14,6 +14,7 @@ import giga.repo.*;
 import jakarta.servlet.http.HttpRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import net.plsar.model.Cache;
+import net.plsar.model.HttpRequest;
 import qio.Qio;
 import qio.annotate.Inject;
 import qio.annotate.Property;
@@ -579,5 +580,70 @@ public class BusinessService {
         return true;
     }
 
+
+    public void setData(Cart cart, Business business, Cache cache, HttpRequest req){
+        BigDecimal subtotal = new BigDecimal(0);
+        List<CartItem> cartItems = cartRepo.getListItems(cart.getId());
+        System.out.println("ci " + cartItems.size());
+        System.out.println("z");
+        for(CartItem cartItem : cartItems){
+            Item item = itemRepo.get(cartItem.getItemId());
+            cartItem.setItem(item);
+
+            BigDecimal itemTotal = cartItem.getPrice().multiply(cartItem.getQuantity());
+            List<CartOption> cartOptions = cartRepo.getOptions(cartItem.getId());
+            for(CartOption cartOption : cartOptions){
+                ItemOption itemOption = itemRepo.getOption(cartOption.getItemOptionId());
+                OptionValue optionValue = itemRepo.getValue(cartOption.getOptionValueId());
+                cartOption.setItemOption(itemOption);
+                cartOption.setOptionValue(optionValue);
+                if(cartOption.getPrice() != null){
+                    itemTotal = itemTotal.add(cartOption.getPrice().multiply(cartItem.getQuantity()));
+                }
+            }
+            cartItem.setItemTotal(itemTotal);
+
+            subtotal = subtotal.add(itemTotal);
+            cart.setSubtotal(subtotal);
+
+            cartItem.setCartOptions(cartOptions);
+
+        }
+
+        cart.setCartItems(cartItems);
+        if(business.getFlatShipping()){
+            BigDecimal total = cart.getSubtotal();
+            if(business.getShipping() != null){
+                total = total.add(business.getShipping());
+            }
+            cart.setShipping(business.getShipping());
+            cart.setTotal(total);
+            cartRepo.update(cart);
+        }
+
+        if(!business.getFlatShipping()){
+            ShipmentRate rate = cartRepo.getRate(cart.getId());
+            if(rate != null) {
+                BigDecimal total = rate.getRate().add(cart.getSubtotal());
+                cart.setShipping(rate.getRate());
+                cart.setTotal(total);
+                cart.setValidAddress(true);
+                cartRepo.update(cart);
+                cache.set("rate", rate);
+            }
+        }
+
+        System.out.println("kilo : subtotal " + cart);
+        Design design = designRepo.getBase(business.getId());
+        System.out.println("business: " + business);
+        System.out.println("design: " + design);
+
+        cache.set("design", design);
+        cache.set("request", req);
+        cache.set("business", business);
+        cache.set("cart", cart);
+        cache.set("items", cartItems);
+        cache.set("siteService", siteService);
+    }
 
 }
