@@ -25,7 +25,7 @@ public class DataRouter {
 
     @Get("/import/media/{{businessId}}")
     public String viewImport(Cache cache,
-                             @RouteComponent Long businessId) {
+                             @Component Long businessId) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -37,7 +37,7 @@ public class DataRouter {
     @Post("/import/media/{{businessId}}")
     public String importMedia(HttpRequest req,
                               Cache cache,
-                              @RouteComponent Long businessId) throws Exception {
+                              @Component Long businessId) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -127,7 +127,7 @@ public class DataRouter {
 
     @Get("/imports/media/{{businessId}}")
     public String viewImports(Cache cache,
-                             @RouteComponent Long businessId) {
+                             @Component Long businessId) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -141,8 +141,8 @@ public class DataRouter {
 
     @Get("/imports/media/{{businessId}}/{{importId}}")
     public String viewImports(Cache cache,
-                              @RouteComponent Long businessId,
-                              @RouteComponent Long importId) {
+                              @Component Long businessId,
+                              @Component Long importId) {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -164,8 +164,8 @@ public class DataRouter {
     @Post("/import/media/update/{{businessId}}/{{importId}}")
     public String importMedia(HttpRequest req,
                               Cache cache,
-                              @RouteComponent Long businessId,
-                              @RouteComponent Long importId) throws Exception {
+                              @Component Long businessId,
+                              @Component Long importId) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -187,8 +187,8 @@ public class DataRouter {
     @Post("/import/media/convert/{{businessId}}/{{importId}}")
     public String convertItems(HttpRequest req,
                                Cache cache,
-                               @RouteComponent Long businessId,
-                               @RouteComponent Long importId){
+                               @Component Long businessId,
+                               @Component Long importId){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -242,8 +242,8 @@ public class DataRouter {
     @Post("/import/media/delete/{{businessId}}/{{importId}}")
     public String deleteImport(HttpRequest req,
                               Cache cache,
-                              @RouteComponent Long businessId,
-                              @RouteComponent Long importId){
+                              @Component Long businessId,
+                              @Component Long importId){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }

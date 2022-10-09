@@ -5,14 +5,13 @@ import giga.model.Asset;
 import giga.model.User;
 import giga.repo.AssetRepo;
 import giga.repo.UserRepo;
-import giga.service.AssetService;
-import jakarta.servlet.http.HttpRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import net.plsar.model.HttpRequest;
-import qio.annotate.*;
-import qio.annotate.verbs.Get;
-import qio.annotate.verbs.Post;
-import qio.model.web.Cache;
+import giga.service.BusinessService;
+import net.plsar.annotations.*;
+import net.plsar.annotations.Component;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.*;
+import net.plsar.security.SecurityManager;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -21,7 +20,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Router
+@HttpRouter
 public class AssetRouter {
 
     @Inject
@@ -30,12 +29,15 @@ public class AssetRouter {
     @Inject
     UserRepo userRepo;
 
-    AssetService assetService;
+    BusinessService businessService;
+
+    public AssetRouter(){
+        this.businessService = new BusinessService();
+    }
 
     @Text
     @Get("/go/{n}")
-    public String getAsset(HttpServletResponse resp,
-                         @RouteComponent String meta) throws Exception {
+    public String getAsset(@Component String meta) throws Exception {
         String q = meta.toLowerCase();
         Asset asset = assetRepo.get(q);
 
@@ -61,18 +63,18 @@ public class AssetRouter {
 
     @Media
     @Get("/media/{n}")
-    public String getMedia(HttpServletResponse resp,
-                           @RouteComponent String meta) throws Exception {
+    public String getMedia(HttpResponse resp,
+                           @Component String meta) throws Exception {
         String q = meta.toLowerCase();
         Asset asset = assetRepo.get(q);
 
         URL url = new URL(asset.getUri());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        OutputStream o = resp.getOutputStream();
+        OutputStream o = resp.getResponseStream();
         InputStream is = connection.getInputStream();
         OutputStream os = new BufferedOutputStream(o);
 
-        int bit =0; ;
+        int bit = 0; ;
         while((bit=is.read())!=-1){
             os.write(bit);
         }
@@ -87,8 +89,10 @@ public class AssetRouter {
 
     @Get("/assets/new/{businessId}")
     public String configure(Cache cache,
-                            @RouteComponent Long businessId){
-        if(!authService.isAuthenticated()){
+                            HttpRequest httpRequest,
+                            SecurityManager security,
+                            @Component Long businessId){
+        if(!security.isAuthenticated(httpRequest)){
             return "[redirect]/";
         }
         businessService.setData(businessId, cache);
@@ -98,8 +102,10 @@ public class AssetRouter {
 
     @Get("/assets/{businessId}")
     public String list(Cache cache,
-                       @RouteComponent Long businessId){
-        if(!authService.isAuthenticated()){
+                       HttpRequest httpRequest,
+                       SecurityManager security,
+                       @Component Long businessId){
+        if(!security.isAuthenticated(httpRequest)){
             return "[redirect]/";
         }
         businessService.setData(businessId, cache);
@@ -111,12 +117,16 @@ public class AssetRouter {
     }
 
     @Post("/assets/save")
-    public String save(HttpRequest req) throws Exception {
+    public String save(HttpRequest req, SecurityManager security) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
 
-        User authUser = authService.getUser();
+        String credential = security.getUser(req)
+        User authUser = userRepo.get(credential);
+        if(user == null){
+            authUser = userRepo.getPhone(credential);
+        }
 
         Asset asset = (Asset) req.inflect(req, Asset.class);
         asset.setDateAdded(Giga.getDate());
@@ -126,6 +136,10 @@ public class AssetRouter {
                 .stream()
                 .filter(part -> "asset".equals(part.getName()) && part.getSize() > 0)
                 .collect(Collectors.toList());
+
+        RequestComponent requestComponent = req.getRequestComponent("asset");
+        List<FileComponent> fileComponents = 
+
 
         for (Part part : fileParts) {
             String original = Paths.get(part.getSubmittedFileName()).getFileName().toString();
@@ -148,8 +162,8 @@ public class AssetRouter {
 
     @Post("/assets/delete/{{businessId}}/{{id}}")
     public String delete(Cache cache,
-                         @RouteComponent Long businessId,
-                         @RouteComponent Long id){
+                         @Component Long businessId,
+                         @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }

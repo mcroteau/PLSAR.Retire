@@ -62,7 +62,7 @@ public class UserRouter {
 	@Get("/{{shop}}/signup")
 	public String shopSignup(HttpRequest req,
 							 Cache cache,
-							 @RouteComponent String shopUri){
+							 @Component String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 		Design design = designRepo.getBase(business.getId());
@@ -77,7 +77,7 @@ public class UserRouter {
 	@Get("/{{shop}}/activity")
 	public String getActivity(HttpRequest req,
 							 Cache cache,
-							 @RouteComponent String shopUri) throws ParseException {
+							 @Component String shopUri) throws ParseException {
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
@@ -108,8 +108,8 @@ public class UserRouter {
 
 	@Get("/users/edit/{{businessId}}/{{id}}")
 	public String getEdit(Cache cache,
-						  @RouteComponent Long businessId,
-						  @RouteComponent Long id){
+						  @Component Long businessId,
+						  @Component Long id){
 		String permission = getPermission(Long.toString(id));
 		if(!authService.isAdministrator() &&
 				!authService.hasPermission(permission)){
@@ -129,8 +129,8 @@ public class UserRouter {
 	@Post("/users/update/{{businessId}}/{{id}}")
 	public String update(HttpRequest req,
 						 Cache cache,
-						 @RouteComponent Long businessId,
-						 @RouteComponent Long id){
+						 @Component Long businessId,
+						 @Component Long id){
 		User user = (User) Qio.get(req, User.class);
 
 		String permission = getPermission(Long.toString(user.getId()));
@@ -182,7 +182,7 @@ public class UserRouter {
 	@Post("/users/reset/{{id}}")
 	public String resetPassword(HttpRequest req,
 								Cache cache,
-								@RouteComponent Long id){
+								@Component Long id){
 
 		User user = userRepo.get(id);
 		User reqUser = (User) Qio.get(req, User.class);
@@ -206,7 +206,7 @@ public class UserRouter {
 
 	@Get("/clients/{{id}}")
 	public String clients(Cache cache,
-							@RouteComponent Long id){
+							@Component Long id){
 		if(!authService.isAuthenticated()){
 			return "[redirect]/snapshot/" + businessId;
 		}
@@ -243,7 +243,7 @@ public class UserRouter {
 	@Get("/{{shop}}/users/password/get")
 	public String getPassword(HttpRequest req,
 							  Cache cache,
-							  @RouteComponent String shopUri){
+							  @Component String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
@@ -260,7 +260,7 @@ public class UserRouter {
 	@Post("/{{shop}}/users/password/send")
 	public String sendPassword(HttpRequest req,
 							   Cache cache,
-							   @RouteComponent String shopUri){
+							   @Component String shopUri){
 
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
@@ -287,8 +287,8 @@ public class UserRouter {
 	@Get("/{{shop}}/users/edit/{{id}}")
 	public String editUser(HttpRequest req,
 							 Cache cache,
-							 @RouteComponent String shopUri,
-						     @RouteComponent Long id){
+							 @Component String shopUri,
+						     @Component Long id){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
@@ -308,7 +308,7 @@ public class UserRouter {
 	@Post("/{{shop}}/users/update")
 	public String updateUser(HttpRequest req,
 							   Cache cache,
-							   @RouteComponent String shopUri){
+							   @Component String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
@@ -322,8 +322,8 @@ public class UserRouter {
 	@Get("/{{shop}}/users/password/edit")
 	public String editPassword(HttpRequest req,
 							   Cache cache,
-							   @RouteComponent String shopUri,
-							   @RouteComponent Long id){
+							   @Component String shopUri,
+							   @Component Long id){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
@@ -345,7 +345,7 @@ public class UserRouter {
 	@Post("/{{shop}}/users/password/save")
 	public String savePassword(HttpRequest req,
 							  Cache cache,
-							  @RouteComponent String shopUri){
+							  @Component String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 

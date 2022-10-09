@@ -75,7 +75,7 @@ public class AuthRouter {
 	@Get("/{{shop}}/signin")
 	public String shopSignin(HttpRequest qer,
 							 Cache cache,
-							 @RouteComponent String shopUri){
+							 @Component String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 		Design design = designRepo.getBase(business.getId());
@@ -89,7 +89,7 @@ public class AuthRouter {
 	@Post("/{{shop}}/signin")
 	public String shopAuthenticate(HttpRequest req,
 							   Cache cache,
-							   @RouteComponent String shopUri){
+							   @Component String shopUri){
 		authService.authenticate(cache, req);
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
@@ -115,7 +115,7 @@ public class AuthRouter {
 	@Get("/{{shop}}/signout")
 	public String shopSignout(HttpRequest req,
 							  Cache cache,
-							  @RouteComponent String shopUri){
+							  @Component String shopUri){
 		signout();
 		cache.set("message", "Successfully signed out");
 		req.getSession().setAttribute("username", "");

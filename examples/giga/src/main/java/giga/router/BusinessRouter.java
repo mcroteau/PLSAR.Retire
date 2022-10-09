@@ -195,7 +195,7 @@ public class BusinessRouter {
 
     @Get("/snapshot/{{id}}")
     public String snapshot(Cache cache,
-                           @RouteComponent Long id){
+                           @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -243,7 +243,7 @@ public class BusinessRouter {
 
     @Get("/businesses/new/{{id}}")
     public String create(Cache cache,
-                        @RouteComponent Long id){
+                        @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -255,7 +255,7 @@ public class BusinessRouter {
 
 //    @Get("/businesses/{{id}}")
 //    public String list(Cache cache,
-//                       @RouteComponent Long id) throws Exception{
+//                       @Component Long id) throws Exception{
 //        return businessService.list(id, data);
 //    }
 
@@ -288,7 +288,7 @@ public class BusinessRouter {
     //registration -> setup complete
     @Get("/businesses/signup/complete/{{id}}")
     public String signupComplete(Cache cache,
-                                  @RouteComponent Long id){
+                                  @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -307,20 +307,20 @@ public class BusinessRouter {
 
 //    @Get("/businesses/edit/{{id}}")
 //    public String edit(Cache cache,
-//                       @RouteComponent Long id) throws Exception {
+//                       @Component Long id) throws Exception {
 //        return businessService.edit(id, data);
 //    }
 //
 //    @Post("/businesses/update/{{id}}")
 //    public String update(HttpRequest req,
 //                         Cache cache,
-//                         @RouteComponent Long id) throws Exception {
+//                         @Component Long id) throws Exception {
 //        return businessService.update(id, cache, req);
 //    }
 
     @Get("/businesses/settings/{{id}}")
     public String showSettings(Cache cache,
-                           @RouteComponent Long id){
+                           @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -339,7 +339,7 @@ public class BusinessRouter {
     @Post("/businesses/settings/save/{{id}}")
     public String saveSettings(HttpRequest req,
                                Cache cache,
-                               @RouteComponent Long id){
+                               @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -392,7 +392,7 @@ public class BusinessRouter {
 
     @Get("/businesses/settings/save/{{id}}")
     public String showSettingsDos(Cache cache,
-                               @RouteComponent Long id){
+                               @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -410,8 +410,8 @@ public class BusinessRouter {
 
     @Post("/businesses/delete/{{current}}/{{id}}")
     public String delete(Cache cache,
-                         @RouteComponent Long currentId,
-                         @RouteComponent Long id){
+                         @Component Long currentId,
+                         @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -444,7 +444,7 @@ public class BusinessRouter {
     @Get("/stripe/onboarding/setup/{{id}}")
     public String activateStripe(HttpServletResponse resp,
                               Cache cache,
-                              @RouteComponent Long id){
+                              @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -501,7 +501,7 @@ public class BusinessRouter {
     @Post("/{{shop}}/register")
     public String shopRegister(HttpRequest req,
                                    Cache cache,
-                                   @RouteComponent String shopUri){
+                                   @Component String shopUri){
         Business business = businessRepo.get(shopUri);
         if(business == null)return "[redirect]/";
 
@@ -564,7 +564,7 @@ public class BusinessRouter {
 
     @Get("/stripe/onboarding/complete/{{id}}")
     public String onboardingComplete(Cache cache,
-                                     @RouteComponent Long id){
+                                     @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }

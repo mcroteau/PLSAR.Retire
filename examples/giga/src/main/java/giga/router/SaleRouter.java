@@ -35,7 +35,7 @@ public class SaleRouter {
 
     @Get("/sales/{{businessId}}")
     public String list(Cache cache,
-                       @RouteComponent Long businessId) throws Exception{
+                       @Component Long businessId) throws Exception{
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -59,8 +59,8 @@ public class SaleRouter {
 
     @Post("/{{business}}/sale/{{id}}")
     public String processSale(HttpRequest req,
-                          @RouteComponent String businessUri,
-                          @RouteComponent Long id){
+                          @Component String businessUri,
+                          @Component Long id){
         Business business = businessRepo.get(businessUri);
         Business primaryBusiness = businessRepo.get(business.getPrimaryId());
         System.out.println("set sale business " + business);
@@ -241,8 +241,8 @@ public class SaleRouter {
     @Get("/{{business}}/sale/{{id}}")
     public String getSale(HttpRequest req,
                           Cache cache,
-                          @RouteComponent String businessUri,
-                          @RouteComponent Long id){
+                          @Component String businessUri,
+                          @Component Long id){
 
         System.out.println("get sale : " + id + ", " + businessUri + " : " + businessRepo);
         Business business = businessRepo.get(businessUri);

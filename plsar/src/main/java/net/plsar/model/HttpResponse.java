@@ -9,7 +9,7 @@ public class HttpResponse {
     String contentType;
     String content;
     List<SecurityAttribute> securityAttributes;
-    OutputStream responseOutput;
+    OutputStream responseStream;
 
     public String getRedirectLocation() {
         return redirectLocation;
@@ -43,12 +43,12 @@ public class HttpResponse {
         this.securityAttributes = securityAttributes;
     }
 
-    public OutputStream getResponseOutput() {
-        return responseOutput;
+    public OutputStream getResponseStream() {
+        return responseStream;
     }
 
-    public void setResponseOutput(OutputStream responseOutput) {
-        this.responseOutput = responseOutput;
+    public void setResponseStream(OutputStream responseStream) {
+        this.responseStream = responseStream;
     }
 
     public HttpResponse(){

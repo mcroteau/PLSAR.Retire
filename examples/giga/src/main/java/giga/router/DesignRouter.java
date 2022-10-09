@@ -23,7 +23,7 @@ public class DesignRouter {
     
     @Get("/designs/new/{{id}}")
     public String configure(Cache cache,
-                            @RouteComponent Long id){
+                            @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -38,7 +38,7 @@ public class DesignRouter {
 
     @Get("/designs/{{id}}")
     public String list(Cache cache,
-                       @RouteComponent Long id) throws Exception{
+                       @Component Long id) throws Exception{
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -70,7 +70,7 @@ public class DesignRouter {
 
     @Get("/designs/edit/{{id}}")
     public String showcase(Cache cache,
-                           @RouteComponent Long id) throws Exception {
+                           @Component Long id) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -95,7 +95,7 @@ public class DesignRouter {
     @Post("/designs/update/{{id}}")
     public String update(HttpRequest req,
                          Cache cache,
-                         @RouteComponent Long id){
+                         @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -115,7 +115,7 @@ public class DesignRouter {
 
     @Post("/designs/delete/{{id}}")
     public String delete(Cache cache,
-                         @RouteComponent Long id){
+                         @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }

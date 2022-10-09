@@ -25,17 +25,28 @@ public class AffiliateRouter {
     UserRepo userRepo;
 
     @Inject
+    RoleRepo roleRepo;
+
+    @Inject
+    ItemRepo itemRepo;
+
+    @Inject
+    CategoryRepo categoryRepo;
+
+    @Inject
     SaleRepo saleRepo;
+
+    @Inject
+    DesignRepo designRepo;
 
     @Inject
     BusinessRepo businessRepo;
 
-    AffiliateService affiliateService;
+    BusinessService businessService;
 
     public AffiliateRouter(){
-        this.affiliateService = new AffiliateService();
+        this.businessService = new BusinessService();
     }
-
 
     @Meta(design="/designs/auth.jsp")
     @Get("/affiliates/{id}")
@@ -128,8 +139,10 @@ public class AffiliateRouter {
     }
 
     @Post("/affiliates/onboarding/approve/{id}")
-    public String approve(Cache cache,
-                          @Component Long id){
+    public String approve(@Component Long id,
+                          Cache cache,
+                          HttpRequest httpRequest,
+                          SecurityManager security){
         BusinessRequest businessRequest = businessRepo.getRequest(id);
         cache.set("businessRequest", businessRequest);
 
@@ -152,8 +165,10 @@ public class AffiliateRouter {
     }
 
     @Post("/affiliates/onboarding/pass/{guid}")
-    public String deny(Cache cache,
-                       @Component Long id){
+    public String deny(@Component Long id,
+                       Cache cache,
+                       HttpRequest httpRequest,
+                       SecurityManager security){
         BusinessRequest businessRequest = businessRepo.getRequest(id);
         cache.set("businessRequest", businessRequest);
 

@@ -25,7 +25,7 @@ public class PageRouter {
     @Get("/{{business}}")
     public String getHome(HttpRequest req,
                           Cache cache,
-                          @RouteComponent String business){
+                          @Component String business){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]";
@@ -46,8 +46,8 @@ public class PageRouter {
     @Get("/{{business}}/asset/{{page}}")
     public String getPage(HttpRequest req,
                           Cache cache,
-                          @RouteComponent String business,
-                          @RouteComponent String page){
+                          @Component String business,
+                          @Component String page){
         System.out.println("get page");
         Business business = businessRepo.get(businessUri);
         if(business == null){
@@ -68,7 +68,7 @@ public class PageRouter {
 
     @Get("/pages/new/{{businessId}}")
     public String configure(Cache cache,
-                            @RouteComponent Long businessId){
+                            @Component Long businessId){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -81,7 +81,7 @@ public class PageRouter {
 
     @Get("/pages/{{businessId}}")
     public String list(Cache cache,
-                       @RouteComponent Long businessId){
+                       @Component Long businessId){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -112,8 +112,8 @@ public class PageRouter {
 
     @Post("/pages/delete/{{businessId}}/{{id}}")
     public String delete(Cache cache,
-                         @RouteComponent Long businessId,
-                         @RouteComponent Long id){
+                         @Component Long businessId,
+                         @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }

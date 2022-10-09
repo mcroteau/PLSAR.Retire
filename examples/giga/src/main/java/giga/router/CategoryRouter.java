@@ -23,8 +23,8 @@ public class CategoryRouter {
     @Get("/{{business}}/{{category}}/items")
     public String getPage(HttpRequest req,
                           Cache cache,
-                          @RouteComponent String business,
-                          @RouteComponent String category){
+                          @Component String business,
+                          @Component String category){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -54,7 +54,7 @@ public class CategoryRouter {
 
     @Get("/categories/new/{{businessId}}")
     public String configure(Cache cache,
-                            @RouteComponent Long businessId){
+                            @Component Long businessId){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -75,7 +75,7 @@ public class CategoryRouter {
 
     @Get("/categories/{{businessId}}")
     public String list(Cache cache,
-                       @RouteComponent Long businessId) throws Exception{
+                       @Component Long businessId) throws Exception{
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -112,23 +112,23 @@ public class CategoryRouter {
 
     @Get("/categories/edit/{{businessId}}/{{id}}")
     public String showcase(Cache cache,
-                           @RouteComponent Long businessId,
-                           @RouteComponent Long id) throws Exception {
+                           @Component Long businessId,
+                           @Component Long id) throws Exception {
         return categoryService.edit(id, businessId, data);
     }
 
     @Post("/categories/update/{{businessId}}/{{id}}")
     public String update(HttpRequest req,
                          Cache cache,
-                         @RouteComponent Long businessId,
-                         @RouteComponent Long id){
+                         @Component Long businessId,
+                         @Component Long id){
         return categoryService.update(id, businessId, cache, req);
     }
 
     @Post("/categories/delete/{{businessId}}/{{id}}")
     public String delete(Cache cache,
-                         @RouteComponent Long businessId,
-                         @RouteComponent Long id){
+                         @Component Long businessId,
+                         @Component Long id){
         return categoryService.delete(id, businessId, data);
     }
 }

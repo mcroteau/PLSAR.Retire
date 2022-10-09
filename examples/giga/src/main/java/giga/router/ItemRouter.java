@@ -28,7 +28,7 @@ public class ItemRouter {
     @Get("/query/{{businessId}}")
     public String configure(HttpRequest req,
                             Cache cache,
-                            @RouteComponent Long id){
+                            @Component Long id){
         String q = req.getParameter("q");
         Business business = businessRepo.get(id);
         List<Item> items = itemRepo.q(q, id);
@@ -45,8 +45,8 @@ public class ItemRouter {
     @Get("/{{business}}/items/{{id}}")
     public String getItem(HttpRequest req,
                           Cache cache,
-                          @RouteComponent String business,
-                          @RouteComponent Long id){
+                          @Component String business,
+                          @Component Long id){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -70,9 +70,9 @@ public class ItemRouter {
     @Get("/{{business}}/items/{{categoryId}}/{{id}}")
     public String getItem(HttpRequest req,
                           Cache cache,
-                          @RouteComponent String business,
-                          @RouteComponent Long categoryId,
-                          @RouteComponent Long id){
+                          @Component String business,
+                          @Component Long categoryId,
+                          @Component Long id){
         System.out.println(id + " : " + categoryId + " : " + businessUri);
         Business business = businessRepo.get(businessUri);
         if(business == null){
@@ -102,7 +102,7 @@ public class ItemRouter {
 
     @Get("/items/new/{{businessId}}")
     public String configure(Cache cache,
-                            @RouteComponent Long businessId){
+                            @Component Long businessId){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -127,7 +127,7 @@ public class ItemRouter {
 
     @Get("/items/{{businessId}}")
     public String list(Cache cache,
-                       @RouteComponent Long businessId){
+                       @Component Long businessId){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -143,7 +143,7 @@ public class ItemRouter {
 
     @Get("/items/inactive/{{businessId}}")
     public String getListInactive(Cache cache,
-                       @RouteComponent Long businessId){
+                       @Component Long businessId){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -159,7 +159,7 @@ public class ItemRouter {
 
     @Get("/items/grid/{{businessId}}")
     public String grid(Cache cache,
-                       @RouteComponent Long businessId){
+                       @Component Long businessId){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -187,7 +187,7 @@ public class ItemRouter {
 
     @Post("/items/save/{{businessId}}")
     public String save(HttpRequest req,
-                        @RouteComponent Long businessId) throws IOException, ServletException {
+                        @Component Long businessId) throws IOException, ServletException {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -233,8 +233,8 @@ public class ItemRouter {
 
     @Get("/items/edit/{{businessId}}/{{id}}")
     public String showcase(Cache cache,
-                           @RouteComponent Long businessId,
-                           @RouteComponent Long id) throws Exception {
+                           @Component Long businessId,
+                           @Component Long id) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -282,8 +282,8 @@ public class ItemRouter {
     @Post("/items/update/{{businessId}}/{{id}}")
     public String update(HttpRequest req,
                          Cache cache,
-                         @RouteComponent Long businessId,
-                         @RouteComponent Long id) throws IOException, ServletException{
+                         @Component Long businessId,
+                         @Component Long id) throws IOException, ServletException{
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -348,8 +348,8 @@ public class ItemRouter {
     @Post("/items/grid/update/{{businessId}}/{{id}}")
     public String gridUpdate(HttpRequest req,
                          Cache cache,
-                         @RouteComponent Long businessId,
-                         @RouteComponent Long id) throws IOException, ServletException{
+                         @Component Long businessId,
+                         @Component Long id) throws IOException, ServletException{
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -413,8 +413,8 @@ public class ItemRouter {
 
     @Post("/items/delete/{{businessId}}/{{id}}")
     public String delete(Cache cache,
-                         @RouteComponent Long businessId,
-                         @RouteComponent Long id){
+                         @Component Long businessId,
+                         @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -440,8 +440,8 @@ public class ItemRouter {
 
     @Get("/items/options/{{businessId}}/{{id}}")
     public String options(Cache cache,
-                           @RouteComponent Long businessId,
-                           @RouteComponent Long id) throws Exception {
+                           @Component Long businessId,
+                           @Component Long id) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -462,8 +462,8 @@ public class ItemRouter {
 
     @Get("/items/options/save/{{businessId}}/{{id}}")
     public String getOptions(Cache cache,
-                          @RouteComponent Long businessId,
-                          @RouteComponent Long id) throws Exception {
+                          @Component Long businessId,
+                          @Component Long id) throws Exception {
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -485,8 +485,8 @@ public class ItemRouter {
     @Post("/items/options/save/{{businessId}}/{{id}}")
     public String saveOption(HttpRequest req,
                              Cache cache,
-                             @RouteComponent Long businessId,
-                             @RouteComponent Long id){
+                             @Component Long businessId,
+                             @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -507,9 +507,9 @@ public class ItemRouter {
     @Post("/items/options/delete/{{businessId}}/{{optionId}}/{{id}}")
     public String deleteOption(HttpRequest req,
                              Cache cache,
-                             @RouteComponent Long businessId,
-                             @RouteComponent Long optionId,
-                             @RouteComponent Long id){
+                             @Component Long businessId,
+                             @Component Long optionId,
+                             @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -530,8 +530,8 @@ public class ItemRouter {
 
     @Get("/items/options/delete/{{businessId}}/{{optionId}}/{{id}}")
     public String deleteOption(Cache cache,
-                               @RouteComponent Long businessId,
-                               @RouteComponent Long id){
+                               @Component Long businessId,
+                               @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -553,8 +553,8 @@ public class ItemRouter {
     @Post("/items/options/values/save/{{businessId}}/{{id}}")
     public String saveValue(HttpRequest req,
                             Cache cache,
-                             @RouteComponent Long businessId,
-                             @RouteComponent Long id){
+                             @Component Long businessId,
+                             @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -575,8 +575,8 @@ public class ItemRouter {
 
     @Get("/items/options/values/save/{{businessId}}/{{id}}")
     public String getValues(Cache cache,
-                            @RouteComponent Long businessId,
-                            @RouteComponent Long id){
+                            @Component Long businessId,
+                            @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -598,9 +598,9 @@ public class ItemRouter {
     @Post("/items/options/values/delete/{{businessId}}/{{valueId}}/{{id}}")
     public String deleteValue(HttpRequest req,
                              Cache cache,
-                             @RouteComponent Long businessId,
-                             @RouteComponent Long valueId,
-                             @RouteComponent Long id){
+                             @Component Long businessId,
+                             @Component Long valueId,
+                             @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }
@@ -623,8 +623,8 @@ public class ItemRouter {
 
     @Get("/items/options/values/delete/{{businessId}}/{{valueId}}/{{id}}")
     public String deleteValue(Cache cache,
-                              @RouteComponent Long businessId,
-                              @RouteComponent Long id){
+                              @Component Long businessId,
+                              @Component Long id){
         if(!authService.isAuthenticated()){
             return "[redirect]/";
         }

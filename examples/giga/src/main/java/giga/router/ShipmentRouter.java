@@ -30,7 +30,7 @@ public class ShipmentRouter {
     @Get("{{business}}/shipment")
     public String begin(HttpRequest req,
                            Cache cache,
-                           @RouteComponent String businessUri){
+                           @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -48,14 +48,14 @@ public class ShipmentRouter {
     }
 
     @Get("{{business}}/shipment/rates")
-    public String redirect(@RouteComponent String businessUri){
+    public String redirect(@Component String businessUri){
         return "[redirect]/" + businessUri + "/shipment";
     }
 
     @Post("{{business}}/shipment/rates")
     public String getRates(HttpRequest req,
                            Cache cache,
-                           @RouteComponent String businessUri){
+                           @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -170,7 +170,7 @@ public class ShipmentRouter {
     @Post("{{business}}/shipment/add")
     public String select(HttpRequest req,
                         Cache cache,
-                        @RouteComponent String businessUri){
+                        @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -186,7 +186,7 @@ public class ShipmentRouter {
     @Get("{{business}}/shipment/create")
     public String createShipment(HttpRequest req,
                            Cache cache,
-                           @RouteComponent String businessUri){
+                           @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -201,7 +201,7 @@ public class ShipmentRouter {
     @Post("{{business}}/shipment/save")
     public String save(HttpRequest req,
                            Cache cache,
-                           @RouteComponent String businessUri){
+                           @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";

@@ -16,7 +16,7 @@ public class CartRouter {
     @Get("/{{business}}/cart")
     public String view(HttpRequest req,
                       Cache cache,
-                      @RouteComponent String businessUri){
+                      @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -36,7 +36,7 @@ public class CartRouter {
     @Get("/{{business}}/checkout")
     public String viewCheckout(HttpRequest req,
                                Cache cache,
-                               @RouteComponent String businessUri){
+                               @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -51,8 +51,8 @@ public class CartRouter {
     @Post("/{{business}}/cart/add/{{id}}")
     public String add(HttpRequest req,
                       Cache cache,
-                      @RouteComponent String businessUri,
-                      @RouteComponent Long id){
+                      @Component String businessUri,
+                      @Component Long id){
         System.out.println("\n\n////////////////////////////////");
 
         List<Business> businesses = businessRepo.getList();
@@ -140,8 +140,8 @@ public class CartRouter {
 
     @Post("/{{business}}/cart/minus/{{id}}")
     public String minus(Cache cache,
-                      @RouteComponent String businessUri,
-                      @RouteComponent Long id){
+                      @Component String businessUri,
+                      @Component Long id){
         System.out.println("minus");
         CartItem cartItem = cartRepo.getItem(id);
         cartRepo.deleteOption(id);
