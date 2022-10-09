@@ -12,12 +12,11 @@ import qio.model.web.Cache;
 
 import java.io.IOException;
 
-@HttpHandler
-public class ItemHandler {
+@Router
+public class ItemRouter {
 
     @Inject
     ItemService itemService;
-
 
     @Get("/query/{{businessId}}")
     public String configure(HttpRequest req,

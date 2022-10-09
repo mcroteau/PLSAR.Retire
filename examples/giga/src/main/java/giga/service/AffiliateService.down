@@ -70,7 +70,7 @@ public class AffiliateService {
     }
 
     public String begin(Cache cache, HttpRequest req) {
-        BusinessRequest businessRequest = (BusinessRequest) Qio.get(req, BusinessRequest.class);
+        BusinessRequest businessRequest = (BusinessRequest) req.inflect(req, BusinessRequest.class);
         businessRequest.setGuid(Giga.getString(7));
         businessRepo.saveRequest(businessRequest);
 
@@ -88,7 +88,7 @@ public class AffiliateService {
         BusinessRequest businessRequest = businessRepo.getRequest(id);
         cache.set("businessRequest", businessRequest);
 
-        if(!security.userIsAuthenticated(httpRequest)){
+        if(!security.isAuthenticated(httpRequest)){
             return "[redirect]/";
         }
 
@@ -164,7 +164,7 @@ public class AffiliateService {
     }
 
 
-    public String finalizeOnboarding(Cache cache, HttpRequest req, SecurityManager securityManager) {
+    public String finalizeOnboarding(Cache cache, HttpRequest req, SecurityManager security) {
         Business business = (Business) req.inflect(req, Business.class);
 
         try {
@@ -182,7 +182,7 @@ public class AffiliateService {
             user.setPhone(Giga.getPhone(business.getPhone()));
             user.setUsername(Giga.getSpaces(business.getEmail()));
             user.setName(business.getOwner());
-            user.setPassword(security.dirty(business.getPassword()));
+            user.setPassword(security.hash(business.getPassword()));
             userRepo.save(user);
 
             User savedUser = userRepo.getSaved();

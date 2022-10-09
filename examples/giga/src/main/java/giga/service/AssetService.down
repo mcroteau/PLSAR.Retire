@@ -27,14 +27,13 @@ public class AssetService {
     @Inject
     UserRepo userRepo;
 
-    @Inject
-    SeaService seaService;
 
-    @Inject
-    AuthService authService;
-
-    @Inject
     BusinessService businessService;
+
+    public AssetService(){
+        this.seaService = new SeaService();
+        this.businessService = new BusinessService();
+    }
 
 
     public String getAsset(String meta, HttpServletResponse resp) throws Exception {
