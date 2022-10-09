@@ -5,7 +5,7 @@ import giga.model.User;
 import giga.model.UserBusiness;
 import giga.repo.BusinessRepo;
 import giga.service.AuthService;
-import qio.annotate.HttpHandler;
+import qio.annotate.HttpRouter;
 import qio.annotate.Inject;
 import qio.annotate.Property;
 import qio.annotate.verbs.Get;
@@ -13,8 +13,8 @@ import qio.model.web.Cache;
 
 import java.util.List;
 
-@HttpHandler
-public class BasicHandler {
+@HttpRouter
+public class BasicRouter {
 
 	@Property("stripe.key")
 	String stripeKey;
@@ -45,7 +45,7 @@ public class BasicHandler {
 	}
 
 	@Get("/home")
-	public String home(Cache data){
+	public String home(Cache cache){
 		List<Business> businesses = businessRepo.getList();
 		data.put("businesses", businesses);
 		data.set("title", "A Marketplace for Marketplaces.");

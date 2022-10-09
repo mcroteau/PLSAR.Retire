@@ -7,7 +7,7 @@ import giga.repo.*;
 import giga.service.*;
 import jakarta.servlet.http.HttpRequest;
 import qio.Qio;
-import qio.annotate.HttpHandler;
+import qio.annotate.HttpRouter;
 import qio.annotate.Inject;
 import qio.annotate.Variable;
 import qio.annotate.verbs.Get;
@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@HttpHandler
-public class UserHandler {
+@HttpRouter
+public class UserRouter {
 
 	@Inject
 	Qio qio;
@@ -122,14 +122,14 @@ public class UserHandler {
 	}
 
 	@Get("/users/reset")
-	public String reset(Cache data){
+	public String reset(Cache cache){
 		data.set("page", "/pages/user/reset.jsp");
 		return "/designs/guest.jsp";
 	}
 
 	@Post("/users/send")
 	public String send(HttpRequest req,
-							Cache data){
+							Cache cache){
 		return userService.send(cache, req);
 	}
 

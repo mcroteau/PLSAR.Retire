@@ -1,16 +1,10 @@
 package giga.router;
 
 import giga.service.CartService;
-import jakarta.servlet.http.HttpRequest;
-import qio.annotate.HttpHandler;
-import qio.annotate.Inject;
-import qio.annotate.Variable;
-import qio.annotate.verbs.Get;
-import qio.annotate.verbs.Post;
-import qio.model.web.Cache;
+import net.plsar.annotations.HttpRouter;
 
-@HttpHandler
-public class CartHandler {
+@HttpRouter
+public class CartRouter {
 
     @Inject
     CartService cartService;

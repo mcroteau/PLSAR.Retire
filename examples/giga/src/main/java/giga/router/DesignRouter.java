@@ -2,15 +2,15 @@ package giga.router;
 
 import giga.service.DesignService;
 import jakarta.servlet.http.HttpRequest;
-import qio.annotate.HttpHandler;
+import qio.annotate.HttpRouter;
 import qio.annotate.Inject;
 import qio.annotate.Variable;
 import qio.annotate.verbs.Get;
 import qio.annotate.verbs.Post;
 import qio.model.web.Cache;
 
-@HttpHandler
-public class DesignHandler {
+@HttpRouter
+public class DesignRouter {
 
     @Inject
     DesignService designService;

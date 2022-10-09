@@ -8,8 +8,8 @@ import qio.annotate.verbs.Get;
 import qio.annotate.verbs.Post;
 import qio.model.web.Cache;
 
-@HttpHandler
-public class DataHandler {
+@HttpRouter
+public class DataRouter {
 
     @Inject
     DataService dataService;

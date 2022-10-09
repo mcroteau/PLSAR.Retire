@@ -1,21 +1,23 @@
 package giga.router;
 
+import giga.Giga;
 import giga.model.Business;
 import giga.model.Design;
+import giga.model.User;
 import giga.repo.BusinessRepo;
 import giga.repo.DesignRepo;
 import giga.service.SiteService;
 import jakarta.servlet.http.HttpRequest;
 import giga.service.AuthService;
-import qio.annotate.HttpHandler;
+import qio.annotate.HttpRouter;
 import qio.annotate.Inject;
 import qio.annotate.Variable;
 import qio.annotate.verbs.Get;
 import qio.annotate.verbs.Post;
 import qio.model.web.Cache;
 
-@HttpHandler
-public class AuthHandler {
+@HttpRouter
+public class AuthRouter {
 
 	@Inject
     AuthService authService;
@@ -32,12 +34,40 @@ public class AuthHandler {
 
 	@Post("/authenticate")
 	public String signin(HttpRequest req,
-							   Cache data){
-		return authService.authenticate(cache, req);
+							   Cache cache){
+
+		try{
+
+			signout();
+
+			String credential = req.getParameter("username");
+			if(credential != null)credential = Giga.getSpaces(credential);
+
+			String passwordDirty = req.getParameter("password");
+			if(!signin(credential, passwordDirty)){
+				cache.set("message", "Wrong username and password");
+				return "[redirect]/signin";
+			}
+
+			User authUser = userRepo.get(credential);
+			if(authUser == null){
+				authUser = userRepo.getPhone(credential);
+			}
+
+			req.getSession().setAttribute("username", authUser.getUsername());
+			req.getSession().setAttribute("userId", authUser.getId());
+
+		} catch ( Exception e ) {
+			e.printStackTrace();
+			cache.set("message", "Please yell at one of us, something is a little off!");
+			return "[redirect]/";
+		}
+
+		return "[redirect]/";
 	}
 
 	@Get("/signin")
-	public String signin(Cache data){
+	public String signin(Cache cache){
 		data.set("page", "/pages/signin.jsp");
 		return "/designs/guest.jsp";
 	}
@@ -67,22 +97,29 @@ public class AuthHandler {
 	}
 
 	@Get("/signup")
-	public String signup(Cache data){
+	public String signup(Cache cache){
 		data.set("page", "/pages/signup.jsp");
 		return "/designs/guest.jsp";
 	}
 
 	@Get("/signout")
 	public String signout(HttpRequest req,
-						  Cache data){
-		return authService.deAuthenticate(cache, req);
+						  Cache cache){
+		signout();
+		cache.set("message", "Successfully signed out");
+		req.getSession().setAttribute("username", "");
+		req.getSession().setAttribute("userId", "");
+		return "[redirect]/";
 	}
 
 	@Get("/{{shop}}/signout")
 	public String shopSignout(HttpRequest req,
 							  Cache cache,
 							  @RouteComponent String shopUri){
-		authService.deAuthenticate(cache, req);
+		signout();
+		cache.set("message", "Successfully signed out");
+		req.getSession().setAttribute("username", "");
+		req.getSession().setAttribute("userId", "");
 		return "[redirect]/" + shopUri;
 	}
 

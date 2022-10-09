@@ -3,7 +3,6 @@ package giga.router;
 import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
-import giga.service.AffiliateService;
 import giga.service.BusinessService;
 import net.plsar.annotations.HttpRouter;
 import net.plsar.annotations.Inject;
@@ -56,7 +55,6 @@ public class AffiliateRouter {
 
         BusinessService businessService = new BusinessService();
         Business business = businessRepo.get(id);
-        User user = userRepo.get(business.getUserId());
         List<Business> affiliates = businessRepo.getListAffiliate(id);
         for(Business affiliate : affiliates){
             List<Sale> sales = saleRepo.getListAffiliate(affiliate.getId());
@@ -77,7 +75,7 @@ public class AffiliateRouter {
 
     @Get("/affiliates/onboarding")
     public String getOnboarding(HttpRequest req,
-                                Cache data){
+                                Cache cache){
         List<Business> businesses = businessRepo.getListPrimary();
         cache.set("businesses", businesses);
         cache.set("title", "Giga! Partners Signup");
@@ -108,7 +106,7 @@ public class AffiliateRouter {
 
     @Post("/affiliates/onboarding/begin")
     public String begin(HttpRequest req,
-                       Cache data){
+                       Cache cache){
         BusinessRequest businessRequest = (BusinessRequest) req.inflect(req, BusinessRequest.class);
         businessRequest.setGuid(Giga.getString(7));
         businessRepo.saveRequest(businessRequest);
