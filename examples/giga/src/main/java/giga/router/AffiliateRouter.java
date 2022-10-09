@@ -74,8 +74,7 @@ public class AffiliateRouter {
     }
 
     @Get("/affiliates/onboarding")
-    public String getOnboarding(HttpRequest req,
-                                Cache cache){
+    public String getOnboarding(Cache cache){
         List<Business> businesses = businessRepo.getListPrimary();
         cache.set("businesses", businesses);
         cache.set("title", "Giga! Partners Signup");
@@ -88,7 +87,14 @@ public class AffiliateRouter {
                                 Cache cache,
                                 HttpRequest httpRequest,
                                 SecurityManager security){
-        return affiliateService.getRequests(id, cache, httpRequest, security);
+        if(!security.isAuthenticated(httpRequest)){
+            return "[redirect]/";
+        }
+        List<BusinessRequest> businessRequests = businessRepo.getRequests(id);
+        cache.set("businessRequests", businessRequests);
+        businessService.setData(id, cache);
+        cache.set("page", "/pages/affiliate/requests.jsp");
+        return "/designs/auth.jsp";
     }
 
     @Get("/affiliates/onboarding/status/{{guid}}")
