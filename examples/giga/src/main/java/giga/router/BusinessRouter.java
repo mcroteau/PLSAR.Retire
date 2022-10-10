@@ -14,6 +14,7 @@ import giga.repo.*;
 import giga.service.BusinessService;
 import giga.service.SiteService;
 import giga.service.SmsService;
+import net.plsar.RouteAttributes;
 import net.plsar.annotations.*;
 import net.plsar.annotations.http.Get;
 import net.plsar.annotations.http.Post;
@@ -347,17 +348,24 @@ public class BusinessRouter {
                                HttpResponse resp,
                                SecurityManager security,
                                @Component Long id){
-        if(!security.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!security.isAdministrator() &&
-                !security.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to edit this business.");
             return "[redirect]/";
         }
-        setData(id, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        setData(id, authUser, cache, security);
         cache.set("page", "/pages/business/settings.jsp");
         return "/designs/auth.jsp";
     }
@@ -373,16 +381,17 @@ public class BusinessRouter {
         }
 
         String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!security.isAdministrator() &&
-                !security.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to edit this business.");
             return "[redirect]/";
         }
 
-        Business business = (Business) Qio.get(req, Business.class);
+        Business business = (Business) req.inflect(Business.class);
         business.setUri(Giga.getUri(business.getUri()));
 
-        EasyPost.apiKey = easypostKey;
+        RouteAttributes routeAttributes = req.getRouteAttributes();
+        EasyPost.apiKey = (String) routeAttributes.get("easypost.key");
 
         Map<String, Object> addressHash = new HashMap<>();
 
@@ -399,7 +408,7 @@ public class BusinessRouter {
         verificationList.add("delivery");
         addressHash.put("verify_strict", verificationList);
 
-        setData(id, cache);
+
 
         try {
             Address.createAndVerify(addressHash);
@@ -411,7 +420,14 @@ public class BusinessRouter {
 
         business.setInitial(false);
         businessRepo.update(business);
-        setData(business.getId(), cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        setData(business.getId(), authUser, cache, security);
 
         cache.set("message", "Updated business settings.");
         cache.set("page", "/pages/business/settings.jsp");
@@ -424,17 +440,24 @@ public class BusinessRouter {
                                   HttpResponse resp,
                                   SecurityManager security,
                                   @Component Long id){
-        if(!security.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!security.isAdministrator() &&
-                !security.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to edit this business.");
             return "[redirect]/";
         }
-        setData(id, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        setData(id, authUser, cache, security);
         cache.set("page", "/pages/business/settings.jsp");
         return "/designs/auth.jsp";
     }
@@ -446,14 +469,14 @@ public class BusinessRouter {
                          SecurityManager security,
                          @Component Long currentId,
                          @Component Long id){
-        if(!security.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!security.isAdministrator() &&
-                !security.hasPermission(permission)){
-            Cache.put("message", "This business doesn't belong to you, you cannot delete this business.");
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
+            cache.set("message", "This business doesn't belong to you, you cannot delete this business.");
             return "[redirect]/";
         }
 
@@ -465,7 +488,7 @@ public class BusinessRouter {
         designRepo.deleteDesigns(id);
 
         businessRepo.delete(id);
-        Cache.put("message", "Successfully deleted business.");
+        cache.set("message", "Successfully deleted business.");
 
         if(id != currentId){
             return "[redirect]/businesses/" + currentId;
@@ -486,8 +509,8 @@ public class BusinessRouter {
         }
 
         String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!security.isAdministrator() &&
-                !security.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "not your account buddy...");
             return "[redirect]/";
         }
@@ -498,6 +521,10 @@ public class BusinessRouter {
                         .build();
 
         try {
+
+            RouteAttributes routeAttributes = req.getRouteAttributes();
+            String host = (String) routeAttributes.get("host");
+            String stripeKey = (String) routeAttributes.get("stripe.key");
 
             String refreshUrl = "http://" + host + "/stripe/onboarding/refresh";
             String returnUrl = "http://" + host + "/stripe/onboarding/complete/" + id;
@@ -519,10 +546,11 @@ public class BusinessRouter {
             business.setStripeId(account.getId());
             businessRepo.update(business);
 
-            PrintWriter pw = resp.getWriter();
+
+            /*
             resp.sendRedirect(accountLink.getUrl());
             pw.close();
-
+            */
 
         }catch(Exception ex){
             ex.printStackTrace();
@@ -603,7 +631,6 @@ public class BusinessRouter {
     @Get("/stripe/onboarding/complete/{{id}}")
     public String onboardingComplete(Cache cache,
                                      HttpRequest req,
-                                     HttpResponse resp,
                                      SecurityManager security,
                                      @Component Long id){
         if(!security.isAuthenticated(req)){
@@ -621,7 +648,13 @@ public class BusinessRouter {
         business.setActivationComplete(true);
         businessRepo.update(business);
 
-        setData(id, cache);
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        setData(id, authUser, cache, security);
 
         cache.set("message", "Successfully configured your Stripe account! <br/>Congratulations. Good times!");
         return "[redirect]/snapshot/" + id;
@@ -680,71 +713,6 @@ public class BusinessRouter {
         cache.set("authUser", authUser);
         cache.set("business", currentBusiness);
         cache.set("businessOptions", businesses);
-        cache.set("siteService", siteService);
-    }
-
-    public void setData(Cart cart, Business business, Cache cache, HttpRequest req){
-        BigDecimal subtotal = new BigDecimal(0);
-        List<CartItem> cartItems = cartRepo.getListItems(cart.getId());
-        System.out.println("ci " + cartItems.size());
-        System.out.println("z");
-        for(CartItem cartItem : cartItems){
-            Item item = itemRepo.get(cartItem.getItemId());
-            cartItem.setItem(item);
-
-            BigDecimal itemTotal = cartItem.getPrice().multiply(cartItem.getQuantity());
-            List<CartOption> cartOptions = cartRepo.getOptions(cartItem.getId());
-            for(CartOption cartOption : cartOptions){
-                ItemOption itemOption = itemRepo.getOption(cartOption.getItemOptionId());
-                OptionValue optionValue = itemRepo.getValue(cartOption.getOptionValueId());
-                cartOption.setItemOption(itemOption);
-                cartOption.setOptionValue(optionValue);
-                if(cartOption.getPrice() != null){
-                    itemTotal = itemTotal.add(cartOption.getPrice().multiply(cartItem.getQuantity()));
-                }
-            }
-            cartItem.setItemTotal(itemTotal);
-
-            subtotal = subtotal.add(itemTotal);
-            cart.setSubtotal(subtotal);
-
-            cartItem.setCartOptions(cartOptions);
-
-        }
-
-        cart.setCartItems(cartItems);
-        if(business.getFlatShipping()){
-            BigDecimal total = cart.getSubtotal();
-            if(business.getShipping() != null){
-                total = total.add(business.getShipping());
-            }
-            cart.setShipping(business.getShipping());
-            cart.setTotal(total);
-            cartRepo.update(cart);
-        }
-
-        if(!business.getFlatShipping()){
-            ShipmentRate rate = cartRepo.getRate(cart.getId());
-            if(rate != null) {
-                BigDecimal total = rate.getRate().add(cart.getSubtotal());
-                cart.setShipping(rate.getRate());
-                cart.setTotal(total);
-                cart.setValidAddress(true);
-                cartRepo.update(cart);
-                cache.set("rate", rate);
-            }
-        }
-
-        System.out.println("kilo : subtotal " + cart);
-        Design design = designRepo.getBase(business.getId());
-        System.out.println("business: " + business);
-        System.out.println("design: " + design);
-
-        cache.set("design", design);
-        cache.set("request", req);
-        cache.set("business", business);
-        cache.set("cart", cart);
-        cache.set("items", cartItems);
         cache.set("siteService", siteService);
     }
 

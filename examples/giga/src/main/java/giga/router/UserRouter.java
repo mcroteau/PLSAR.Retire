@@ -1,92 +1,84 @@
 package giga.router;
 
-import chico.Chico;
 import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
 import giga.service.*;
-import jakarta.servlet.http.HttpRequest;
-import qio.Qio;
-import qio.annotate.HttpRouter;
-import qio.annotate.Inject;
-import qio.annotate.Variable;
-import qio.annotate.verbs.Get;
-import qio.annotate.verbs.Post;
-import qio.model.web.Cache;
+import net.plsar.annotations.Component;
+import net.plsar.annotations.HttpRouter;
+import net.plsar.annotations.Inject;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.Cache;
+import net.plsar.model.HttpRequest;
+import net.plsar.security.SecurityManager;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @HttpRouter
 public class UserRouter {
-
-	@Inject
-	Qio qio;
-
-	@Inject
-	DesignRepo designRepo;
 
 	@Inject
 	SaleRepo saleRepo;
 
 	@Inject
-	BusinessRepo businessRepo;
+	ItemRepo itemRepo;
 
 	@Inject
-	SiteService siteService;
-
-	@Inject
-	UserService userService;
-
-	@Inject
-	AuthService authService;
-
-	@Inject
-	SaleService saleService;
-
-	@Inject
-	RoleRepo roleRepo;
+	CartRepo cartRepo;
 
 	@Inject
 	UserRepo userRepo;
 
 	@Inject
-	SmsService smsService;
+	DesignRepo designRepo;
 
 	@Inject
-	MailService mailService;
+	BusinessRepo businessRepo;
+
+	@Inject
+	CategoryRepo categoryRepo;
+
+	BusinessService businessService;
+
+	public UserRouter(){
+		this.businessService = new BusinessService();
+	}
 
 	@Get("/{{shop}}/signup")
-	public String shopSignup(HttpRequest req,
-							 Cache cache,
+	public String shopSignup(Cache cache,
+							 HttpRequest req,
+							 SecurityManager security,
 							 @Component String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 		Design design = designRepo.getBase(business.getId());
-		data.set("design", design);
-		data.set("business", business);
-		data.set("siteService", siteService);
-		data.set("request", req);
+		SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+
+		cache.set("design", design);
+		cache.set("business", business);
+		cache.set("siteService", siteService);
+		cache.set("request", req);
 		return "/pages/business/signup.jsp";
 	}
 
 
 	@Get("/{{shop}}/activity")
-	public String getActivity(HttpRequest req,
-							 Cache cache,
-							 @Component String shopUri) throws ParseException {
+	public String getActivity(Cache cache,
+							  HttpRequest req,
+							  SecurityManager security,
+							  @Component String shopUri) throws ParseException {
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
-		if(!authService.isAuthenticated()){
+		if(!security.isAuthenticated(req)){
 			return "[redirect]/" + shopUri;
 		}
 
-		List<Sale> sales = new ArrayList();
-		User authUser = authService.getUser();
+		List<Sale> sales;
 		if(business.getAffiliate() == null ||
 				!business.getAffiliate()) {
 			sales = saleRepo.getListPrimary(business.getId());
@@ -94,25 +86,29 @@ public class UserRouter {
 			sales = saleRepo.getListAffiliate(business.getId());
 		}
 
-		saleService.setSaleData(sales);
+		SaleService saleService = new SaleService();
+		saleService.setSaleData(sales, cartRepo, itemRepo);
 
 		Design design = designRepo.getBase(business.getId());
-		data.set("design", design);
+		SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
 
-		data.set("sales", sales);
-		data.set("business", business);
-		data.set("siteService", siteService);
-		data.set("request", req);
+		cache.set("design", design);
+		cache.set("sales", sales);
+		cache.set("business", business);
+		cache.set("siteService", siteService);
+		cache.set("request", req);
 		return "/pages/business/activity.jsp";
 	}
 
 	@Get("/users/edit/{{businessId}}/{{id}}")
 	public String getEdit(Cache cache,
+						  HttpRequest req,
+						  SecurityManager security,
 						  @Component Long businessId,
 						  @Component Long id){
 		String permission = getPermission(Long.toString(id));
-		if(!authService.isAdministrator() &&
-				!authService.hasPermission(permission)){
+		if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+				!security.hasPermission(permission, req)){
 			return "[redirect]/";
 		}
 
@@ -127,11 +123,12 @@ public class UserRouter {
 
 
 	@Post("/users/update/{{businessId}}/{{id}}")
-	public String update(HttpRequest req,
-						 Cache cache,
+	public String update(Cache cache,
+						 HttpRequest req,
+						 SecurityManager security,
 						 @Component Long businessId,
 						 @Component Long id){
-		User user = (User) Qio.get(req, User.class);
+		User user = (User) req.inflect(User.class);
 
 		String permission = getPermission(Long.toString(user.getId()));
 		if(!authService.isAdministrator() &&
@@ -148,13 +145,14 @@ public class UserRouter {
 
 	@Get("/users/reset")
 	public String reset(Cache cache){
-		data.set("page", "/pages/user/reset.jsp");
+		cache.set("page", "/pages/user/reset.jsp");
 		return "/designs/guest.jsp";
 	}
 
 	@Post("/users/send")
-	public String send(HttpRequest req,
-							Cache cache){
+	public String send(Cache cache,
+					   HttpRequest req,
+					   SecurityManager security){
 		try {
 			String phone = req.getParameter("phone");
 			if(phone != null) phone = Giga.getPhone(phone);
@@ -180,8 +178,9 @@ public class UserRouter {
 	}
 
 	@Post("/users/reset/{{id}}")
-	public String resetPassword(HttpRequest req,
-								Cache cache,
+	public String resetPassword(Cache cache,
+								HttpRequest req,
+								SecurityManager security,
 								@Component Long id){
 
 		User user = userRepo.get(id);
@@ -204,9 +203,11 @@ public class UserRouter {
 		return "[redirect]/signin";
 	}
 
-	@Get("/clients/{{id}}")
+	@Get("/clients/{{businessId}}")
 	public String clients(Cache cache,
-							@Component Long id){
+						  HttpRequest req,
+						  SecurityManager security,
+						  @Component Long businessId){
 		if(!authService.isAuthenticated()){
 			return "[redirect]/snapshot/" + businessId;
 		}
@@ -241,8 +242,9 @@ public class UserRouter {
 	}
 
 	@Get("/{{shop}}/users/password/get")
-	public String getPassword(HttpRequest req,
-							  Cache cache,
+	public String getPassword(Cache cache,
+							  HttpRequest req,
+							  SecurityManager security,
 							  @Component String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
@@ -250,16 +252,17 @@ public class UserRouter {
 		Design design = designRepo.getBase(business.getId());
 		if(design == null)return "[redirect]/";
 
-		data.set("design", design);
-		data.set("business", business);
-		data.set("siteService", siteService);
-		data.set("request", req);
+		cache.set("design", design);
+		cache.set("business", business);
+		cache.set("siteService", siteService);
+		cache.set("request", req);
 		return "/pages/business/get_password.jsp";
 	}
 
 	@Post("/{{shop}}/users/password/send")
-	public String sendPassword(HttpRequest req,
-							   Cache cache,
+	public String sendPassword(Cache cache,
+							   HttpRequest req,
+							   SecurityManager security,
 							   @Component String shopUri){
 
 		Business business = businessRepo.get(shopUri);
@@ -279,16 +282,17 @@ public class UserRouter {
 		String message = business.getName() + " :: temporary password is " + password;
 		smsService.send(phone, message);
 
-		data.set("message", "Success! A password has been sent to you!");
+		cache.set("message", "Success! A password has been sent to you!");
 		return "[redirect]/" + shopUri + "/signin";
 	}
 
 
 	@Get("/{{shop}}/users/edit/{{id}}")
-	public String editUser(HttpRequest req,
-							 Cache cache,
-							 @Component String shopUri,
-						     @Component Long id){
+	public String editUser(Cache cache,
+						   HttpRequest req,
+						   SecurityManager security,
+						   @Component String shopUri,
+						   @Component Long id){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
@@ -297,11 +301,11 @@ public class UserRouter {
 
 		Design design = designRepo.getBase(business.getId());
 
-		data.set("user", user);
-		data.set("design", design);
-		data.set("business", business);
-		data.set("siteService", siteService);
-		data.set("request", req);
+		cache.set("user", user);
+		cache.set("design", design);
+		cache.set("business", business);
+		cache.set("siteService", siteService);
+		cache.set("request", req);
 		return "/pages/business/edit_user.jsp";
 	}
 
@@ -315,7 +319,7 @@ public class UserRouter {
 		User user = (User) qio.set(req, User.class);
 		userRepo.update(user);
 
-		data.set("message", "Successfully updated your account!");
+		cache.set("message", "Successfully updated your account!");
 		return "[redirect]/" + shopUri + "/users/edit/" + user.getId();
 	}
 
@@ -333,11 +337,11 @@ public class UserRouter {
 		User user = userRepo.get(id);
 		if(user == null)return "[redirect]/";
 
-		data.set("user", user);
-		data.set("business", business);
-		data.set("design", design);
-		data.set("siteService", siteService);
-		data.set("request", req);
+		cache.set("user", user);
+		cache.set("business", business);
+		cache.set("design", design);
+		cache.set("siteService", siteService);
+		cache.set("request", req);
 		return "/pages/business/edit_password.jsp";
 	}
 
@@ -361,7 +365,11 @@ public class UserRouter {
 			userRepo.updatePassword(user);
 		}
 
-		data.set("message", "Successfully updated! You may now sign in with your new credentials.");
+		cache.set("message", "Successfully updated! You may now sign in with your new credentials.");
 		return "[redirect]/" + shopUri + "/signin";
+	}
+
+	String getPermission(String id){
+		return Giga.USER_MAINTENANCE + id;
 	}
 }
