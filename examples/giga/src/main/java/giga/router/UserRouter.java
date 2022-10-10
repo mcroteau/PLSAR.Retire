@@ -11,6 +11,7 @@ import net.plsar.annotations.http.Get;
 import net.plsar.annotations.http.Post;
 import net.plsar.model.Cache;
 import net.plsar.model.HttpRequest;
+import net.plsar.model.HttpResponse;
 import net.plsar.security.SecurityManager;
 
 import java.math.BigDecimal;
@@ -131,8 +132,8 @@ public class UserRouter {
 		User user = (User) req.inflect(User.class);
 
 		String permission = getPermission(Long.toString(user.getId()));
-		if(!authService.isAdministrator() &&
-				!authService.hasPermission(permission)){
+		if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+				!security.hasPermission(permission, req)){
 			return "[redirect]/";
 		}
 
@@ -154,18 +155,19 @@ public class UserRouter {
 					   HttpRequest req,
 					   SecurityManager security){
 		try {
-			String phone = req.getParameter("phone");
+			String phone = req.getValue("phone");
 			if(phone != null) phone = Giga.getPhone(phone);
 			User user = userRepo.getPhone(phone);
 			if (user == null) {
-				data.put("message", "Unable to find user with cell phone " + phone + ". Please try again or if the problem persists, contact me Mike and I will reset your password for you. croteau.mike@gmail.com.");
+				cache.set("message", "Unable to find user with cell phone " + phone + ". Please try again or if the problem persists, contact me Mike and I will reset your password for you. croteau.mike@gmail.com.");
 				return ("[redirect]/users/reset");
 			}
 
 			String guid = Giga.getString(4);
-			user.setPassword(Chico.dirty(guid));
+			user.setPassword(security.hash(guid));
 			userRepo.updatePassword(user);
 
+			SmsService smsService = new SmsService();
 			String message = "Giga >_ Your temporary password : "    + guid;
 			smsService.send(phone, message);
 
@@ -173,33 +175,34 @@ public class UserRouter {
 			e.printStackTrace();
 		}
 
-		data.put("message", "Successfully sent you your reset instructions");
+		cache.set("message", "Successfully sent you your reset instructions");
 		return "[redirect]/signin";
 	}
 
 	@Post("/users/reset/{{id}}")
 	public String resetPassword(Cache cache,
 								HttpRequest req,
+								HttpResponse resp,
 								SecurityManager security,
 								@Component Long id){
 
 		User user = userRepo.get(id);
-		User reqUser = (User) Qio.get(req, User.class);
+		User reqUser = (User) req.inflect(User.class);
 
 		if(reqUser.getPassword().length() < 7){
-			data.put("message", "Passwords must be at least 7 characters long.");
+			cache.set("message", "Passwords must be at least 7 characters long.");
 			return "[redirect]/users/confirm?phone=" + reqUser.getPhone() + "&uuid=" + reqUser.getUuid();
 		}
 
 		if(!reqUser.getPassword().equals("")){
-			String password = Chico.dirty(reqUser.getPassword());
+			String password = security.hash(reqUser.getPassword());
 			user.setPassword(password);
 			userRepo.updatePassword(user);
 		}
 
-		authService.signout();
+		security.signout(req, resp);
 
-		data.put("message", "Password successfully updated! You can continue now!");
+		cache.set("message", "Password successfully updated! You can continue now!");
 		return "[redirect]/signin";
 	}
 
@@ -208,12 +211,12 @@ public class UserRouter {
 						  HttpRequest req,
 						  SecurityManager security,
 						  @Component Long businessId){
-		if(!authService.isAuthenticated()){
+		if(!security.hasRole(Giga.SUPER_ROLE, req)){
 			return "[redirect]/snapshot/" + businessId;
 		}
 
-		String businessPermission = Giga.BUSINESS_MAINTENANCE + businessId;
-		if(!authService.hasPermission(businessPermission)){
+		String permission = Giga.BUSINESS_MAINTENANCE + businessId;
+		if(!security.hasPermission(permission, req)){
 			cache.set("message", "whaoo... ");
 			return "[redirect]/snapshot/" + businessId;
 		}
@@ -233,6 +236,7 @@ public class UserRouter {
 
 		}
 
+		SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
 		cache.set("siteService", siteService);
 		cache.set("clients", clients);
 		cache.set("page", "/pages/user/list.jsp");
@@ -252,6 +256,8 @@ public class UserRouter {
 		Design design = designRepo.getBase(business.getId());
 		if(design == null)return "[redirect]/";
 
+		SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+
 		cache.set("design", design);
 		cache.set("business", business);
 		cache.set("siteService", siteService);
@@ -268,7 +274,7 @@ public class UserRouter {
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
-		User user = (User) qio.set(req, User.class);
+		User user = (User) req.inflect(User.class);
 		String phone = Giga.getPhone(user.getPhone());
 		if(phone.equals(""))return "[redirect]/" + shopUri;
 
@@ -276,9 +282,10 @@ public class UserRouter {
 		if(storedUser == null)return "[redirect]/" + shopUri;
 
 		String password = Giga.getString(6);
-		storedUser.setPassword(Chico.dirty(password));
+		storedUser.setPassword(security.hash(password));
 		userRepo.updatePassword(storedUser);
 
+		SmsService smsService = new SmsService();
 		String message = business.getName() + " :: temporary password is " + password;
 		smsService.send(phone, message);
 
@@ -300,6 +307,7 @@ public class UserRouter {
 		if(user == null)return "[redirect]/";
 
 		Design design = designRepo.getBase(business.getId());
+		SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
 
 		cache.set("user", user);
 		cache.set("design", design);
@@ -316,7 +324,7 @@ public class UserRouter {
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
-		User user = (User) qio.set(req, User.class);
+		User user = (User) req.inflect(User.class);
 		userRepo.update(user);
 
 		cache.set("message", "Successfully updated your account!");
@@ -324,8 +332,9 @@ public class UserRouter {
 	}
 
 	@Get("/{{shop}}/users/password/edit")
-	public String editPassword(HttpRequest req,
-							   Cache cache,
+	public String editPassword(Cache cache,
+							   HttpRequest req,
+							   SecurityManager security,
 							   @Component String shopUri,
 							   @Component Long id){
 		Business business = businessRepo.get(shopUri);
@@ -337,6 +346,8 @@ public class UserRouter {
 		User user = userRepo.get(id);
 		if(user == null)return "[redirect]/";
 
+		SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+
 		cache.set("user", user);
 		cache.set("business", business);
 		cache.set("design", design);
@@ -347,20 +358,21 @@ public class UserRouter {
 
 
 	@Post("/{{shop}}/users/password/save")
-	public String savePassword(HttpRequest req,
-							  Cache cache,
-							  @Component String shopUri){
+	public String savePassword(Cache cache,
+							   HttpRequest req,
+							   SecurityManager security,
+							   @Component String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 
-		User user = (User) qio.set(req, User.class);
+		User user = (User) req.inflect(User.class);
 		if(user.getPassword().length() < 6){
-			data.put("message", "Passwords must be at least 6 characters long.");
+			cache.set("message", "Passwords must be at least 6 characters long.");
 			return "[redirect]/"+ shopUri + "/users/password/edit";
 		}
 
 		if(!user.getPassword().equals("")){
-			String password = Chico.dirty(user.getPassword());
+			String password = security.hash(user.getPassword());
 			user.setPassword(password);
 			userRepo.updatePassword(user);
 		}
