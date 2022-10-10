@@ -1,15 +1,15 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<c:if test="${not empty message}">
+
+<plsar:if spec="${message != ''}">
     <p class="notify">${message}</p>
-</c:if>
+</plsar:if>
 
 <h1>Settings</h1>
 
 <p>Please enter valid phone, email and address information to complete business setup.
     The information below is required to calculate shipping, send email notifications and sms alerts.</p>
 
-<form action="${pageContext.request.contextPath}/businesses/settings/save/${business.id}" method="post">
+<form action="/businesses/settings/save/${business.id}" method="post">
 
     <input type="hidden" name="id" value="${business.id}"/>
     <input type="hidden" name="live" value="${business.live}"/>
@@ -29,11 +29,11 @@
         <br class="clear"/>
     </div>
 
-    <c:if test="${!business.affiliate}">
+    <plsar:if spec="${!business.affiliate}">
         <label>Commission Rate</label>
         <span class="tiny">Enter full percent. For instance for 13%, enter 13.0.</span>
         <input type="text" name="baseCommission" value="${business.get(business.baseCommission)}" style="width:40%"/>
-    </c:if>
+    </plsar:if>
 
 
 
@@ -45,15 +45,15 @@
 <%--        for a business partner's item, they are only allowed to list an item at an equal or higher price.</span>--%>
 <%--        <select name="allowAffiliates" id="allow-affiliate" style="width:340px;">--%>
 
-<%--            <c:if test="${business.allowAffiliates}">--%>
+<%--            <plsar:if spec="${business.allowAffiliates}">--%>
 <%--                <c:set var="allow" value="selected"/>--%>
 <%--                <c:set var="disallow" value=""/>--%>
-<%--            </c:if>--%>
+<%--            </plsar:if>--%>
 
-<%--            <c:if test="${!business.allowAffiliates}">--%>
+<%--            <plsar:if spec="${!business.allowAffiliates}">--%>
 <%--                <c:set var="allow" value=""/>--%>
 <%--                <c:set var="disallow" value="selected"/>--%>
-<%--            </c:if>--%>
+<%--            </plsar:if>--%>
 
 <%--            <option value="true" ${allow}>Allow Affiliates</option>--%>
 <%--            <option value="false" ${disallow}>Don't Alllow Affiliates</option>--%>
@@ -71,15 +71,15 @@
         <span class="tiny">Would you like to use a flat rate or real time shipping calculations on the fly?</span>
         <select name="flatShipping" id="flat-shipping" style="width:340px;">
 
-            <c:if test="${business.flatShipping}">
+            <plsar:if spec="${business.flatShipping}">
                 <c:set var="flat" value="selected"/>
                 <c:set var="realtime" value=""/>
-            </c:if>
+            </plsar:if>
 
-            <c:if test="${!business.flatShipping}">
+            <plsar:if spec="${!business.flatShipping}">
                 <c:set var="flat" value=""/>
                 <c:set var="realtime" value="selected"/>
-            </c:if>
+            </plsar:if>
 
             <option value="true" ${flat}>Use Flat Rate</option>
             <option value="false" ${realtime}>Use Real-time Shipping Calculations</option>

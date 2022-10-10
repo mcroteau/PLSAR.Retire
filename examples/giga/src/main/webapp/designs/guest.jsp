@@ -1,14 +1,12 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="chico" uri="/META-INF/tags/chico.tld" %>
 <html>
 <head>
     <title>Giga. ${title}</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/benefit/media/icon.gif?v=<%=System.currentTimeMillis()%>">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/benefit/css/default.css?v=<%=System.currentTimeMillis()%>">
-    <script src="${pageContext.request.contextPath}/benefit/media/confetti.js"></script>
+    <link rel="icon" type="image/png" href="/benefit/media/icon.gif?v=<%=System.currentTimeMillis()%>">
+    <link rel="stylesheet" href="/benefit/css/default.css?v=<%=System.currentTimeMillis()%>">
+    <script src="/benefit/media/confetti.js"></script>
 </head>
 <body>
 <style>
@@ -110,14 +108,14 @@
     <div id="top-wrapper" class="section">
 
         <div id="header-wrapper">
-            <chico:isAnonymous>
-                <a href="${pageContext.request.contextPath}/signin" id="signin-button" class="button remove">Signin!</a>
-            </chico:isAnonymous>
-            <chico:isAuthenticated>
-                <a href="${pageContext.request.contextPath}/signout" id="signin-button" class="button green">Signout!</a>
-            </chico:isAuthenticated>
+            <plsar:guest>
+                <a href="/signin" id="signin-button" class="button remove">Signin!</a>
+            </plsar:guest>
+            <plsar:authenticated>
+                <a href="/signout" id="signin-button" class="button green">Signout!</a>
+            </plsar:authenticated>
 
-            <a href="${pageContext.request.contextPath}/" id="home-href">
+            <a href="/" id="home-href">
                 <div id="identity-wrapper">
                     <span class="square">&nbsp;</span>
                     <span class="circle">&nbsp;</span>
@@ -128,18 +126,19 @@
             </a>
 
             <div id="guest-menu">
-                <chico:isAuthenticated>
-                    <a href="${pageContext.request.contextPath}/">Admin</a>&nbsp;
-                </chico:isAuthenticated>
-                <a href="${pageContext.request.contextPath}/home#features">Features</a>&nbsp;
-                <a href="${pageContext.request.contextPath}/home#friends">Resellers*</a>&nbsp;
-                <a href="${pageContext.request.contextPath}/signup" class="button orange">Start Business!</a>
+                <plsar:authenticated>
+                    <a href="/">Admin</a>&nbsp;
+                </plsar:authenticated>
+                <a href="/home#features">Features</a>&nbsp;
+                <a href="/home#friends">Resellers*</a>&nbsp;
+                <a href="/signup" class="button orange">Start Business!</a>
             </div>
         </div>
 
     </div>
 
-    <jsp:include page="${page}"/>
+
+    <plsar:content/>
 
 </body>
 </html>

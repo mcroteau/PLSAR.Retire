@@ -1,15 +1,15 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ page import="giga.Giga" %>
 
-<c:if test="${not empty message}">
+<plsar:if spec="${message != ''}">
     <p class="notify">${message}</p>
-</c:if>
+</plsar:if>
 
 <h1 class="left-float">Site Pages</h1>
-<a href="${pageContext.request.contextPath}/pages/new/${business.id}" class="button retro right-float" style="margin-top:20px;">New Page</a>
+<a href="/pages/new/${business.id}" class="button retro right-float" style="margin-top:20px;">New Page</a>
 <br class="clear"/>
 
-<c:if test="${pages.size() > 0}">
+<plsar:if spec="${pages.size() > 0}">
     <table>
         <tr>
             <th>Id</th>
@@ -20,19 +20,19 @@
         <c:forEach var="page" items="${pages}" varStatus="idx">
             <tr>
                 <td>${page.id}</td>
-                <td><a href="${pageContext.request.contextPath}/${business.uri}/${page.uri}" class="href-dotted-black" target="_blank">${page.name}</a></td>
+                <td><a href="/${business.uri}/${page.uri}" class="href-dotted-black" target="_blank">${page.name}</a></td>
                 <td>${page.uri}</td>
                 <td>
-                    <form action="${pageContext.request.contextPath}/pages/delete/${business.id}/${page.id}" method="post" m onsubmit="return confirm('Are you sure you want to delete this page?');">
+                    <form action="/pages/delete/${business.id}/${page.id}" method="post" m onsubmit="return confirm('Are you sure you want to delete this page?');">
                         <input type="submit" value="Delete" class="button remove"/>
                     </form>
                 </td>
             </tr>
         </c:forEach>
     </table>
-</c:if>
+</plsar:if>
 
 
-<c:if test="${pages.size() == 0}">
-    <p class="notify">No pages added yet! <a href="${pageContext.request.contextPath}/pages/new/${business.id}" class="href-dotted">New Page</a></p>
-</c:if>
+<plsar:if spec="${pages.size() == 0}">
+    <p class="notify">No pages added yet! <a href="/pages/new/${business.id}" class="href-dotted">New Page</a></p>
+</plsar:if>

@@ -33,6 +33,6 @@ public interface SecurityAccess {
      */
     public Set<String> getPermissions(String user);
 
-    public void setPersistence(Dao dao);
+    public void setDao(Dao dao);
 }
 

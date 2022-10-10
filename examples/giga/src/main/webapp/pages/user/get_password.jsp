@@ -1,16 +1,16 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 <div class="section-wrapper">
     <div class="section">
-        <c:if test="${not empty message}">
+        <plsar:if spec="${message != ''}">
             <div class="notify">${message}</div>
-        </c:if>
+        </plsar:if>
 
         <h1>Reset Password</h1>
 
         <p>Enter cell phone that is registered with your account.</p>
 
-        <form action="${pageContext.request.contextPath}/users/send" method="post">
+        <form action="/users/send" method="post">
             <fieldset>
 
                 <label for="cellphone">Cell Phone</label>

@@ -1,7 +1,7 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 <h1>New Business</h1>
-<form action="${pageContext.request.contextPath}/businesses/save" method="post">
+<form action="/businesses/save" method="post">
 
     <input type="hidden" name="userId" value="${authUser.id}"/>
 

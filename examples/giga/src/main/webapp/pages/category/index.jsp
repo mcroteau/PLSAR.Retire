@@ -1,4 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ page import="giga.Giga" %>
 <%@ page import="giga.model.Item" %>
 <%@ page import="java.util.List" %>
@@ -40,9 +40,9 @@ ${category.header}
 
 <div id="category-items">
 
-    <c:if test="${items.size() > 0}">
+    <plsar:if spec="${items.size() > 0}">
     <c:forEach items="${items}" var="item">
-        <a href="${pageContext.request.contextPath}/${business.uri}/items/${category.id}/${item.id}" class="item-wrapper" id="item-${item.id}">
+        <a href="/${business.uri}/items/${category.id}/${item.id}" class="item-wrapper" id="item-${item.id}">
             <div class="category-item">
                 <img src="${item.imageUri}" width="150"/>
                 <div class="item-details-wrapper">
@@ -53,10 +53,10 @@ ${category.header}
         </a>
     </c:forEach>
 <br class="clear"/>
-</c:if>
-<c:if test="${items.size() == 0}">
+</plsar:if>
+<plsar:if spec="${items.size() == 0}">
     <p>No items created yet for ${category.name}!<br/>Check back later!</p>
-</c:if>
+</plsar:if>
 
 ${siteService.getCategoryBit(Giga.BOTTOM, category, business, request)}
 

@@ -224,7 +224,7 @@ public class PLSAR {
                 }
 
                 HttpResponse httpResponse = new HttpResponse();
-                httpResponse.setResponseOutput(clientOutput);
+                httpResponse.setResponseStream(clientOutput);
                 httpResponse.setContentType("text/html");
 
                 ComponentCompiler requestComponentCompiler = new ComponentCompiler(byteArrayOutputStream.toByteArray(), httpRequest);

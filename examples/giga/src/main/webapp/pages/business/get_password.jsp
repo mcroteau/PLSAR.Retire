@@ -1,19 +1,19 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ page import="giga.Giga" %>
 
 ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
 
 <div class="section-wrapper">
     <div class="section">
-        <c:if test="${not empty message}">
+        <plsar:if spec="${message != ''}">
             <div class="notify">${message}</div>
-        </c:if>
+        </plsar:if>
 
         <h1>Reset Password</h1>
 
         <p>Enter cell phone that is registered with your account.</p>
 
-        <form action="${pageContext.request.contextPath}/${business.uri}/users/password/send" method="post">
+        <form action="/${business.uri}/users/password/send" method="post">
             <fieldset>
 
                 <label for="phone">Cell Phone</label>

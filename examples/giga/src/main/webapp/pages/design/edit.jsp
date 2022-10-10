@@ -1,4 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 <style>
     #live{
@@ -14,7 +14,7 @@
 
 <a href="javascript:" id="live" class="button orange">Live Preview</a>
 
-<form action="${pageContext.request.contextPath}/designs/update/${design.id}" method="post">
+<form action="/designs/update/${design.id}" method="post">
 
     <input type="hidden" name="id" value="${design.id}"/>
     <input type="hidden" name="businessId" value="${design.businessId}"/>
@@ -33,7 +33,7 @@
 
     <script>
         $(document).ready(function(){
-            const uri = "${pageContext.request.contextPath}/${business.uri}";
+            const uri = "/${business.uri}";
             let $live = $('#live'),
                 $preview = $('#live-preview'),
                 $frame = $('#frame');
@@ -70,5 +70,5 @@
 
 <div id="live-preview" style="display:none">
     <h3 style="text-align: center; color:#3979E4;padding-top:20px !important;" >Live Preview</h3>
-    <iframe src="${pageContext.request.contextPath}/${business.uri}" id="frame"></iframe>
+    <iframe src="/${business.uri}" id="frame"></iframe>
 </div>

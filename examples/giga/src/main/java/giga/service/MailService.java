@@ -1,9 +1,5 @@
 package giga.service;
 
-import qio.annotate.Property;
-import qio.annotate.Service;
-
-@Service
 public class MailService {
 
     public void send(String to, String subject, String body){

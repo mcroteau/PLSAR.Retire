@@ -1,4 +1,3 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <script>
     startConfetti();
 </script>
@@ -9,15 +8,15 @@
 <div class="section-wrapper">
     <div class="section">
 
-        <c:if test="${not empty message}">
+        <plsar:if spec="${message != ''}">
             <p class="notify">${message}</p>
-        </c:if>
+        </plsar:if>
 
         <h1>Congratulations Affiliate!</h1>
         <p>Congratulations on starting a new business! We are here to help! Update your
         business uri and password in order to login.</p>
 
-        <form action="${pageContext.request.contextPath}/affiliates/onboarding/finalize/${business.id}" method="post">
+        <form action="/affiliates/onboarding/finalize/${business.id}" method="post">
 
             <input type="hidden" name="id" value="${business.id}">
             <input type="hidden" name="name" value="${business.name}">

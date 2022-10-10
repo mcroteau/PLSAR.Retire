@@ -1,13 +1,11 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ page import="giga.Giga" %>
 <html>
 <head>
     <title>Giga: A Marketplace for Marketplaces</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/benefit/media/icon.gif" type="image/gif">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/benefit/css/default.css?v=<%=System.currentTimeMillis()%>">
+    <link rel="icon" type="image/png" href="/benefit/media/icon.gif" type="image/gif">
+    <link rel="stylesheet" href="/benefit/css/default.css?v=<%=System.currentTimeMillis()%>">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"
             integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
             crossorigin="anonymous"></script>
@@ -58,7 +56,7 @@
 
 <div id="outer-wrapper">
 
-    <a href="${pageContext.request.contextPath}/" id="home-href">
+    <a href="/" id="home-href">
         <div id="identity-wrapper">
             <span class="square">&nbsp;</span>
             <span class="circle">&nbsp;</span>
@@ -71,73 +69,73 @@
     <div id="header-wrapper">
 
         <span id="hello">Hi
-            <c:if test="${authUser.name != '' && authUser.name != 'null'}">
-                <a href="${pageContext.request.contextPath}/users/edit/${business.id}/${authUser.id}" style="color:#000;font-size:17px;" class="top">${authUser.name}</a>,
-            </c:if>
-            <c:if test="${authUser.name == '' || authUser.name == 'null'}">
-                <a href="${pageContext.request.contextPath}/users/edit/${business.id}/${authUser.id}" style="color:#000;font-size:17px;" class="top">Mr./Mrs.</a>,
-            </c:if>
-            Welcome Back! <a href="${pageContext.request.contextPath}/signout" style="color:#000;font-size:17px;" class="top">Signout!</a></span><br/><br/>
-        <c:if test="${businessOptions.size() > 0}">
+            <plsar:if spec="${authUser.name != ''}">
+                <a href="/users/edit/${business.id}/${authUser.id}" style="color:#000;font-size:17px;" class="top">${authUser.name}</a>,
+            </plsar:if>
+            <plsar:if spec="${authUser.name == ''}">
+                <a href="/users/edit/${business.id}/${authUser.id}" style="color:#000;font-size:17px;" class="top">Mr./Mrs.</a>,
+            </plsar:if>
+            Welcome Back! <a href="/signout" style="color:#000;font-size:17px;" class="top">Signout!</a></span><br/><br/>
+        <plsar:if spec="${businessOptions.size() > 0}">
             Business :
             <select name="business" id="business-select">
                 <c:forEach var="current" items="${businessOptions}">
-                    <c:if test="${current.id == business.id}">
-                        <c:set var="selected" value="selected"/>
-                    </c:if>
-                    <c:if test="${current.id != business.id}">
-                        <c:set var="selected" value=""/>
-                    </c:if>
+                    <plsar:if spec="${current.id == business.id}">
+                        <plsar:set var="selected" value="selected"/>
+                    </plsar:if>
+                    <plsar:if spec="${current.id != business.id}">
+                        <plsar:set var="selected" value=""/>
+                    </plsar:if>
                     <option value="${current.id}" ${selected}>${current.name}</option>
                 </c:forEach>
             </select>
-            <a href="${pageContext.request.contextPath}/businesses/new/${business.id}" class="button modern">New Business</a>
-            <c:if test="${!business.activationComplete}">
-                <a href="${pageContext.request.contextPath}/snapshot/${business.id}" class="button payments">Setup Payments!</a>
-            </c:if>
-        </c:if>
-        <c:if test="${businessOptions.size() == 0}">
-            <a href="${pageContext.request.contextPath}/businesses/new/${business.id}" class="button modern">New Business</a>
-        </c:if>
+            <a href="/businesses/new/${business.id}" class="button modern">New Business</a>
+            <plsar:if spec="${!business.activationComplete}">
+                <a href="/snapshot/${business.id}" class="button payments">Setup Payments!</a>
+            </plsar:if>
+        </plsar:if>
+        <plsar:if spec="${businessOptions.size() == 0}">
+            <a href="/businesses/new/${business.id}" class="button modern">New Business</a>
+        </plsar:if>
     </div>
 
     <div id="menu-wrapper">
 
         <span id="business-identity">${business.name}.
-            <c:if test="${!business.activationComplete}">
+            <plsar:if spec="${!business.activationComplete}">
                 <br/>
-                <a href="${pageContext.request.contextPath}/businesses/signup/complete/${business.id}" class="tiny">Congratulations!</a>
-            </c:if>
+                <a href="/businesses/signup/complete/${business.id}" class="tiny">Congratulations!</a>
+            </plsar:if>
         </span>
         <ul id="sales-menu" class="menu">
-            <li><a href="${pageContext.request.contextPath}/snapshot/${business.id}"><span>Snapshot</span></a></li>
-            <li><a href="${pageContext.request.contextPath}/sales/${business.id}"><span>Sales</span></a></li>
-            <li><a href="${pageContext.request.contextPath}/clients/${business.id}"><span>Clients</span></a></li>
-            <c:if test="${!business.affiliate}">
-                <li><a href="${pageContext.request.contextPath}/affiliates/${business.id}"><span>Affiliates</span></a></li>
-                <li><a href="${pageContext.request.contextPath}/affiliates/requests/${business.id}"><span>Requests</span></a></li>
-            </c:if>
+            <li><a href="/snapshot/${business.id}"><span>Snapshot</span></a></li>
+            <li><a href="/sales/${business.id}"><span>Sales</span></a></li>
+            <li><a href="/clients/${business.id}"><span>Clients</span></a></li>
+            <plsar:if spec="${!business.affiliate}">
+                <li><a href="/affiliates/${business.id}"><span>Affiliates</span></a></li>
+                <li><a href="/affiliates/requests/${business.id}"><span>Requests</span></a></li>
+            </plsar:if>
         </ul>
         <ul id="settings-menu" class="menu">
-            <li><a href="${pageContext.request.contextPath}/items/${business.id}"><span>Items</span></a></li>
-            <li><a href="${pageContext.request.contextPath}/categories/${business.id}"><span>Categories</span></a></li>
-            <li><a href="${pageContext.request.contextPath}/designs/${business.id}"><span>Designs</span></a></li>
-            <li><a href="${pageContext.request.contextPath}/pages/${business.id}"><span>Pages</span></a></li>
+            <li><a href="/items/${business.id}"><span>Items</span></a></li>
+            <li><a href="/categories/${business.id}"><span>Categories</span></a></li>
+            <li><a href="/designs/${business.id}"><span>Designs</span></a></li>
+            <li><a href="/pages/${business.id}"><span>Pages</span></a></li>
         </ul>
         <ul id="business-menu" class="menu">
-            <li><a href="${pageContext.request.contextPath}/${business.uri}/asset/home" target="_blank"><span>Homepage</span></a></li>
-            <li><a href="${pageContext.request.contextPath}/businesses/settings/${business.id}"><span>Settings</span></a></li>
-            <li><a href="${pageContext.request.contextPath}/imports/media/${business.id}"><span>Data Imports</span></a></li>
-            <li><a href="${pageContext.request.contextPath}/assets/${business.id}"><span>Assets</span></a></li>
+            <li><a href="/${business.uri}/asset/home" target="_blank"><span>Homepage</span></a></li>
+            <li><a href="/businesses/settings/${business.id}"><span>Settings</span></a></li>
+            <li><a href="/imports/media/${business.id}"><span>Data Imports</span></a></li>
+            <li><a href="/assets/${business.id}"><span>Assets</span></a></li>
         </ul>
 
     </div>
 
     <div id="content-wrapper">
-        <jsp:include page="${page}"/>
+        <plsar:content/>
     </div>
 
-    <c:if test="${assets.size() > 0}">
+    <plsar:if spec="${assets.size() > 0}">
         <div id="assets-wrapper">
             <h2 style="text-align: center">Web Assets</h2>
             <table>
@@ -145,38 +143,34 @@
                     <th>Name</th>
                     <th>Url</th>
                 </tr>
-                <c:forEach items="${assets}" var="asset">
+                <plsar:iterate items="${assets}" var="asset">
                     <tr>
-                        <c:if test="${asset.type == 'media'}">
+                        <plsar:if spec="${asset.type == 'media'}">
                             <td>
                                 <span class="information">${asset.name}</span>
                             </td>
                             <td>
-                                <img src="${pageContext.request.contextPath}/media/${asset.meta}" />
-                                <a href="${pageContext.request.contextPath}/media/${asset.meta}" class="information" target="_blank">${pageContext.request.contextPath}/media/${asset.meta}</a>
+                                <img src="/media/${asset.meta}" />
+                                <a href="/media/${asset.meta}" class="information" target="_blank">/media/${asset.meta}</a>
                             </td>
-                        </c:if>
-                        <c:if test="${asset.type != 'media'}">
+                        </plsar:if>
+                        <plsar:if spec="${asset.type != 'media'}">
                             <td>
                                 <span class="information">${asset.name}</span>
                             </td>
                             <td>
-                                <a href="${pageContext.request.contextPath}/go/${asset.meta}" class="information" target="_blank">${pageContext.request.contextPath}/go/${asset.meta}</a>
+                                <a href="/go/${asset.meta}" class="information" target="_blank">/go/${asset.meta}</a>
                             </td>
-                        </c:if>
+                        </plsar:if>
                     </tr>
-                </c:forEach>
+                </plsar:iterate>
             </table>
         </div>
-    </c:if>
+    </plsar:if>
 
     <br class="clear"/>
 
 </div>
-
-
-
-
 
 
 <div id="footer-wrapper"></div>
@@ -188,7 +182,7 @@
         $businessSelect.change(function(){
             const id = $businessSelect.val();
             console.info('id', id);
-            window.location = "${pageContext.request.contextPath}/snapshot/" + id;
+            window.location = "/snapshot/" + id;
         })
 
 

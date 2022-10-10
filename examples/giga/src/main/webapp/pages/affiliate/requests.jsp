@@ -1,13 +1,13 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<c:if test="${not empty message}">
+
+<plsar:if spec="${message != ''}">
     <p class="notify">${message}</p>
-</c:if>
+</plsar:if>
 
 <h1 class="left-float">Business<br/>Partner Requests</h1>
 <br class="clear"/>
 
-<c:if test="${businessRequests.size() > 0}">
+<plsar:if spec="${businessRequests.size() > 0}">
     <table>
         <tr>
             <th></th>
@@ -16,7 +16,7 @@
         <c:forEach var="businessRequest" items="${businessRequests}" varStatus="idx">
             <tr>
                 <td style="width:160px;">
-                    <a href="${pageContext.request.contextPath}/affiliates/onboarding/status/${businessRequest.guid}" class="button orange">Status Page</a>
+                    <a href="/affiliates/onboarding/status/${businessRequest.guid}" class="button orange">Status Page</a>
                     <p class="tiny">View the request status page that the person who requested it sees.</p>
                 </td>
                 <td>
@@ -26,23 +26,23 @@
                     <strong>Notes:</strong><br/>
                     <p>${businessRequest.notes}</p>
                 </td>
-                <c:if test="${businessRequest.pending}">
+                <plsar:if spec="${businessRequest.pending}">
                     <td>
-                        <form action="${pageContext.request.contextPath}/affiliates/onboarding/approve/${businessRequest.id}" method="post"">
+                        <form action="/affiliates/onboarding/approve/${businessRequest.id}" method="post"">
                             <input type="submit" value="Approve!" class="button green"/>
                         </form>
-                        <form action="${pageContext.request.contextPath}/affiliates/onboarding/pass/${businessRequest.id}" method="post" onsubmit="return confirm('Are you sure you want to pass on this offering?');">
+                        <form action="/affiliates/onboarding/pass/${businessRequest.id}" method="post" onsubmit="return confirm('Are you sure you want to pass on this offering?');">
                             <input type="submit" value="Pass" class="button orange"/>
                         </form>
                     </td>
-                </c:if>
+                </plsar:if>
             </tr>
         </c:forEach>
     </table>
-</c:if>
+</plsar:if>
 
 
-<c:if test="${businessRequests.size() == 0}">
+<plsar:if spec="${businessRequests.size() == 0}">
     <p class="notify">No business partner requests yet.</p>
     <h3>What are Business Partner requests?</h3>
 
@@ -50,4 +50,4 @@
     running an online store as an affiliate or business partner. They gain access to your
     products and can set prices and add designs to your item page. They cannot change
     quantity, descriptions or item options.</p>
-</c:if>
+</plsar:if>

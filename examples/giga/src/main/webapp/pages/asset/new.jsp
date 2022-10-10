@@ -1,9 +1,9 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 <h1>New Asset</h1>
 <p>Use the following to upload artifacts to support your web front end.</p>
 
-<form action="${pageContext.request.contextPath}/assets/save" method="post" enctype="multipart/form-data">
+<form action="/assets/save" method="post" enctype="multipart/form-data">
 
     <input type="hidden" name="businessId" value="${business.id}"/>
 

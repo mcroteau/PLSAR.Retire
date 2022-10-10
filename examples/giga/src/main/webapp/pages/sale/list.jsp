@@ -1,13 +1,13 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<c:if test="${not empty message}">
+
+<plsar:if spec="${message != ''}">
     <p class="notify">${message}</p>
-</c:if>
+</plsar:if>
 
 <h1 class="left-float">Sales</h1>
 <br class="clear"/>
 
-<c:if test="${sales.size() > 0}">
+<plsar:if spec="${sales.size() > 0}">
     <table>
         <tr>
             <th>Id</th>
@@ -18,25 +18,25 @@
             <tr>
                 <td>${sale.id}</td>
                 <td style="width:150px;">
-                    <c:if test="${sale.cart.shipName != '' && sale.cart.shipName != 'null'}">
+                    <plsar:if spec="${sale.cart.shipName != '' && sale.cart.shipName != 'null'}">
                         ${sale.cart.shipName}<br/>
-                    </c:if>
-                    <c:if test="${sale.cart.shipPhone != '' && sale.cart.shipPhone != 'null'}">
+                    </plsar:if>
+                    <plsar:if spec="${sale.cart.shipPhone != '' && sale.cart.shipPhone != 'null'}">
                         <span class="information">Phone:<br/>
                                 ${sale.cart.shipPhone}</span><br/>
-                    </c:if>
-                    <c:if test="${sale.cart.shipEmail != '' && sale.cart.shipEmail != 'null'}">
+                    </plsar:if>
+                    <plsar:if spec="${sale.cart.shipEmail != '' && sale.cart.shipEmail != 'null'}">
                         <span class="information">Email:<br/>
                         ${sale.cart.shipEmail}</span>
-                    </c:if>
+                    </plsar:if>
                     <span class="tiny">Date: ${sale.prettyDate}</span>
-<%--                    <a href="${pageContext.request.contextPath}/sales/${business.id}/${sale.id}" class="button orange">Show Details</a>--%>
+<%--                    <a href="/sales/${business.id}/${sale.id}" class="button orange">Show Details</a>--%>
 
                     <br/><span class="tiny">Primary Amount : $${sale.convert(sale.primaryAmount)}</span>
 
-                    <c:if test="${sale.affiliateAmount != null}">
+                    <plsar:if spec="${sale.affiliateAmount != null}">
                         <br/><span class="tiny">Affiliate Commission : $${sale.convert(sale.affiliateAmount)}</span>
-                    </c:if>
+                    </plsar:if>
                 </td>
                 <td style="padding:0px !important">
                     <table>
@@ -80,8 +80,8 @@
             </tr>
         </c:forEach>
     </table>
-</c:if>
+</plsar:if>
 
-<c:if test="${sales.size() == 0}">
+<plsar:if spec="${sales.size() == 0}">
     <p class="notify">No Sales yet. Have no fear clients are on their way!</p>
-</c:if>
+</plsar:if>

@@ -1,4 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ page import="giga.Giga" %>
 
 ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
@@ -9,7 +9,7 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
     <c:forEach items="${rates}" var="rate" varStatus="idx">
 
         <div class="rate-wrapper">
-            <form action="${pageContext.request.contextPath}/${business.uri}/shipment/add" method="post">
+            <form action="/${business.uri}/shipment/add" method="post">
                 <input type="hidden" name="cartId" value="${cart.id}"/>
                 <input type="hidden" name="rate" value="${rate.rate}"/>
                 <input type="hidden" name="carrier" value="${rate.carrier}"/>
@@ -23,7 +23,7 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
     </c:forEach>
 
 
-    <a href="${pageContext.request.contextPath}/${business.uri}/shipment" class="button yellow">Re-calculate</a>
+    <a href="/${business.uri}/shipment" class="button yellow">Re-calculate</a>
 
     <h2>Ship Address</h2>
     <address>

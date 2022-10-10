@@ -1,7 +1,7 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 <h1>New Item</h1>
-<form action="${pageContext.request.contextPath}/items/save/${business.id}" method="post" enctype="multipart/form-data">
+<form action="/items/save/${business.id}" method="post" enctype="multipart/form-data">
 
     <input type="hidden" name="businessId" value="${business.id}"/>
 

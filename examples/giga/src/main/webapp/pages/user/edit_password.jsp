@@ -1,16 +1,16 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 <div class="section-wrapper">
 	<div class="section">
 
-		<c:if test="${not empty message}">
+		<plsar:if spec="${message != ''}">
 			<p class="notify">${message}</p>
-		</c:if>
+		</plsar:if>
 
 		<h1>Edit Password</h1>
 		<p>Okay! Finally, you can now update your password below!</p>
 
-		<form action="${pageContext.request.contextPath}/users/reset/${user.id}" method="post">
+		<form action="/users/reset/${user.id}" method="post">
 
 			<input type="hidden" name="id" value="${user.id}"/>
 			<input type="hidden" name="phone" value="${user.phone}"/>

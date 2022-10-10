@@ -1,14 +1,14 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ page import="giga.Giga" %>
 
-<c:if test="${not empty message}">
+<plsar:if spec="${message != ''}">
     <p class="notify">${message}</p>
-</c:if>
+</plsar:if>
 
 <h1 class="left-float">Item Image Imports</h1>
 <div class="right-float" style="text-align: right;margin-top: 20px;">
     <div class="right-float">
-        <form action="${pageContext.request.contextPath}/import/media/convert/${business.id}/${dataImport.id}" method="post">
+        <form action="/import/media/convert/${business.id}/${dataImport.id}" method="post">
             <input type="submit" class="button remove" value="Convert to Items!">
         </form>
     </div>
@@ -18,7 +18,7 @@
 <p>What is an item image import? An item image import is an image import that can be easily converted
 into items.</p>
 
-<c:if test="${mediaImports.size() > 0}">
+<plsar:if spec="${mediaImports.size() > 0}">
     <table>
         <tr>
             <th></th>
@@ -30,7 +30,7 @@ into items.</p>
                     <img src="${mediaImport.uri}" style="width:150px;border-radius:12px;"/>
                 </td>
                 <td>
-                    <form action="${pageContext.request.contextPath}/import/media/update/${business.id}/${mediaImport.importId}" method="post">
+                    <form action="/import/media/update/${business.id}/${mediaImport.importId}" method="post">
                         <input type="hidden" name="id" value="${mediaImport.id}"/>
                         <label>Name</label>
                         <input type="text" name="name" placeholder="Name" value="${mediaImport.name}" class="grid"/>
@@ -47,12 +47,12 @@ into items.</p>
                         <label>Category</label>
                         <select name="categoryId">
                             <c:forEach items="${categories}" var="category">
-                                <c:if test="${category.id == mediaImport.categoryId}">
+                                <plsar:if spec="${category.id == mediaImport.categoryId}">
                                     <c:set var="selected" value="selected"/>
-                                </c:if>
-                                <c:if test="${category.id != mediaImport.categoryId}">
+                                </plsar:if>
+                                <plsar:if spec="${category.id != mediaImport.categoryId}">
                                     <c:set var="selected" value=""/>
-                                </c:if>
+                                </plsar:if>
                                 <option value="${category.id}" ${selected}>${category.name}</option>
                             </c:forEach>
                         </select>
@@ -65,8 +65,8 @@ into items.</p>
             </tr>
         </c:forEach>
     </table>
-</c:if>
+</plsar:if>
 
-<c:if test="${mediaImports == null || mediaImports.size() == 0}">
-    <p class="notify">No item image imports added yet! <a href="${pageContext.request.contextPath}/import/media/${business.id}" class="href-dotted">New Import</a></p>
-</c:if>
+<plsar:if spec="${mediaImports == null || mediaImports.size() == 0}">
+    <p class="notify">No item image imports added yet! <a href="/import/media/${business.id}" class="href-dotted">New Import</a></p>
+</plsar:if>

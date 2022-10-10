@@ -4,10 +4,11 @@ import com.amazonaws.Request;
 import giga.Giga;
 import giga.model.Asset;
 import giga.model.User;
-import giga.repo.AssetRepo;
-import giga.repo.UserRepo;
+import giga.repo.*;
 import giga.service.BusinessService;
 import giga.service.SeaService;
+import giga.service.SiteService;
+import net.plsar.RouteAttributes;
 import net.plsar.annotations.*;
 import net.plsar.annotations.Component;
 import net.plsar.annotations.http.Get;
@@ -18,9 +19,7 @@ import net.plsar.security.SecurityManager;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @HttpRouter
 public class AssetRouter {
@@ -30,6 +29,15 @@ public class AssetRouter {
 
     @Inject
     UserRepo userRepo;
+
+    @Inject
+    DesignRepo designRepo;
+
+    @Inject
+    CategoryRepo categoryRepo;
+
+    @Inject
+    BusinessRepo businessRepo;
 
     BusinessService businessService;
 
@@ -91,26 +99,40 @@ public class AssetRouter {
 
     @Get("/assets/new/{businessId}")
     public String configure(Cache cache,
-                            HttpRequest httpRequest,
+                            HttpRequest req,
                             SecurityManager security,
                             @Component Long businessId){
-        if(!security.isAuthenticated(httpRequest)){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
-        businessService.setData(businessId, cache);
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
         cache.set("page", "/pages/asset/new.jsp");
         return "/designs/auth.jsp";
     }
 
     @Get("/assets/{businessId}")
     public String list(Cache cache,
-                       HttpRequest httpRequest,
+                       HttpRequest req,
                        SecurityManager security,
                        @Component Long businessId){
-        if(!security.isAuthenticated(httpRequest)){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
         List<Asset> assets = assetRepo.getList(businessId);
         cache.set("assets", assets);
@@ -138,13 +160,15 @@ public class AssetRouter {
         List<FileComponent> fileComponents = requestComponent.getFileComponents();
 
         SeaService seaService = new SeaService();
-
+        RouteAttributes routeAttributes = req.getRouteAttributes();
+        String key = (String) routeAttributes .get("storage.key");
+        String secret = (String) routeAttributes .get("storage.secret");
         for (FileComponent fileComponent : fileComponents) {
             String original = fileComponent.getFileName();
             InputStream is = new ByteArrayInputStream(fileComponent.getFileBytes());
             String ext = Giga.getExt(original);
             String name = Giga.getString(6) + "." + ext;
-            seaService.send(name, is);
+            seaService.send(key, secret, name, is);
             asset.setMeta(name);
             asset.setUri(Giga.OCEAN_ENDPOINT + name);
         }

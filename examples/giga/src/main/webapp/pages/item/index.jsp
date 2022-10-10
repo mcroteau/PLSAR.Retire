@@ -1,13 +1,13 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ page import="giga.Giga" %>
 
-<c:if test="${category != null}">
+<plsar:if spec="${category != null}">
     ${siteService.getItemBit(Giga.HEAD, item, category, business, request)}
-</c:if>
+</plsar:if>
 
-<c:if test="${category == null}">
+<plsar:if spec="${category == null}">
     ${siteService.getItemBit(Giga.HEAD, item, null, business, request)}
-</c:if>
+</plsar:if>
     <div id="barter-item-wrapper">
 
         <style>
@@ -22,7 +22,7 @@
             <h1>${item.name}</h1>
             <span id="item-price">$${siteService.getPriceDos(item.price)}</span>
 
-            <form action="${pageContext.request.contextPath}/${business.uri}/cart/add/${item.id}" method="post">
+            <form action="/${business.uri}/cart/add/${item.id}" method="post">
 
                 <label>Quantity</label>
                 <input type="text" name="quantity" value="0" id="quantity" style="width:100px;"/>
@@ -32,10 +32,10 @@
                     <select name="optionId">
                         <c:forEach items="${option.optionValues}" var="value">
                             <option value="${value.id}">${value.value}
-                                <c:if test="${value.price > 0}">
+                                <plsar:if spec="${value.price > 0}">
                                     @
                                     $${siteService.getPrice(value.price)}
-                                </c:if>
+                                </plsar:if>
                             </option>
                         </c:forEach>
                     </select>
@@ -53,10 +53,10 @@
 
     </div>
 
-<c:if test="${category != null}">
+<plsar:if spec="${category != null}">
     ${siteService.getItemBit(Giga.BOTTOM, item, category, business, request)}
-</c:if>
+</plsar:if>
 
-<c:if test="${category == null}">
+<plsar:if spec="${category == null}">
     ${siteService.getItemBit(Giga.BOTTOM, item, null, business, request)}
-</c:if>
+</plsar:if>

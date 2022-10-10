@@ -1,4 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 <style>
 
@@ -58,7 +58,7 @@
 <div id="splash-wrapper">
     <div id="splash" class="section">
         <h1 style="margin-bottom:10px;">Simple. Easy. Online Commerce.</h1>
-        <img src="${pageContext.request.contextPath}/benefit/media/giga.splash.png" style="margin:auto;width:650px"/>
+        <img src="/benefit/media/giga.splash.png" style="margin:auto;width:650px"/>
     </div>
 </div>
 
@@ -96,7 +96,7 @@
         beautiful Html + Css + Javascript user experiences and allows you to do such.</p>
 
         <div class="align-center" style="margin:30px 0px 60px">
-            <a href="${pageContext.request.contextPath}/signup" class="button yellow gigantic">Get Started as a Business!</a>
+            <a href="/signup" class="button yellow gigantic">Get Started as a Business!</a>
         </div>
 
     </div>
@@ -138,7 +138,7 @@
             #friends a{position:absolute; right:50px; top:254px;}
         </style>
 
-        <a href="${pageContext.request.contextPath}/affiliates/onboarding" class="button green gigantic">Get Started Now!</a>
+        <a href="/affiliates/onboarding" class="button green gigantic">Get Started Now!</a>
     </div>
 </div>
 

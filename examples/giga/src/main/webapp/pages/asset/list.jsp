@@ -1,15 +1,15 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ page import="giga.Giga" %>
 
-<c:if test="${not empty message}">
+<plsar:if spec="${message != ''}">
     <p class="notify">${message}</p>
-</c:if>
+</plsar:if>
 
 <h1 class="left-float">Web Assets</h1>
-<a href="${pageContext.request.contextPath}/assets/new/${business.id}" class="button retro right-float" style="margin-top:20px;">New Asset</a>
+<a href="/assets/new/${business.id}" class="button retro right-float" style="margin-top:20px;">New Asset</a>
 <br class="clear"/>
 
-<c:if test="${assets.size() > 0}">
+<plsar:if spec="${assets.size() > 0}">
     <table>
         <tr>
             <th>Id</th>
@@ -24,25 +24,25 @@
                     <span class="tiny">${asset.uri}</span></td>
                 <td>${asset.name}<br/>${asset.meta}</td>
                 <td style="width:60px;">
-                    <c:if test="${asset.type == 'media'}">
-                        <img src="${pageContext.request.contextPath}/media/${asset.meta}" style="width:150px;border-radius:12px;"/>
-                        <a href="${pageContext.request.contextPath}/media/${asset.meta}" target="_blank">${pageContext.request.contextPath}/media/${asset.meta}</a>
-                    </c:if>
-                    <c:if test="${asset.type != 'media'}">
-                        <a href="${pageContext.request.contextPath}/go/${asset.meta}" target="_blank">${pageContext.request.contextPath}/go/${asset.meta}</a>
-                    </c:if>
+                    <plsar:if spec="${asset.type == 'media'}">
+                        <img src="/media/${asset.meta}" style="width:150px;border-radius:12px;"/>
+                        <a href="/media/${asset.meta}" target="_blank">/media/${asset.meta}</a>
+                    </plsar:if>
+                    <plsar:if spec="${asset.type != 'media'}">
+                        <a href="/go/${asset.meta}" target="_blank">/go/${asset.meta}</a>
+                    </plsar:if>
                 </td>
                 <td>${asset.type}</td>
                 <td>
-                    <form action="${pageContext.request.contextPath}/assets/delete/${business.id}/${asset.id}" method="post" m onsubmit="return confirm('Are you sure you want to delete this asset?');">
+                    <form action="/assets/delete/${business.id}/${asset.id}" method="post" m onsubmit="return confirm('Are you sure you want to delete this asset?');">
                         <input type="submit" value="Delete" class="button remove"/>
                     </form>
                 </td>
             </tr>
         </c:forEach>
     </table>
-</c:if>
+</plsar:if>
 
-<c:if test="${assets == null || assets.size() == 0}">
-    <p class="notify">No assets added yet! <a href="${pageContext.request.contextPath}/assets/new/${business.id}" class="href-dotted">New Asset</a></p>
-</c:if>
+<plsar:if spec="${assets == null || assets.size() == 0}">
+    <p class="notify">No assets added yet! <a href="/assets/new/${business.id}" class="href-dotted">New Asset</a></p>
+</plsar:if>

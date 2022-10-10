@@ -1,199 +1,192 @@
 package giga.service;
 
-import giga.Giga;
 import giga.model.*;
-import giga.repo.BusinessRepo;
 import giga.repo.CartRepo;
 import giga.repo.DesignRepo;
 import giga.repo.ItemRepo;
-import jakarta.servlet.http.HttpRequest;
 import net.plsar.model.Cache;
 import net.plsar.model.HttpRequest;
-import qio.annotate.Inject;
-import qio.annotate.Service;
-import qio.model.web.Cache;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@Service
 public class CartService {
 
-//    public String view(String businessUri, Cache cache, HttpRequest req) {
-//        Business business = businessRepo.get(businessUri);
-//        if(business == null){
-//            return "[redirect]/home";
-//        }
+////    public String view(String businessUri, Cache cache, HttpRequest req) {
+////        Business business = businessRepo.get(businessUri);
+////        if(business == null){
+////            return "[redirect]/home";
+////        }
+////
+////        Cart cart = getCart(business, req);
+////        setData(cart, business, cache, req);
+////
+////        String oops = req.getParameter("oops");
+////        if(oops != null && oops.equals("true")){
+////            cache.set("message", "Something went wrong while processing your order.");
+////        }
+////
+////        return "/pages/cart/index.jsp";
+////    }
+////
+////    public String viewCheckout(String businessUri, Cache cache, HttpRequest req) {
+////        Business business = businessRepo.get(businessUri);
+////        if(business == null){
+////            return "[redirect]/home";
+////        }
+////
+////        Cart cart = getCart(business, req);
+////        setData(cart, business, cache, req);
+////
+////        return "/pages/cart/checkout.jsp";
+////    }
+////
+////    public String add(Long id, String businessUri, Cache cache, HttpRequest req) {
+////
+////        List<Business> businesses = businessRepo.getList();
+////        for(Business item: businesses){
+////            System.out.println("zzq, " + item.getUri());
+////        }
+////
+////        Business business = businessRepo.get(businessUri);
+////        if(business == null){
+////            return "[redirect]/home";
+////        }
+////
+////        Item activeItem = itemRepo.get(id);
+////        if(activeItem == null){
+////            return "[redirect]/" + businessUri + "/home";
+////        }
+////
+////        BigDecimal quantity = new BigDecimal(1);
+////        try {
+////            quantity = new BigDecimal(req.getParameter("quantity"));
+////            if(quantity.compareTo(new BigDecimal(0)) == 0){
+////                quantity = new BigDecimal(1);
+////            }
+////        }catch(Exception ex){}
+////
+////        Cart cart = getCart(business, req);
+////        System.out.println("z " + cart);
+////
+////        CartItem cartItem = new CartItem();
+////        cartItem.setBusinessId(business.getId());
+////        cartItem.setCartId(cart.getId());
+////        cartItem.setItemId(activeItem.getId());
+////        cartItem.setQuantity(quantity);
+////        cartItem.setPrice(activeItem.getPrice());
+////        cartRepo.saveItem(cartItem);
+////
+////        CartItem savedCartItem = cartRepo.getSavedItem();
+////        System.out.println("z item: " + savedCartItem.getId());
+////
+////        String[] optionIds = req.getParameterValues("optionId");
+////        if(optionIds != null) {
+////            for (String optionId : optionIds) {
+////                OptionValue optionValue = itemRepo.getValue(Long.valueOf(optionId));
+////                CartOption cartOption = new CartOption();
+////                cartOption.setCartId(cart.getId());
+////                cartOption.setCartItemId(savedCartItem.getId());
+////                cartOption.setItemOptionId(optionValue.getItemOptionId());
+////                cartOption.setOptionValueId(optionValue.getId());
+////                cartOption.setPrice(optionValue.getPrice());
+////                cartOption.setQuantity(quantity);
+////                cartRepo.saveOption(cartOption);
+////
+////                BigDecimal itemTotal = cartOption.getPrice().multiply(quantity);
+////                savedCartItem.setItemTotal(itemTotal);
+////                cartRepo.updateItem(savedCartItem);
+////            }
+////        }
+////
+////        activeItem.setQuantity(activeItem.getQuantity().subtract(quantity));
+////        itemRepo.update(activeItem);
+////
+////        cartRepo.deleteRate(cart.getId());
+////
+////        setData(cart, business, cache, req);
+////
+////        if(shipmentService.validateAddress(cart, business)){
+////            cart.setValidAddress(true);
+////        }else{
+////            cart.setValidAddress(false);
+////        }
+////
+////        cartRepo.update(cart);
+////
+////        System.out.println("added");
+////        System.out.println("////////////////////////////////\n\n");
+////
+////        cache.set("message", "Added " + activeItem.getName() + " to Kart");
+////
+////        if(cart.getValidAddress() != null &&
+////                cart.getValidAddress()){
+////            return "[redirect]/" + businessUri + "/checkout";
+////        }
+////        return "[redirect]/" + businessUri + "/cart";
+////    }
 //
-//        Cart cart = getCart(business, req);
-//        setData(cart, business, cache, req);
+//    public Cart getCart(Business business, CartRepo cartRepo, HttpRequest req){
+//        Cart cart;
+//        User user = null;
+//        String sessionId = req.getSession().getId();
 //
-//        String oops = req.getParameter("oops");
-//        if(oops != null && oops.equals("true")){
-//            cache.set("message", "Something went wrong while processing your order.");
-//        }
-//
-//        return "/pages/cart/index.jsp";
-//    }
-//
-//    public String viewCheckout(String businessUri, Cache cache, HttpRequest req) {
-//        Business business = businessRepo.get(businessUri);
-//        if(business == null){
-//            return "[redirect]/home";
-//        }
-//
-//        Cart cart = getCart(business, req);
-//        setData(cart, business, cache, req);
-//
-//        return "/pages/cart/checkout.jsp";
-//    }
-//
-//    public String add(Long id, String businessUri, Cache cache, HttpRequest req) {
-//
-//        List<Business> businesses = businessRepo.getList();
-//        for(Business item: businesses){
-//            System.out.println("zzq, " + item.getUri());
-//        }
-//
-//        Business business = businessRepo.get(businessUri);
-//        if(business == null){
-//            return "[redirect]/home";
-//        }
-//
-//        Item activeItem = itemRepo.get(id);
-//        if(activeItem == null){
-//            return "[redirect]/" + businessUri + "/home";
-//        }
-//
-//        BigDecimal quantity = new BigDecimal(1);
-//        try {
-//            quantity = new BigDecimal(req.getParameter("quantity"));
-//            if(quantity.compareTo(new BigDecimal(0)) == 0){
-//                quantity = new BigDecimal(1);
-//            }
-//        }catch(Exception ex){}
-//
-//        Cart cart = getCart(business, req);
-//        System.out.println("z " + cart);
-//
-//        CartItem cartItem = new CartItem();
-//        cartItem.setBusinessId(business.getId());
-//        cartItem.setCartId(cart.getId());
-//        cartItem.setItemId(activeItem.getId());
-//        cartItem.setQuantity(quantity);
-//        cartItem.setPrice(activeItem.getPrice());
-//        cartRepo.saveItem(cartItem);
-//
-//        CartItem savedCartItem = cartRepo.getSavedItem();
-//        System.out.println("z item: " + savedCartItem.getId());
-//
-//        String[] optionIds = req.getParameterValues("optionId");
-//        if(optionIds != null) {
-//            for (String optionId : optionIds) {
-//                OptionValue optionValue = itemRepo.getValue(Long.valueOf(optionId));
-//                CartOption cartOption = new CartOption();
-//                cartOption.setCartId(cart.getId());
-//                cartOption.setCartItemId(savedCartItem.getId());
-//                cartOption.setItemOptionId(optionValue.getItemOptionId());
-//                cartOption.setOptionValueId(optionValue.getId());
-//                cartOption.setPrice(optionValue.getPrice());
-//                cartOption.setQuantity(quantity);
-//                cartRepo.saveOption(cartOption);
-//
-//                BigDecimal itemTotal = cartOption.getPrice().multiply(quantity);
-//                savedCartItem.setItemTotal(itemTotal);
-//                cartRepo.updateItem(savedCartItem);
-//            }
-//        }
-//
-//        activeItem.setQuantity(activeItem.getQuantity().subtract(quantity));
-//        itemRepo.update(activeItem);
-//
-//        cartRepo.deleteRate(cart.getId());
-//
-//        setData(cart, business, cache, req);
-//
-//        if(shipmentService.validateAddress(cart, business)){
-//            cart.setValidAddress(true);
+//        if(authService.isAuthenticated()){
+//            user = authService.getUser();
+//            cart = cartRepo.getActive(user.getId(), business.getId());
 //        }else{
-//            cart.setValidAddress(false);
+//            cart = cartRepo.getActive(sessionId, business.getId());
 //        }
 //
-//        cartRepo.update(cart);
+//        if(cart == null) {
+//            cart = new Cart();
 //
-//        System.out.println("added");
-//        System.out.println("////////////////////////////////\n\n");
+//            cart.setDateCreated(Giga.getDate());
+//            cart.setBusinessId(business.getId());
 //
-//        cache.set("message", "Added " + activeItem.getName() + " to Kart");
-//
-//        if(cart.getValidAddress() != null &&
-//                cart.getValidAddress()){
-//            return "[redirect]/" + businessUri + "/checkout";
-//        }
-//        return "[redirect]/" + businessUri + "/cart";
-//    }
-
-    public Cart getCart(Business business, CartRepo cartRepo, HttpRequest req){
-        Cart cart;
-        User user = null;
-        String sessionId = req.getSession().getId();
-
-        if(authService.isAuthenticated()){
-            user = authService.getUser();
-            cart = cartRepo.getActive(user.getId(), business.getId());
-        }else{
-            cart = cartRepo.getActive(sessionId, business.getId());
-        }
-
-        if(cart == null) {
-            cart = new Cart();
-
-            cart.setDateCreated(Giga.getDate());
-            cart.setBusinessId(business.getId());
-
-            if (user != null) {
-                cart.setUserId(user.getId());
-            } else {
-                System.out.println("session " + sessionId);
-                cart.setSessionId(sessionId);
-            }
-
-            cart.setActive(true);
-            cartRepo.save(cart);
-            cart = cartRepo.getSaved();
-
-            cart.setTotal(new BigDecimal(0));
-            cart.setSubtotal(new BigDecimal(0));
-            cart.setShipping(new BigDecimal(0));
-        }
-
-        if(authService.isAuthenticated()){
-            cart.setShipName(user.getName());
-            cart.setShipPhone(user.getPhone());
-            cart.setShipEmail(user.getUsername());
-            cart.setShipStreet(user.getShipStreet());
-            cart.setShipStreetDos(user.getShipStreetDos());
-            cart.setShipCity(user.getShipCity());
-            cart.setShipState(user.getShipState());
-            cart.setShipCountry(user.getShipCountry());
-            cart.setShipZip(user.getShipZip());
-
-            //->
-            // setting to valid address regardless for now.
-            // mail service integration is easy, this is already
-            // setup with one.
-            cart.setValidAddress(true);
-
-//            if(shipmentService.validateAddress(user, business) &&
-//                    shipmentService.validateBusinessAddress(business)){
-//                ///-> mail integration done here.
+//            if (user != null) {
+//                cart.setUserId(user.getId());
+//            } else {
+//                System.out.println("session " + sessionId);
+//                cart.setSessionId(sessionId);
 //            }
-
-            cartRepo.update(cart);
-        }
-
-        return cart;
-    }
+//
+//            cart.setActive(true);
+//            cartRepo.save(cart);
+//            cart = cartRepo.getSaved();
+//
+//            cart.setTotal(new BigDecimal(0));
+//            cart.setSubtotal(new BigDecimal(0));
+//            cart.setShipping(new BigDecimal(0));
+//        }
+//
+//        if(authService.isAuthenticated()){
+//            cart.setShipName(user.getName());
+//            cart.setShipPhone(user.getPhone());
+//            cart.setShipEmail(user.getUsername());
+//            cart.setShipStreet(user.getShipStreet());
+//            cart.setShipStreetDos(user.getShipStreetDos());
+//            cart.setShipCity(user.getShipCity());
+//            cart.setShipState(user.getShipState());
+//            cart.setShipCountry(user.getShipCountry());
+//            cart.setShipZip(user.getShipZip());
+//
+//            //->
+//            // setting to valid address regardless for now.
+//            // mail service integration is easy, this is already
+//            // setup with one.
+//            cart.setValidAddress(true);
+//
+////            if(shipmentService.validateAddress(user, business) &&
+////                    shipmentService.validateBusinessAddress(business)){
+////                ///-> mail integration done here.
+////            }
+//
+//            cartRepo.update(cart);
+//        }
+//
+//        return cart;
+//    }
 
 
     public void setData(Cart cart, Business business, Cache cache, ItemRepo itemRepo, DesignRepo designRepo, CartRepo cartRepo, HttpRequest req, SiteService siteService){
@@ -261,14 +254,14 @@ public class CartService {
         cache.set("siteService", siteService);
     }
 
-    public String minus(Long id, String businessUri, Cache cache) {
-        CartItem cartItem = cartRepo.getItem(id);
-        cartRepo.deleteOption(id);
-        cartRepo.deleteItem(id);
-        Cart cart = cartRepo.get(cartItem.getCartId());
-        cartRepo.update(cart);
-        cache.set("message", "Removed item from cart.");
-        return "[redirect]/" + businessUri + "/cart";
-    }
+//    public String minus(Long id, String businessUri, Cache cache) {
+//        CartItem cartItem = cartRepo.getItem(id);
+//        cartRepo.deleteOption(id);
+//        cartRepo.deleteItem(id);
+//        Cart cart = cartRepo.get(cartItem.getCartId());
+//        cartRepo.update(cart);
+//        cache.set("message", "Removed item from cart.");
+//        return "[redirect]/" + businessUri + "/cart";
+//    }
 
 }

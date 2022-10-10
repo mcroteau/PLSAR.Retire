@@ -1,4 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 <style>
     #signup-wrapper{
@@ -11,11 +11,11 @@
 
     <div id="signup-wrapper" class="section">
 
-        <c:if test="${not empty message}">
+        <plsar:if spec="${message != ''}">
             <p class="notify">${message}</p>
-        </c:if>
+        </plsar:if>
 
-        <form action="${pageContext.request.contextPath}/business/signup" method="post" id="signup-form">
+        <form action="/business/signup" method="post" id="signup-form">
             <fieldset style="text-align: left">
 
                 <h1 style="margin-bottom:20px;">Business<br/>Signup!</h1>

@@ -1,4 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 <html>
 <head>
@@ -6,8 +6,8 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/media/icon.png?v=<%=System.currentTimeMillis()%>">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css?v=<%=System.currentTimeMillis()%>">
+    <link rel="icon" type="image/png" href="/assets/media/icon.png?v=<%=System.currentTimeMillis()%>">
+    <link rel="stylesheet" href="/assets/css/app.css?v=<%=System.currentTimeMillis()%>">
 
 </head>
 <body>
@@ -16,7 +16,7 @@
 
 <div id="outer-wrapper">
 
-    <a href="${pageContext.request.contextPath}/" id="home-href">
+    <a href="/" id="home-href">
         <div id="identity-wrapper">
             <span class="square">&nbsp;</span>
             <span class="circle">&nbsp;</span>
@@ -34,7 +34,7 @@
         <h3>Congratulations</h3>
         <p>On starting a new business! Enter your business details below to get started!</p>
 
-        <form action="${pageContext.request.contextPath}/businesses/save" method="post">
+        <form action="/businesses/save" method="post">
 
             <input type="hidden" name="userId" value="${authUser.id}"/>
 

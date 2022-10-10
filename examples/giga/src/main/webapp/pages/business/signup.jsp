@@ -1,4 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ page import="giga.Giga" %>
 
 ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
@@ -13,11 +13,11 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
 
 <div id="signup-wrapper" class="section">
 
-    <c:if test="${not empty message}">
+    <plsar:if spec="${message != ''}">
         <p class="notify">${message}</p>
-    </c:if>
+    </plsar:if>
 
-    <form action="${pageContext.request.contextPath}/${business.uri}/register" method="post" id="signup-form">
+    <form action="/${business.uri}/register" method="post" id="signup-form">
         <fieldset style="text-align: left">
 
             <h1 style="margin-bottom:20px;">${business.name} Signup!</h1>

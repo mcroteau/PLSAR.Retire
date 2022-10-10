@@ -1,9 +1,9 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 <h1>New Page</h1>
 <p>Create a new page to support your business front end.</p>
 
-<form action="${pageContext.request.contextPath}/pages/save" method="post" enctype="multipart/form-data">
+<form action="/pages/save" method="post" enctype="multipart/form-data">
 
     <input type="hidden" name="businessId" value="${business.id}"/>
 

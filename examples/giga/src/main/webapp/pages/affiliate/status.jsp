@@ -1,4 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 <style>
     #status-wrapper{
@@ -21,24 +21,24 @@
 
         <div id="status-wrapper">
 
-            <c:if test="${!businessRequest.approved && !businessRequest.denied}">
+            <plsar:if spec="${!businessRequest.approved && !businessRequest.denied}">
                 <p class="status retro">Pending</p>
                 <p>You may be a business owner before you know it. Stay tuned. If you
                 need to contact the Business owner, here is : ${user.username}</p>
-            </c:if>
+            </plsar:if>
 
-            <c:if test="${businessRequest.approved}">
+            <plsar:if spec="${businessRequest.approved}">
                 <p class="status green">Congratulations! Request Approved!</p>
 
                 <p>Congratulations! You have the approval of one of your favorite business
                     owners to continue with store setup. So, let's continue...</p>
-                <form action="${pageContext.request.contextPath}/affiliate/setup/${businessRequest.id}" method="post">
+                <form action="/affiliate/setup/${businessRequest.id}" method="post">
                     <input type="submit" value="Start Business Now!" class="button retro" onclick="this.disabled=true;this.value='Please wait...';this.form.submit();"/>
                 </form>
-            </c:if>
+            </plsar:if>
 
 
-            <c:if test="${businessRequest.denied}">
+            <plsar:if spec="${businessRequest.denied}">
                 <p class="status remove">We are sorry.</p>
                 <p>We are sorry, but the business owner has decided to do
                     pass for now. You can always try again at a different time,
@@ -47,7 +47,7 @@
                     will pay off! We thank you! Best.</p>
 
                 <p>${user.username} is ${business.name}'s contact email. </p>
-            </c:if>
+            </plsar:if>
         </div>
     </div>
 </div>

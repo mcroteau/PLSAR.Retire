@@ -1,7 +1,7 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 <h1>Edit Business</h1>
-<form action="${pageContext.request.contextPath}/businesses/update/${editBusiness.id}" method="post">
+<form action="/businesses/update/${editBusiness.id}" method="post">
 
     <input type="hidden" name="id" value="${editBusiness.id}"/>
 

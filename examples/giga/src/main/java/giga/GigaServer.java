@@ -1,4 +1,4 @@
-package plsar;
+package giga;
 
 import net.plsar.PLSAR;
 import net.plsar.PersistenceConfig;
@@ -8,10 +8,9 @@ import net.plsar.environments.Environments;
 import net.plsar.security.renderer.AuthenticatedRenderer;
 import net.plsar.security.renderer.GuestRenderer;
 import net.plsar.security.renderer.UserRenderer;
-import plsar.assist.AuthSecurityAccess;
 
-public class Main {
-    public static void main(String[] args) {
+public class GigaServer {
+    public static void main(String[] args){
         PersistenceConfig persistenceConfig = new PersistenceConfig();
         persistenceConfig.setDriver(Drivers.H2);
         persistenceConfig.setUrl("jdbc:h2:~/devDb");

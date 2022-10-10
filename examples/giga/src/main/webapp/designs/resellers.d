@@ -4,8 +4,8 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/benefit/media/icon.png?v=<%=System.currentTimeMillis()%>">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/benefit/css/app.css?v=<%=System.currentTimeMillis()%>">
+    <link rel="icon" type="image/png" href="/benefit/media/icon.png?v=<%=System.currentTimeMillis()%>">
+    <link rel="stylesheet" href="/benefit/css/app.css?v=<%=System.currentTimeMillis()%>">
 
 </head>
 <body>
@@ -81,7 +81,7 @@
         }
     </style>
 
-    <a href="${pageContext.request.contextPath}/" id="home-href">
+    <a href="/" id="home-href">
         <div id="identity-wrapper">
             <span class="square">&nbsp;</span>
             <span class="circle">&nbsp;</span>

@@ -1,15 +1,15 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ page import="giga.Giga" %>
 
 ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
 
-    <c:if test="${not empty message}">
+    <plsar:if spec="${message != ''}">
         <p class="notify">${message}</p>
-    </c:if>
+    </plsar:if>
 
     <h1>${business.name} Signin</h1>
 
-    <form action="${pageContext.request.contextPath}/${business.uri}/signin" modelAttribute="user" method="post" >
+    <form action="/${business.uri}/signin" modelAttribute="user" method="post" >
 
         <div class="form-group">
             <label for="username">Username
@@ -30,7 +30,7 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
     </form>
 
     <div class="button-wrapper-bottom align-center">
-        <a href="${pageContext.request.contextPath}/${business.uri}/users/password/get">I need help signing in!</a>
+        <a href="/${business.uri}/users/password/get">I need help signing in!</a>
     </div>
 
 ${siteService.getBaseBit(Giga.BOTTOM, design, business, request)}

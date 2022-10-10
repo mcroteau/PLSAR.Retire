@@ -1,12 +1,12 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ taglib prefix="chico" uri="/META-INF/tags/chico.tld" %>
 <%@ page import="giga.Giga" %>
 
 ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
 
-<c:if test="${not empty message}">
+<plsar:if spec="${message != ''}">
     <p class="notify">${message}</p>
-</c:if>
+</plsar:if>
 
 <style>
     #step-by-step{margin:10px auto 30px;width:370px;}
@@ -17,7 +17,7 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
 
 <div id="cart-wrapper">
 
-    <c:if test="${items.size() > 0}">
+    <plsar:if spec="${items.size() > 0}">
         <div style="text-align: center">
             <div id="step-by-step">
                 <div class="step active left-float">1</div>
@@ -28,11 +28,11 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
                 <br class="clear"/>
             </div>
         </div>
-    </c:if>
+    </plsar:if>
 
     <h1 class="align-left">Shopping Cart</h1>
 
-    <c:if test="${items.size() > 0}">
+    <plsar:if spec="${items.size() > 0}">
         <table>
             <tr>
                 <th>Id</th>
@@ -55,7 +55,7 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
                     <td>$${siteService.getPriceDos(cartItem.price)}</td>
                     <td>$${siteService.getPriceDos(cartItem.itemTotal)}</td>
                     <td>
-                        <form action="${pageContext.request.contextPath}/${business.uri}/cart/minus/${cartItem.id}" method="post">
+                        <form action="/${business.uri}/cart/minus/${cartItem.id}" method="post">
                             <input type="submit" value="x" class="button light"/>
                         </form>
                     </td>
@@ -68,18 +68,18 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
             <tr>
                 <td colspan="4">Shipping:</td>
                 <td>
-                    <c:if test="${!business.flatShipping}">
-                        <c:if test="${cart.validAddress}">
+                    <plsar:if spec="${!business.flatShipping}">
+                        <plsar:if spec="${cart.validAddress}">
                             $${siteService.getPriceDos(rate.rate)}
                             ${rate.carrier}, est days ${rate.deliveryDays}
-                        </c:if>
-                        <c:if test="${!cart.validAddress}">
-                            <a href="${pageContext.request.contextPath}/${business.uri}/shipment" id="choose-shipping">Choose Shipping!</a>
-                        </c:if>
-                    </c:if>
-                    <c:if test="${business.flatShipping}">
+                        </plsar:if>
+                        <plsar:if spec="${!cart.validAddress}">
+                            <a href="/${business.uri}/shipment" id="choose-shipping">Choose Shipping!</a>
+                        </plsar:if>
+                    </plsar:if>
+                    <plsar:if spec="${business.flatShipping}">
                         $${siteService.getPriceDos(business.shipping)}
-                    </c:if>
+                    </plsar:if>
                 </td>
             </tr>
             <tr>
@@ -88,23 +88,23 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
             </tr>
         </table>
 
-        <c:if test="${!business.flatShipping && !cart.validAddress}">
+        <plsar:if spec="${!business.flatShipping && !cart.validAddress}">
             <div class="align-right" style="margin-top:20px">
-                <a href="${pageContext.request.contextPath}/${business.uri}/shipment" id="choose-shipping-dos" class="button orange">Choose Shipping!</a>
+                <a href="/${business.uri}/shipment" id="choose-shipping-dos" class="button orange">Choose Shipping!</a>
             </div>
-        </c:if>
+        </plsar:if>
 
-        <c:if test="${business.flatShipping}">
+        <plsar:if spec="${business.flatShipping}">
             <br/>
             <div class="align-right">
-                <a href="${pageContext.request.contextPath}/${business.uri}/shipment/create" class="button orange">Continue Step 2 : Shipping</a>
+                <a href="/${business.uri}/shipment/create" class="button orange">Continue Step 2 : Shipping</a>
             </div>
-        </c:if>
+        </plsar:if>
 
-        <c:if test="${cart.validAddress}">
+        <plsar:if spec="${cart.validAddress}">
             <div class="align-right" style="margin:20px 90px;">or</div>
             <div class="align-right">
-                <a href="${pageContext.request.contextPath}/${business.uri}/checkout" class="button green">Continue Step 3 : Checkout</a>
+                <a href="/${business.uri}/checkout" class="button green">Continue Step 3 : Checkout</a>
             </div>
 
             <h3 class="align-left">Ship Address</h3>
@@ -116,17 +116,17 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
                 ${cart.get(cart.shipCountry)}<br/>
                 ${cart.get(cart.shipEmail)}
                 Phone: ${cart.get(cart.shipPhone)}<br/>
-                <a href="${pageContext.request.contextPath}/${business.uri}/shipment/create">Edit Address</a>
+                <a href="/${business.uri}/shipment/create">Edit Address</a>
             </address>
 
 
-        </c:if>
+        </plsar:if>
 
 
-    </c:if>
-    <c:if test="${items.size() == 0}">
+    </plsar:if>
+    <plsar:if spec="${items.size() == 0}">
         <p>No items added to your cart yet!</p>
-    </c:if>
+    </plsar:if>
 
 </div>
 

@@ -10,7 +10,7 @@ public class GuestRenderer implements ViewRenderer {
     public boolean truthy(HttpRequest httpRequest){
         SecurityManagerHelper securityManagerHelper = new SecurityManagerHelper();
         SecurityManager security = securityManagerHelper.getSecurityManager(httpRequest);
-        return !security.userIsAuthenticated(httpRequest);
+        return !security.isAuthenticated(httpRequest);
     }
 
     public String render(HttpRequest httpRequest){

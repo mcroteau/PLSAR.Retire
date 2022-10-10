@@ -1,18 +1,18 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ page import="giga.Giga" %>
 
 ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
 
 
-    <c:if test="${not empty message}">
+    <plsar:if spec="${message != ''}">
         <p class="notify">${message}</p>
-    </c:if>
+    </plsar:if>
 
     <h1>My Orders</h1>
 
     <p>A recap for all the orders placed for ${business.name}</p>
 
-    <c:if test="${sales.size() > 0}">
+    <plsar:if spec="${sales.size() > 0}">
         <table>
             <tr>
                 <th>Id</th>
@@ -67,11 +67,11 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
                 </tr>
             </c:forEach>
         </table>
-    </c:if>
+    </plsar:if>
 
-    <c:if test="${sales.size() == 0}">
+    <plsar:if spec="${sales.size() == 0}">
         <p class="notify">Nothing to see yet! No orders placed.</p>
-    </c:if>
+    </plsar:if>
 
 
 

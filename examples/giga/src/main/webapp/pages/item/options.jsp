@@ -1,6 +1,6 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<form action="${pageContext.request.contextPath}/items/options/save/${business.id}/${item.id}" method="post">
+
+<form action="/items/options/save/${business.id}/${item.id}" method="post">
 
     <h1>New Option</h1>
     <h4>${item.name} Item Options</h4>
@@ -15,7 +15,7 @@
     <input type="submit" value="Save Option!" class="button green" onclick="this.disabled=true;this.value='Saving Option...';this.form.submit();"/>
 </form>
 
-<c:if test="${itemOptions.size() > 0}">
+<plsar:if spec="${itemOptions.size() > 0}">
 
     <p>Below is a list of item options with values. The form may be daunting at first, but for
     each option there is a list of values and a form for new Item Option values.</p>
@@ -26,7 +26,7 @@
         <div id="item-option-wrapper">
             <h2 class="left-float">${itemOption.name}</h2>
             <div class="right-float">
-                <form action="${pageContext.request.contextPath}/items/options/delete/${item.businessId}/${itemOption.id}/${item.id}" method="post">
+                <form action="/items/options/delete/${item.businessId}/${itemOption.id}/${item.id}" method="post">
                     <input type="submit" value="Delete Option!" class="button remove"/>
                 </form>
             </div>
@@ -52,7 +52,7 @@
             </style>
 
             <div id="option-value-form">
-                <form action="${pageContext.request.contextPath}/items/options/values/save/${business.id}/${item.id}" method="post">
+                <form action="/items/options/values/save/${business.id}/${item.id}" method="post">
 
                     <h3>New ${itemOption.name}</h3>
 
@@ -75,11 +75,11 @@
             </div>
 
 
-            <c:if test="${itemOption.optionValues.size() == 0}">
+            <plsar:if spec="${itemOption.optionValues.size() == 0}">
                 <p class="notify" id="option-values">No option values added yet for ${itemOption.name}!</p>
-            </c:if>
+            </plsar:if>
 
-            <c:if test="${itemOption.optionValues.size() > 0}">
+            <plsar:if spec="${itemOption.optionValues.size() > 0}">
                 <table id="option-values">
                     <tr>
                         <th>Value Label</th>
@@ -92,17 +92,17 @@
                             <td>${siteService.getPrice(optionValue.price)}</td>
 <%--                            <td>${optionValue.quantity}</td>--%>
                             <td>
-                                <form action="${pageContext.request.contextPath}/items/options/values/delete/${item.businessId}/${optionValue.id}/${item.id}" method="post">
+                                <form action="/items/options/values/delete/${item.businessId}/${optionValue.id}/${item.id}" method="post">
                                     <input type="submit" value="Delete" class="button remove"/>
                                 </form>
                             </td>
                         </tr>
                     </c:forEach>
                 </table>
-            </c:if>
+            </plsar:if>
 
             <br class="clear"/>
 
         </div>
     </c:forEach>
-</c:if>
+</plsar:if>

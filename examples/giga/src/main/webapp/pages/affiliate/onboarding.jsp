@@ -1,4 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 
 <div class="section-wrapper" style="margin-bottom:200px">
     <div class="section">
@@ -6,7 +6,7 @@
         <h1>Affiliate Business<br/> Partner Registration Process!</h1>
         <p>Interested in becoming a business partner, and sell here. Look no further, it all starts right now!</p>
 
-        <form action="${pageContext.request.contextPath}/affiliates/onboarding/begin" method="post">
+        <form action="/affiliates/onboarding/begin" method="post">
             <label>Select your business!</label>
             <select name="businessId">
                 <c:forEach items="${businesses}" var="business">

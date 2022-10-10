@@ -1,18 +1,18 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ page import="giga.Giga" %>
 
 ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
 
 
-    <c:if test="${not empty message}">
+    <plsar:if spec="${message != ''}">
         <p class="notify">${message}</p>
-    </c:if>
+    </plsar:if>
 
 
     <div id="shipment-wrapper">
 
-        <c:if test="${shipment == null}">
-            <form action="${pageContext.request.contextPath}/${business.uri}/shipment/rates" method="post">
+        <plsar:if spec="${shipment == null}">
+            <form action="/${business.uri}/shipment/rates" method="post">
 
                 <h2>Shipping Address</h2>
 
@@ -48,7 +48,7 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
                     <input type="submit" value="Get Shipping Rates!" class="button" id="calculate" onclick="this.disabled=true;this.value='Getting shipping rates...';this.form.submit();"/>
                 </div>
             </form>
-        </c:if>
+        </plsar:if>
     </div>
 
 ${siteService.getBaseBit(Giga.BOTTOM, design, business, request)}

@@ -1,4 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ page import="java.lang.String" %>
 
 <style>
@@ -8,11 +8,11 @@
     .activate{margin-top:30px;}
 </style>
 
-<c:if test="${not empty message}">
+<plsar:if spec="${message != ''}">
     <p class="notify">${message}</p>
-</c:if>
+</plsar:if>
 
-<c:if test="${!business.activationComplete}">
+<plsar:if spec="${!business.activationComplete}">
     <div class="align-center">
 
         <h1 class="large activate">Activate Payments</h1>
@@ -23,39 +23,39 @@
             on setup payments to setup a Stripe account in order to continue with your business.
             You'll be redirected to Stripe.com to complete your on boarding process!</p>
 
-        <a href="${pageContext.request.contextPath}/stripe/onboarding/setup/${business.id}" class="button gigantic green">Setup Payments to Complete</a>
+        <a href="/stripe/onboarding/setup/${business.id}" class="button gigantic green">Setup Payments to Complete</a>
 
         <p style="margin-top:30px;">Each business requires a separate Stripe account.</p>
 
     </div>
-</c:if>
+</plsar:if>
 
-<c:if test="${business.activationComplete}">
+<plsar:if spec="${business.activationComplete}">
 
     <h2 class="center-align" style="margin:20px 0px 0px;">Snapshot</h2>
 
-    <c:if test="${business.affiliate}">
+    <plsar:if spec="${business.affiliate}">
         <h3 class="center-align">
             <span class="value large">$${siteService.getPriceTres(commissionTotal)}</span>
             Total Commissions
         </h3>
-    </c:if>
+    </plsar:if>
 
-    <c:if test="${!business.affiliate}">
+    <plsar:if spec="${!business.affiliate}">
         <h3 class="center-align">
             <span class="value large">$${siteService.getPriceTres(salesTotal)}</span>
             Total Sales
         </h3>
-    </c:if>
+    </plsar:if>
 
 
-    <c:if test="${conversionRate != null}">
+    <plsar:if spec="${conversionRate != null}">
         <h3 style="width:40%;" class="left-float">
             <span class="value">${conversionRate}%</span>
             ${salesCarts}/${totalCarts}  <br/><span class="lightf">sales/total carts</span><br/>
             Conversion Rate
         </h3>
-    </c:if>
+    </plsar:if>
 
     <p class="right-float" style="font-size:18px;width:40%;line-height:1.50em;" >
         Giga fights for the right to Data! Who's better at Data than Google?
@@ -68,8 +68,8 @@
         <a href="http://analytics.google.com" class="button green" target="_blank">Go Google Analytics!</a>
     </p>
 
-    <c:if test="${conversionRate == null}">
+    <plsar:if spec="${conversionRate == null}">
         <p>No carts yet!</p>
-    </c:if>
+    </plsar:if>
 
-</c:if>
+</plsar:if>

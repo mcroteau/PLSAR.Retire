@@ -1,4 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ taglib prefix="chico" uri="/META-INF/tags/chico.tld" %>
 <%@ page import="giga.Giga" %>
 
@@ -13,9 +13,9 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
 
 <div style="text-align: center">
     <div id="step-by-step">
-        <a href="${pageContext.request.contextPath}/${business.uri}/cart" class="step left-float">1</a>
+        <a href="/${business.uri}/cart" class="step left-float">1</a>
         <div class="step-increment previous left-float"></div>
-        <a href="${pageContext.request.contextPath}/${business.uri}/shipment/create" class="step active left-float">2</a>
+        <a href="/${business.uri}/shipment/create" class="step active left-float">2</a>
         <div class="step-increment left-float"></div>
         <div class="step left-float">3</div>
         <br class="clear"/>
@@ -27,7 +27,7 @@ ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
 
 <p>Please enter your mailing address below in order to continue to process your order!</p>
 
-<form action="${pageContext.request.contextPath}/${business.uri}/shipment/save" method="post">
+<form action="/${business.uri}/shipment/save" method="post">
 
     <div id="shipping-details-wrapper">
 

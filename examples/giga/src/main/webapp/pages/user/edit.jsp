@@ -1,22 +1,22 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%@ page import="chico.Chico" %>
 <%@ page import="giga.Giga" %>
 
 
-<c:if test="${not empty message}">
+<plsar:if spec="${message != ''}">
 	<p class="notify">${message}</p>
-</c:if>
+</plsar:if>
 
 <h1>Edit Account</h1>
 
 <p>You personal information is kept private.</p>
 
-<c:if test="${user.freshPassword != 'null' && user.freshPassword != ''}">
+<plsar:if spec="${user.freshPassword != 'null' && user.freshPassword != ''}">
 	<p class="">Old Password : <strong>${user.freshPassword}</strong></p>
 	<p>This should be changed!</p>
-</c:if>
+</plsar:if>
 
-<form action="${pageContext.request.contextPath}/users/update/${business.id}/${user.id}" method="post">
+<form action="/users/update/${business.id}/${user.id}" method="post">
 
 	<input type="hidden" name="id" value="${user.id}"/>
 	<input type="hidden" name="username" value="${user.username}"/>
@@ -43,7 +43,7 @@
 
 
 <%if(Chico.hasRole(Giga.SUPER_ROLE)){%>
-	<form action="${pageContext.request.contextPath}/users/delete/${user.id}" method="post">
+	<form action="/users/delete/${user.id}" method="post">
 		<div id="delete-user-container" style="width:100%;">
 			<input type="submit" class="button remove" value="Delete Account" style="width:100% !important;"/>
 		</div>

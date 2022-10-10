@@ -88,7 +88,15 @@ public class CategoryRouter {
         if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
         List<Category> categories = categoryRepo.getListAll(businessId);
         cache.set("categories", categories);
@@ -111,7 +119,15 @@ public class CategoryRouter {
         if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
         List<Category> categories = categoryRepo.getListAll(businessId);
         cache.set("categories", categories);
@@ -181,7 +197,15 @@ public class CategoryRouter {
         List<Asset> assets = assetRepo.getList(businessId);
         cache.set("assets", assets);
 
-        businessService.setData(businessId, cache);
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
+
         cache.set("page", "/pages/category/edit.jsp");
         return "/designs/auth.jsp";
     }

@@ -1,11 +1,11 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<c:if test="${not empty message}">
+
+<plsar:if spec="${message != ''}">
     <p class="notify">${message}</p>
-</c:if>
+</plsar:if>
 
 <h1>New Category</h1>
-<form action="${pageContext.request.contextPath}/categories/save" method="post">
+<form action="/categories/save" method="post">
 
     <input type="hidden" name="businessId" value="${business.id}"/>
 
