@@ -177,9 +177,11 @@ public class BusinessRouter {
         req.getSession(true).set("username", business.getEmail());
         req.getSession(true).set("userId", authUser.getId());
 
-        SmsService smsService = new SmsService();
-        smsService.send(business.getPhone(), "Giga >_ Welcome! If you have any problems please don't hesitate to send a text to (907) 987-8652. My name is Mike, Im here to help!");
+        RouteAttributes routeAttributes = req.getRouteAttributes();
+        String key = (String) routeAttributes.get("sms.key");
 
+        SmsService smsService = new SmsService();
+        smsService.send(key, business.getPhone(), "Giga >_ Welcome! If you have any problems please don't hesitate to send a text to (907) 987-8652. My name is Mike, Im here to help!");
 
         return "[redirect]/businesses/signup/complete/" + savedBusiness.getId();
     }

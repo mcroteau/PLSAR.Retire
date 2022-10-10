@@ -4,6 +4,7 @@ import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
 import giga.service.*;
+import net.plsar.RouteAttributes;
 import net.plsar.annotations.Component;
 import net.plsar.annotations.HttpRouter;
 import net.plsar.annotations.Inject;
@@ -112,8 +113,13 @@ public class UserRouter {
 				!security.hasPermission(permission, req)){
 			return "[redirect]/";
 		}
-
-		businessService.setData(businessId, cache);
+		String credential = security.getUser(req);
+		User authUser = userRepo.get(credential);
+		if(authUser == null){
+			authUser = userRepo.getPhone(credential);
+		}
+		SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+		businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
 		User user = userRepo.get(id);
 		cache.set("user", user);
@@ -167,9 +173,13 @@ public class UserRouter {
 			user.setPassword(security.hash(guid));
 			userRepo.updatePassword(user);
 
+
+			RouteAttributes routeAttributes = req.getRouteAttributes();
+			String key = (String) routeAttributes.get("sms.key");
+
 			SmsService smsService = new SmsService();
 			String message = "Giga >_ Your temporary password : "    + guid;
-			smsService.send(phone, message);
+			smsService.send(key, phone, message);
 
 		}catch(Exception e){
 			e.printStackTrace();
@@ -236,12 +246,19 @@ public class UserRouter {
 
 		}
 
+		String credential = security.getUser(req);
+		User authUser = userRepo.get(credential);
+		if(authUser == null){
+			authUser = userRepo.getPhone(credential);
+		}
+
 		SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+		businessService.setData(businessId, cache, authUser, businessRepo, siteService);
+
 		cache.set("siteService", siteService);
 		cache.set("clients", clients);
 		cache.set("page", "/pages/user/list.jsp");
 
-		businessService.setData(businessId, cache);
 		return "/designs/auth.jsp";
 	}
 
@@ -285,9 +302,13 @@ public class UserRouter {
 		storedUser.setPassword(security.hash(password));
 		userRepo.updatePassword(storedUser);
 
+
+		RouteAttributes routeAttributes = req.getRouteAttributes();
+		String key = (String) routeAttributes.get("sms.key");
+
 		SmsService smsService = new SmsService();
 		String message = business.getName() + " :: temporary password is " + password;
-		smsService.send(phone, message);
+		smsService.send(key, phone, message);
 
 		cache.set("message", "Success! A password has been sent to you!");
 		return "[redirect]/" + shopUri + "/signin";

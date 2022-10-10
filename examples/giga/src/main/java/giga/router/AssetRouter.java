@@ -163,6 +163,7 @@ public class AssetRouter {
         RouteAttributes routeAttributes = req.getRouteAttributes();
         String key = (String) routeAttributes .get("storage.key");
         String secret = (String) routeAttributes .get("storage.secret");
+
         for (FileComponent fileComponent : fileComponents) {
             String original = fileComponent.getFileName();
             InputStream is = new ByteArrayInputStream(fileComponent.getFileBytes());

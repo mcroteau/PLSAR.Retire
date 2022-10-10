@@ -6,6 +6,7 @@ import giga.repo.*;
 import giga.service.BusinessService;
 import giga.service.SeaService;
 import giga.service.SiteService;
+import net.plsar.RouteAttributes;
 import net.plsar.annotations.Component;
 import net.plsar.annotations.HttpRouter;
 import net.plsar.annotations.Inject;
@@ -143,7 +144,15 @@ public class ItemRouter {
         if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
         List<Category> categories = categoryRepo.getListAll(businessId);
         if(categories.size() == 0){
@@ -171,8 +180,16 @@ public class ItemRouter {
             return "[redirect]/";
         }
 
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
         SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
+
         List<Item> items = itemRepo.getList(businessId);
 
         cache.set("items", items);
@@ -190,8 +207,17 @@ public class ItemRouter {
         if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
-        businessService.setData(businessId, cache);
+
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
         SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
+
         List<Item> items = itemRepo.getList(businessId, false);
 
         cache.set("items", items);
@@ -209,7 +235,15 @@ public class ItemRouter {
         if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
         List<Item> items = itemRepo.getList(businessId);
         for(Item item : items){
@@ -223,7 +257,6 @@ public class ItemRouter {
         }
         List<Design> designs = designRepo.getList(businessId);
         List<Category> categories = categoryRepo.getListAll(businessId);
-        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
 
         cache.set("designs", designs);
         cache.set("categories", categories);
@@ -252,12 +285,16 @@ public class ItemRouter {
         List<FileComponent> fileComponents = requestComponent.getFileComponents();
 
         SeaService seaService = new SeaService();
+        RouteAttributes routeAttributes = req.getRouteAttributes();
+        String key = (String) routeAttributes .get("storage.key");
+        String secret = (String) routeAttributes .get("storage.secret");
+
         for (FileComponent fileComponent : fileComponents) {
             String original = fileComponent.getFileName();
             InputStream is = new ByteArrayInputStream(fileComponent.getFileBytes());
             String ext = Giga.getExt(original);
             String name = Giga.getString(9) + "." + ext;
-            seaService.send(name, is);
+            seaService.send(key, secret, name, is);
             item.setImageUri(Giga.OCEAN_ENDPOINT + name);
         }
 
@@ -301,7 +338,15 @@ public class ItemRouter {
             return "[redirect]/";
         }
 
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
         Item item = itemRepo.get(id);
 
@@ -360,12 +405,16 @@ public class ItemRouter {
             List<FileComponent> fileComponents = requestComponent.getFileComponents();
 
             SeaService seaService = new SeaService();
+            RouteAttributes routeAttributes = req.getRouteAttributes();
+            String key = (String) routeAttributes .get("storage.key");
+            String secret = (String) routeAttributes .get("storage.secret");
+
             for (FileComponent fileComponent : fileComponents) {
                 String original = fileComponent.getFileName();
                 InputStream is = new ByteArrayInputStream(fileComponent.getFileBytes());
                 String ext = Giga.getExt(original);
                 String name = Giga.getString(9) + "." + ext;
-                seaService.send(name, is);
+                seaService.send(key, secret, name, is);
                 item.setImageUri(Giga.OCEAN_ENDPOINT + name);
             }
         }
@@ -419,12 +468,16 @@ public class ItemRouter {
             List<FileComponent> fileComponents = requestComponent.getFileComponents();
 
             SeaService seaService = new SeaService();
+            RouteAttributes routeAttributes = req.getRouteAttributes();
+            String key = (String) routeAttributes .get("storage.key");
+            String secret = (String) routeAttributes .get("storage.secret");
+
             for (FileComponent fileComponent : fileComponents) {
                 String original = fileComponent.getFileName();
                 InputStream is = new ByteArrayInputStream(fileComponent.getFileBytes());
                 String ext = Giga.getExt(original);
                 String name = Giga.getString(9) + "." + ext;
-                seaService.send(name, is);
+                seaService.send(key, secret, name, is);
                 item.setImageUri(Giga.OCEAN_ENDPOINT + name);
             }
         }
@@ -501,7 +554,15 @@ public class ItemRouter {
         }
 
         setData(id, cache);
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
         cache.set("page", "/pages/item/options.jsp");
         return "/designs/auth.jsp";
@@ -525,7 +586,15 @@ public class ItemRouter {
         }
 
         setData(id, cache);
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
         cache.set("page", "/pages/item/options.jsp");
         return "/designs/auth.jsp";
@@ -597,7 +666,15 @@ public class ItemRouter {
         }
 
         setData(id, cache);
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
         cache.set("page", "/pages/item/options.jsp");
         return "/designs/auth.jsp";
@@ -645,7 +722,15 @@ public class ItemRouter {
         }
 
         setData(id, cache);
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
         cache.set("page", "/pages/item/options.jsp");
         return "/designs/auth.jsp";
@@ -673,7 +758,15 @@ public class ItemRouter {
         itemRepo.deleteValue(valueId);
 
         setData(id, cache);
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
         return "[redirect]/items/options/" + businessId + "/" + id;
     }
@@ -696,7 +789,15 @@ public class ItemRouter {
         }
 
         setData(id, cache);
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
         cache.set("page", "/pages/item/options.jsp");
         return "/designs/auth.jsp";

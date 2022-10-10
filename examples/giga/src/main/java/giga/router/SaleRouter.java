@@ -70,8 +70,16 @@ public class SaleRouter {
         if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
+
         Business business = businessRepo.get(businessId);
-        businessService.setData(businessId, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        businessService.setData(businessId, cache, authUser, businessRepo, siteService);
 
         List<Sale> sales;
         if(business.getAffiliate() == null ||
@@ -256,14 +264,18 @@ public class SaleRouter {
 
         cartRepo.update(cart);
 
-        smsService.send("9079878652", "Giga >_ An order has been placed!");
+
+        RouteAttributes routeAttributes = req.getRouteAttributes();
+        String key = (String) routeAttributes.get("sms.key");
+
+        smsService.send(key, "9079878652", "Giga >_ An order has been placed!");
 
         if(!business.getPhone().equals("")) {
-            smsService.send(business.getPhone(), "Giga >_ Congratulations, an order has been placed!");
+            smsService.send(key, business.getPhone(), "Giga >_ Congratulations, an order has been placed!");
         }
 
         if(!cart.getShipPhone().equals("")) {
-            smsService.send(cart.getShipPhone(), "Thank you! Your order has been placed!");
+            smsService.send(key, cart.getShipPhone(), "Thank you! Your order has been placed!");
         }
 
         return "[redirect]/" + businessUri + "/sale/" + sale.getId();

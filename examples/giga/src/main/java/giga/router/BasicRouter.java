@@ -4,11 +4,14 @@ import giga.model.Business;
 import giga.model.User;
 import giga.model.UserBusiness;
 import giga.repo.BusinessRepo;
-import giga.service.AuthService;
+import giga.repo.UserRepo;
 import net.plsar.annotations.HttpRouter;
 import net.plsar.annotations.Inject;
 import net.plsar.annotations.http.Get;
 import net.plsar.model.Cache;
+import net.plsar.model.HttpRequest;
+import net.plsar.model.HttpResponse;
+import net.plsar.security.SecurityManager;
 
 import java.util.List;
 
@@ -16,15 +19,22 @@ import java.util.List;
 public class BasicRouter {
 
 	@Inject
-	AuthService authService;
+	UserRepo userRepo;
 
 	@Inject
 	BusinessRepo businessRepo;
 
 	@Get("/")
-	public String index(){
-		if(authService.isAuthenticated()){
-			User authUser = authService.getUser();
+	public String index(Cache cache,
+						HttpRequest req,
+						HttpResponse resp,
+						SecurityManager security){
+		if(security.isAuthenticated(req)){
+			String credential = security.getUser(req);
+			User authUser = userRepo.get(credential);
+			if(authUser == null){
+				authUser = userRepo.getPhone(credential);
+			}
 			List<UserBusiness> userBusinesses = businessRepo.getListUsers(authUser.getId());
 			if (userBusinesses.size() > 0) {
 				Business business = null;
