@@ -6,43 +6,74 @@ import com.stripe.model.Customer;
 import com.stripe.model.Token;
 import com.stripe.net.RequestOptions;
 import giga.Giga;
-import giga.model.Business;
-import giga.model.Card;
-import giga.model.Cart;
-import giga.model.Sale;
-import giga.service.SaleService;
-import jakarta.servlet.http.HttpRequest;
-import qio.annotate.HttpRouter;
-import qio.annotate.Inject;
-import qio.annotate.Variable;
-import qio.annotate.verbs.Get;
-import qio.annotate.verbs.Post;
-import qio.model.web.Cache;
+import giga.model.*;
+import giga.repo.*;
+import giga.service.BusinessService;
+import giga.service.SiteService;
+import giga.service.SmsService;
+import net.plsar.RouteAttributes;
+import net.plsar.annotations.Component;
+import net.plsar.annotations.HttpRouter;
+import net.plsar.annotations.Inject;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.Cache;
+import net.plsar.model.HttpRequest;
+import net.plsar.security.SecurityManager;
+import org.ocpsoft.prettytime.PrettyTime;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @HttpRouter
 public class SaleRouter {
 
     @Inject
-    SaleService saleService;
+    ItemRepo itemRepo;
+
+    @Inject
+    UserRepo userRepo;
+
+    @Inject
+    CategoryRepo categoryRepo;
+
+    @Inject
+    SaleRepo saleRepo;
+
+    @Inject
+    CartRepo cartRepo;
+
+    @Inject
+    DesignRepo designRepo;
+
+    @Inject
+    BusinessRepo businessRepo;
+
+    BusinessService businessService;
+
+    SmsService smsService;
+
+    public SaleRouter(){
+        this.smsService = new SmsService();
+        this.businessService = new BusinessService();
+    }
 
     @Get("/sales/{{businessId}}")
     public String list(Cache cache,
+                       HttpRequest req,
+                       SecurityManager security,
                        @Component Long businessId) throws Exception{
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
         Business business = businessRepo.get(businessId);
         businessService.setData(businessId, cache);
 
-        List<Sale> sales = new ArrayList<>();
+        List<Sale> sales;
         if(business.getAffiliate() == null ||
                 !business.getAffiliate()) {
             sales = saleRepo.getListPrimary(businessId);
@@ -57,10 +88,10 @@ public class SaleRouter {
         return "/designs/auth.jsp";
     }
 
-    @Post("/{{business}}/sale/{{id}}")
+    @Post("/{{businessUri}}/sale/{{cartId}}")
     public String processSale(HttpRequest req,
                           @Component String businessUri,
-                          @Component Long id){
+                          @Component Long cartId){
         Business business = businessRepo.get(businessUri);
         Business primaryBusiness = businessRepo.get(business.getPrimaryId());
         System.out.println("set sale business " + business);
@@ -92,9 +123,10 @@ public class SaleRouter {
         System.out.println("last .");
 
         try {
-            Card card = (Card) Qio.get(req, Card.class);
+            Card card = (Card) req.inflect(Card.class);
 
-            Stripe.apiKey = stripeKey;
+            RouteAttributes routeAttributes = req.getRouteAttributes();
+            Stripe.apiKey = (String) routeAttributes.get("stripe.key");
 
             Map<String, Object> cardMap = new HashMap<>();
             cardMap.put("number", card.getCard());
@@ -159,7 +191,6 @@ public class SaleRouter {
 
             if(business.getAffiliate() != null &&
                     business.getAffiliate()){
-
 
                 BigDecimal commissionRate = primaryBusiness.getBaseCommission().divide(new BigDecimal(100), 3, RoundingMode.HALF_UP);
                 BigDecimal affiliateAmountPre = chargeAmount.multiply(commissionRate, new MathContext(3, RoundingMode.HALF_DOWN));
@@ -239,8 +270,9 @@ public class SaleRouter {
     }
 
     @Get("/{{business}}/sale/{{id}}")
-    public String getSale(HttpRequest req,
-                          Cache cache,
+    public String getSale(Cache cache,
+                          HttpRequest req,
+                          SecurityManager security,
                           @Component String businessUri,
                           @Component Long id){
 
@@ -268,8 +300,115 @@ public class SaleRouter {
         }
 
         cache.set("sale", sale);
-        cartService.setData(cart, business, cache, req);
+        setData(cart, business, cache, req, security);
         return "/pages/sale/index.jsp";
     }
 
+    public void setSaleData(List<Sale> sales) throws ParseException {
+        for(Sale sale : sales){
+            Cart cart = cartRepo.get(sale.getCartId());
+            BigDecimal subtotal = new BigDecimal(0);
+            List<CartItem> cartItems = cartRepo.getListItems(cart.getId());
+            for(CartItem cartItem : cartItems){
+                Item item = itemRepo.get(cartItem.getItemId());
+                cartItem.setItem(item);
+
+                BigDecimal itemTotal = item.getPrice().multiply(cartItem.getQuantity());
+                List<CartOption> cartOptions = cartRepo.getOptions(cartItem.getId());
+                for(CartOption cartOption : cartOptions){
+                    ItemOption itemOption = itemRepo.getOption(cartOption.getItemOptionId());
+                    OptionValue optionValue = itemRepo.getValue(cartOption.getOptionValueId());
+                    cartOption.setItemOption(itemOption);
+                    cartOption.setOptionValue(optionValue);
+                    if(optionValue.getPrice() != null){
+                        itemTotal = itemTotal.add(cartItem.getPrice().multiply(cartItem.getQuantity()));
+                    }
+                }
+                cartItem.setItemTotal(itemTotal);
+
+                subtotal = subtotal.add(itemTotal);
+                cart.setSubtotal(subtotal);
+
+                cartItem.setCartOptions(cartOptions);
+            }
+
+            SimpleDateFormat format = new SimpleDateFormat(Giga.DATE_FORMAT);
+            Date date = format.parse(Long.toString(sale.getSalesDate()));
+            PrettyTime p = new PrettyTime();
+            String prettyDate = p.format(date);
+            sale.setPrettyDate(prettyDate);
+
+            cart.setCartItems(cartItems);
+            BigDecimal total = cart.getShipping().add(cart.getSubtotal());
+            cart.setTotal(total);
+            sale.setCart(cart);
+        }
+    }
+
+    public void setData(Cart cart, Business business, Cache cache, HttpRequest req, SecurityManager security){
+        BigDecimal subtotal = new BigDecimal(0);
+        List<CartItem> cartItems = cartRepo.getListItems(cart.getId());
+        System.out.println("ci " + cartItems.size());
+        System.out.println("z");
+        for(CartItem cartItem : cartItems){
+            Item item = itemRepo.get(cartItem.getItemId());
+            cartItem.setItem(item);
+
+            BigDecimal itemTotal = cartItem.getPrice().multiply(cartItem.getQuantity());
+            List<CartOption> cartOptions = cartRepo.getOptions(cartItem.getId());
+            for(CartOption cartOption : cartOptions){
+                ItemOption itemOption = itemRepo.getOption(cartOption.getItemOptionId());
+                OptionValue optionValue = itemRepo.getValue(cartOption.getOptionValueId());
+                cartOption.setItemOption(itemOption);
+                cartOption.setOptionValue(optionValue);
+                if(cartOption.getPrice() != null){
+                    itemTotal = itemTotal.add(cartOption.getPrice().multiply(cartItem.getQuantity()));
+                }
+            }
+            cartItem.setItemTotal(itemTotal);
+
+            subtotal = subtotal.add(itemTotal);
+            cart.setSubtotal(subtotal);
+
+            cartItem.setCartOptions(cartOptions);
+
+        }
+
+        cart.setCartItems(cartItems);
+        if(business.getFlatShipping()){
+            BigDecimal total = cart.getSubtotal();
+            if(business.getShipping() != null){
+                total = total.add(business.getShipping());
+            }
+            cart.setShipping(business.getShipping());
+            cart.setTotal(total);
+            cartRepo.update(cart);
+        }
+
+        if(!business.getFlatShipping()){
+            ShipmentRate rate = cartRepo.getRate(cart.getId());
+            if(rate != null) {
+                BigDecimal total = rate.getRate().add(cart.getSubtotal());
+                cart.setShipping(rate.getRate());
+                cart.setTotal(total);
+                cart.setValidAddress(true);
+                cartRepo.update(cart);
+                cache.set("rate", rate);
+            }
+        }
+
+        System.out.println("kilo : subtotal " + cart);
+        Design design = designRepo.getBase(business.getId());
+        System.out.println("business: " + business);
+        System.out.println("design: " + design);
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+
+        cache.set("design", design);
+        cache.set("request", req);
+        cache.set("business", business);
+        cache.set("cart", cart);
+        cache.set("items", cartItems);
+        cache.set("siteService", siteService);
+    }
 }

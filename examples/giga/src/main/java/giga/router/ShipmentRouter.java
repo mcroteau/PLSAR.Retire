@@ -7,8 +7,19 @@ import com.easypost.model.Rate;
 import com.easypost.model.Shipment;
 import giga.Giga;
 import giga.model.*;
+import giga.repo.BusinessRepo;
+import giga.repo.CartRepo;
+import giga.repo.ItemRepo;
+import giga.repo.UserRepo;
+import giga.service.CartService;
 import giga.service.ShipmentService;
 import jakarta.servlet.http.HttpRequest;
+import net.plsar.annotations.Component;
+import net.plsar.annotations.HttpRouter;
+import net.plsar.annotations.Inject;
+import net.plsar.annotations.http.Get;
+import net.plsar.model.Cache;
+import net.plsar.model.HttpRequest;
 import qio.annotate.HttpRouter;
 import qio.annotate.Inject;
 import qio.annotate.Variable;
@@ -25,12 +36,22 @@ import java.util.Map;
 public class ShipmentRouter {
 
     @Inject
-    ShipmentService shipmentService;
+    CartRepo cartRepo;
+
+    @Inject
+    UserRepo userRepo;
+
+    @Inject
+    ItemRepo itemRepo;
+
+    @Inject
+    BusinessRepo businessRepo;
+
 
     @Get("{{business}}/shipment")
-    public String begin(HttpRequest req,
-                           Cache cache,
-                           @Component String businessUri){
+    public String begin(Cache cache,
+                        HttpRequest req,
+                        @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
@@ -61,6 +82,7 @@ public class ShipmentRouter {
             return "[redirect]/home";
         }
 
+        CartService cartService = new CartService();
         Cart cart = cartService.getCart(business, req);
 
         User shipUser = (User) Qio.get(req, User.class);
