@@ -1,6 +1,5 @@
 package giga.router;
 
-import chico.Chico;
 import com.easypost.EasyPost;
 import com.easypost.model.Address;
 import com.google.gson.Gson;
@@ -12,18 +11,26 @@ import com.stripe.param.AccountLinkCreateParams;
 import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
-import jakarta.servlet.http.HttpRequest;
 import giga.service.BusinessService;
-import jakarta.servlet.http.HttpServletResponse;
-import qio.Qio;
-import qio.annotate.*;
-import qio.annotate.verbs.Get;
-import qio.annotate.verbs.Post;
-import qio.model.web.Cache;
+import giga.service.SiteService;
+import giga.service.SmsService;
+import net.plsar.annotations.*;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.Cache;
+import net.plsar.model.HttpRequest;
+import net.plsar.model.HttpResponse;
+import net.plsar.security.SecurityManager;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,15 +40,6 @@ import java.util.Map;
 public class BusinessRouter {
 
     Gson gson = new Gson();
-
-    @Property("host")
-    String host;
-
-    @Property("stripe.key")
-    String stripeKey;
-
-    @Property("easypost.key")
-    String easypostKey;
 
     @Inject
     CartRepo cartRepo;
@@ -70,14 +68,19 @@ public class BusinessRouter {
     @Inject
     BusinessRepo businessRepo;
 
-    @Inject
     BusinessService businessService;
 
-    @Post("/business/signup")
-    public String businessSignup(HttpRequest req,
-                                 Cache cache) throws Exception {
+    public BusinessRouter(){
+        this.businessService = new BusinessService();
+    }
 
-        Business business = (Business) Qio.get(request, Business.class);
+    @Post("/business/signup")
+    public String businessSignup(Cache cache,
+                                 HttpRequest req,
+                                 HttpResponse resp,
+                                 SecurityManager security) throws Exception {
+
+        Business business = (Business) req.inflect(Business.class);
 
         if(business.getName() == null ||
                 business.getName().equals("")){
@@ -127,7 +130,7 @@ public class BusinessRouter {
         User user = new User();
         user.setPhone(Giga.getSpaces(business.getPhone()));
         user.setUsername(Giga.getSpaces(business.getEmail()));
-        user.setPassword(Chico.dirty(business.getPassword()));
+        user.setPassword(security.hash(business.getPassword()));
         user.setDateJoined(Giga.getDate());
         userRepo.save(user);
 
@@ -158,51 +161,64 @@ public class BusinessRouter {
 
         userRepo.update(savedUser);
 
-        if(!authService.signin(business.getEmail(), business.getPassword())){
+        if(!security.signin(business.getEmail(), business.getPassword(), req, resp)){
             cache.set("message", "Rock on! Signin to continue...");
             return "[redirect]/signin";
         }
 
-        User authUser = authService.getUser();
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
 
         cache.set("message", "Go Rock! Good luck!");
-        request.getSession().setAttribute("username", business.getEmail());
-        request.getSession().setAttribute("userId", authUser.getId());
+        req.getSession(true).set("username", business.getEmail());
+        req.getSession(true).set("userId", authUser.getId());
 
-        smsService.send(business.getPhone(), "Giga >_ Welcome! If you have any problems please don't hesitate to send a text to (907)987-8652. My name is Mike, Im here to help!");
+        SmsService smsService = new SmsService();
+        smsService.send(business.getPhone(), "Giga >_ Welcome! If you have any problems please don't hesitate to send a text to (907) 987-8652. My name is Mike, Im here to help!");
 
 
         return "[redirect]/businesses/signup/complete/" + savedBusiness.getId();
     }
 
     @Get("/businesses/setup")
-    public String setup(Cache cache){
-        if(!authService.isAuthenticated()){
+    public String setup(Cache cache,
+                        HttpRequest req,
+                        SecurityManager security){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
-        User authdUser = authService.getUser();
-        cache.set("authUser", authdUser);
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+        cache.set("authUser", authUser);
         return "/pages/business/setup.jsp";
     }
 
 
-    @JsonOutput
+    @Json
     @Get("/{{business}}/oops")
     public String oops(Cache cache){
-        data.set("message", "sorry, something went wrong");
-        return gson.toJson(data);
+        cache.set("message", "sorry, something went wrong");
+        return gson.toJson(cache);
     }
 
     @Get("/snapshot/{{id}}")
     public String snapshot(Cache cache,
+                           HttpRequest req,
+                           SecurityManager security,
                            @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Whoa! Not authorized to view this business.");
             return "[redirect]/";
         }
@@ -235,7 +251,12 @@ public class BusinessRouter {
         cache.set("salesTotal", salesTotal);
         cache.set("commissionTotal", commissionTotal);
 
-        setData(id, cache);
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+        setData(id, authUser, cache, security);
 
         cache.set("page", "/pages/business/snapshot.jsp");
         return "/designs/auth.jsp";
@@ -243,32 +264,39 @@ public class BusinessRouter {
 
     @Get("/businesses/new/{{id}}")
     public String create(Cache cache,
+                        HttpRequest req,
+                        SecurityManager security,
                         @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
-        setData(id, cache);
+
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
+        setData(id, authUser, cache, security);
 
         cache.set("page", "/pages/business/new.jsp");
         return "/designs/auth.jsp";
     }
 
-//    @Get("/businesses/{{id}}")
-//    public String list(Cache cache,
-//                       @Component Long id) throws Exception{
-//        return businessService.list(id, data);
-//    }
-
     @Post("/businesses/save")
-    public String save(HttpRequest req) throws Exception {
-        if(!authService.isAuthenticated()){
+    public String save(HttpRequest req,
+                       SecurityManager security) throws Exception {
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
-        Business business = (Business) Qio.get(req, Business.class);
+        Business business = (Business) req.inflect(Business.class);
         businessRepo.save(business);
 
-        User authUser = authService.getUser();
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
         Business savedBusiness = businessRepo.getSaved();
         String permission = Giga.BUSINESS_MAINTENANCE + savedBusiness.getId();
         userRepo.savePermission(authUser.getId(), permission);
@@ -288,46 +316,44 @@ public class BusinessRouter {
     //registration -> setup complete
     @Get("/businesses/signup/complete/{{id}}")
     public String signupComplete(Cache cache,
-                                  @Component Long id){
-        if(!authService.isAuthenticated()){
+                                 HttpRequest req,
+                                 HttpResponse resp,
+                                 SecurityManager security,
+                                 @Component Long id){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to edit this business.");
             return "[redirect]/";
         }
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
 
-        setData(id, cache);
+        setData(id, authUser, cache, security);
         cache.set("page", "/pages/business/start.jsp");
         return "/designs/auth.jsp";
     }
-
-//    @Get("/businesses/edit/{{id}}")
-//    public String edit(Cache cache,
-//                       @Component Long id) throws Exception {
-//        return businessService.edit(id, data);
-//    }
-//
-//    @Post("/businesses/update/{{id}}")
-//    public String update(HttpRequest req,
-//                         Cache cache,
-//                         @Component Long id) throws Exception {
-//        return businessService.update(id, cache, req);
-//    }
-
+    
     @Get("/businesses/settings/{{id}}")
     public String showSettings(Cache cache,
-                           @Component Long id){
-        if(!authService.isAuthenticated()){
+                               HttpRequest req,
+                               HttpResponse resp,
+                               SecurityManager security,
+                               @Component Long id){
+        if(!security.isAuthenticated()){
             return "[redirect]/";
         }
 
         String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.isAdministrator() &&
+                !security.hasPermission(permission)){
             cache.set("message", "Unauthorized to edit this business.");
             return "[redirect]/";
         }
@@ -337,16 +363,18 @@ public class BusinessRouter {
     }
 
     @Post("/businesses/settings/save/{{id}}")
-    public String saveSettings(HttpRequest req,
-                               Cache cache,
+    public String saveSettings(Cache cache,
+                               HttpRequest req,
+                               HttpResponse resp,
+                               SecurityManager security,
                                @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.isAdministrator() &&
+                !security.hasPermission(permission)){
             cache.set("message", "Unauthorized to edit this business.");
             return "[redirect]/";
         }
@@ -392,14 +420,17 @@ public class BusinessRouter {
 
     @Get("/businesses/settings/save/{{id}}")
     public String showSettingsDos(Cache cache,
-                               @Component Long id){
-        if(!authService.isAuthenticated()){
+                                  HttpRequest req,
+                                  HttpResponse resp,
+                                  SecurityManager security,
+                                  @Component Long id){
+        if(!security.isAuthenticated()){
             return "[redirect]/";
         }
 
         String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.isAdministrator() &&
+                !security.hasPermission(permission)){
             cache.set("message", "Unauthorized to edit this business.");
             return "[redirect]/";
         }
@@ -410,15 +441,18 @@ public class BusinessRouter {
 
     @Post("/businesses/delete/{{current}}/{{id}}")
     public String delete(Cache cache,
+                         HttpRequest req,
+                         HttpResponse resp,
+                         SecurityManager security,
                          @Component Long currentId,
                          @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated()){
             return "[redirect]/";
         }
 
         String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.isAdministrator() &&
+                !security.hasPermission(permission)){
             Cache.put("message", "This business doesn't belong to you, you cannot delete this business.");
             return "[redirect]/";
         }
@@ -442,16 +476,18 @@ public class BusinessRouter {
 
     @Text
     @Get("/stripe/onboarding/setup/{{id}}")
-    public String activateStripe(HttpServletResponse resp,
-                              Cache cache,
-                              @Component Long id){
-        if(!authService.isAuthenticated()){
+    public String activateStripe(Cache cache,
+                                 HttpRequest req,
+                                 HttpResponse resp,
+                                 SecurityManager security,
+                                 @Component Long id){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.isAdministrator() &&
+                !security.hasPermission(permission)){
             cache.set("message", "not your account buddy...");
             return "[redirect]/";
         }
@@ -499,40 +535,42 @@ public class BusinessRouter {
 
 
     @Post("/{{shop}}/register")
-    public String shopRegister(HttpRequest req,
-                                   Cache cache,
-                                   @Component String shopUri){
+    public String shopRegister(Cache cache,
+                               HttpRequest req,
+                               HttpResponse resp,
+                               SecurityManager security,
+                               @Component String shopUri){
         Business business = businessRepo.get(shopUri);
         if(business == null)return "[redirect]/";
 
-        User user = (User) qio.set(req, User.class);
+        User user = (User) req.inflect(User.class);
 
         if(user.getName() == null ||
                 user.getName().equals("")){
-            data.set("message", "Help, could you give us your name?");
+            cache.set("message", "Help, could you give us your name?");
             return "[redirect]/" + shopUri + "/signup";
         }
 
         if(user.getUsername() == null ||
                 user.getUsername().equals("")){
-            data.set("message", "Please enter a valid email address.");
+            cache.set("message", "Please enter a valid email address.");
             return "[redirect]/" + shopUri + "/signup";
         }
 
         User existingUser = userRepo.get(user.getUsername());
         if(existingUser != null){
-            data.set("message", "User exists with same email. Maybe its a mistake? ");
+            cache.set("message", "User exists with same email. Maybe its a mistake? ");
             return "[redirect]/" + shopUri + "/signup";
         }
 
         if(user.getPassword() == null ||
                 user.getPassword().equals("")) {
-            data.set("message", "Please enter a valid password 6 characters long at least.");
+            cache.set("message", "Please enter a valid password 6 characters long at least.");
             return "[redirect]/" + shopUri + "/signup";
         }
 
         if(user.getPassword().length() < 7){
-            data.set("message", "Please enter a valid password 6 characters long at least.");
+            cache.set("message", "Please enter a valid password 6 characters long at least.");
             return "[redirect]/" + shopUri + "/signup";
         }
 
@@ -540,7 +578,7 @@ public class BusinessRouter {
             user.setPhone(Giga.getPhone(user.getPhone()));
         }
 
-        String password = Chico.dirty(user.getPassword());
+        String password = security.hash(user.getPassword());
         user.setPassword(password);
         user.setDateJoined(Giga.getDate());
         userRepo.save(user);
@@ -553,7 +591,7 @@ public class BusinessRouter {
         String permission = Giga.USER_MAINTENANCE + savedUser.getId();
         userRepo.savePermission(savedUser.getId(), permission);
 
-        data.put("message", "Awesome, welcome as a valued member. Happy shopping!");
+        cache.set("message", "Awesome, welcome as a valued member. Happy shopping!");
         return "[redirect]/" + shopUri;
     }
 
@@ -564,14 +602,17 @@ public class BusinessRouter {
 
     @Get("/stripe/onboarding/complete/{{id}}")
     public String onboardingComplete(Cache cache,
+                                     HttpRequest req,
+                                     HttpResponse resp,
+                                     SecurityManager security,
                                      @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.BUSINESS_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "not your account buddy...");
             return "[redirect]/";
         }
@@ -586,5 +627,125 @@ public class BusinessRouter {
         return "[redirect]/snapshot/" + id;
     }
 
+    public void configure(Business business, Boolean isBaseDesign) throws Exception {
+
+        Path path = Paths.get("src", "main", "resources", "blueprint.html");
+        File standardBlueprint = new File(path.toString());
+        InputStream is = new FileInputStream(standardBlueprint);
+        String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+
+        Design design = new Design();
+        design.setBaseDesign(isBaseDesign);
+        design.setName("Base Design");
+        design.setDesign(content);
+        design.setCss("body{background:#efefef;}");
+        design.setJavascript("console.info('Giga!')");
+        design.setBusinessId(business.getId());
+        designRepo.save(design);
+
+        Design baseDesign = designRepo.get(business.getId());
+        String designPermission = Giga.DESIGN_MAINTENANCE + baseDesign.getId();
+        userRepo.savePermission(business.getUserId(), designPermission);
+
+        String[] pages = {"Home", "About", "Contact"};
+
+        //actually, no... sorry. it wont work.
+
+        for(String name : pages) {
+            String uri = Giga.getUri(name);
+            Page page = new Page();
+            page.setName(name);
+            page.setUri(uri);
+            page.setContent("<h1>" + name + "</h1>");
+            page.setBusinessId(business.getId());
+            page.setDesignId(baseDesign.getId());
+            pageRepo.save(page);
+
+            Page savedPage = pageRepo.getSaved();
+            String pagePermission = Giga.PAGE_MAINTENANCE + savedPage.getId();
+            userRepo.savePermission(business.getUserId(), pagePermission);
+        }
+
+    }
+
+    public void setData(Long id, User authUser, Cache cache, SecurityManager security){
+        Business currentBusiness = businessRepo.get(id);
+        Business primaryBusiness = businessRepo.get(currentBusiness.getPrimaryId());
+        currentBusiness.setPrimary(primaryBusiness);
+        List<Business> businesses = businessRepo.getList(authUser.getId());
+        Giga.sort(businesses);
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+
+        cache.set("authUser", authUser);
+        cache.set("business", currentBusiness);
+        cache.set("businessOptions", businesses);
+        cache.set("siteService", siteService);
+    }
+
+    public void setData(Cart cart, Business business, Cache cache, HttpRequest req){
+        BigDecimal subtotal = new BigDecimal(0);
+        List<CartItem> cartItems = cartRepo.getListItems(cart.getId());
+        System.out.println("ci " + cartItems.size());
+        System.out.println("z");
+        for(CartItem cartItem : cartItems){
+            Item item = itemRepo.get(cartItem.getItemId());
+            cartItem.setItem(item);
+
+            BigDecimal itemTotal = cartItem.getPrice().multiply(cartItem.getQuantity());
+            List<CartOption> cartOptions = cartRepo.getOptions(cartItem.getId());
+            for(CartOption cartOption : cartOptions){
+                ItemOption itemOption = itemRepo.getOption(cartOption.getItemOptionId());
+                OptionValue optionValue = itemRepo.getValue(cartOption.getOptionValueId());
+                cartOption.setItemOption(itemOption);
+                cartOption.setOptionValue(optionValue);
+                if(cartOption.getPrice() != null){
+                    itemTotal = itemTotal.add(cartOption.getPrice().multiply(cartItem.getQuantity()));
+                }
+            }
+            cartItem.setItemTotal(itemTotal);
+
+            subtotal = subtotal.add(itemTotal);
+            cart.setSubtotal(subtotal);
+
+            cartItem.setCartOptions(cartOptions);
+
+        }
+
+        cart.setCartItems(cartItems);
+        if(business.getFlatShipping()){
+            BigDecimal total = cart.getSubtotal();
+            if(business.getShipping() != null){
+                total = total.add(business.getShipping());
+            }
+            cart.setShipping(business.getShipping());
+            cart.setTotal(total);
+            cartRepo.update(cart);
+        }
+
+        if(!business.getFlatShipping()){
+            ShipmentRate rate = cartRepo.getRate(cart.getId());
+            if(rate != null) {
+                BigDecimal total = rate.getRate().add(cart.getSubtotal());
+                cart.setShipping(rate.getRate());
+                cart.setTotal(total);
+                cart.setValidAddress(true);
+                cartRepo.update(cart);
+                cache.set("rate", rate);
+            }
+        }
+
+        System.out.println("kilo : subtotal " + cart);
+        Design design = designRepo.getBase(business.getId());
+        System.out.println("business: " + business);
+        System.out.println("design: " + design);
+
+        cache.set("design", design);
+        cache.set("request", req);
+        cache.set("business", business);
+        cache.set("cart", cart);
+        cache.set("items", cartItems);
+        cache.set("siteService", siteService);
+    }
 
 }
