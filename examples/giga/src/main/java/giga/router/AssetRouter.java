@@ -130,12 +130,12 @@ public class AssetRouter {
             authUser = userRepo.getPhone(credential);
         }
 
-        Asset asset = (Asset) req.inflect(req, Asset.class);
+        Asset asset = (Asset) req.inflect(Asset.class);
         asset.setDateAdded(Giga.getDate());
         asset.setUserId(authUser.getId());
 
         RequestComponent requestComponent = new RequestComponent();
-        List<FileComponent> fileComponents = requestComponent.getFiles();
+        List<FileComponent> fileComponents = requestComponent.getFileComponents();
 
         SeaService seaService = new SeaService();
 
@@ -158,7 +158,7 @@ public class AssetRouter {
         return "[redirect]/assets/" + savedAsset.getBusinessId();
     }
 
-    @Post("/assets/delete/{{businessId}}/{{id}}")
+    @Post("/assets/delete/{businessId}/{id}")
     public String delete(Cache cache,
                          HttpRequest httpRequest,
                          SecurityManager security,

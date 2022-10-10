@@ -4,14 +4,18 @@ import giga.Giga;
 import giga.model.Asset;
 import giga.model.Design;
 import giga.model.User;
-import giga.service.DesignService;
-import jakarta.servlet.http.HttpRequest;
-import qio.annotate.HttpRouter;
-import qio.annotate.Inject;
-import qio.annotate.Variable;
-import qio.annotate.verbs.Get;
-import qio.annotate.verbs.Post;
-import qio.model.web.Cache;
+import giga.repo.AssetRepo;
+import giga.repo.DesignRepo;
+import giga.repo.UserRepo;
+import giga.service.BusinessService;
+import net.plsar.annotations.Component;
+import net.plsar.annotations.HttpRouter;
+import net.plsar.annotations.Inject;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.Cache;
+import net.plsar.model.HttpRequest;
+import net.plsar.security.SecurityManager;
 
 import java.util.List;
 
@@ -19,12 +23,26 @@ import java.util.List;
 public class DesignRouter {
 
     @Inject
-    DesignService designService;
+    AssetRepo assetRepo;
+
+    @Inject
+    UserRepo userRepo;
+
+    @Inject
+    DesignRepo designRepo;
+
+    BusinessService businessService;
+
+    public DesignRouter(){
+        this.businessService = new BusinessService();
+    }
     
-    @Get("/designs/new/{{id}}")
+    @Get("/designs/new/{id}")
     public String configure(Cache cache,
+                            HttpRequest req,
+                            SecurityManager security,
                             @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
         businessService.setData(id, cache);
@@ -36,10 +54,12 @@ public class DesignRouter {
         return "/designs/auth.jsp";
     }
 
-    @Get("/designs/{{id}}")
+    @Get("/designs/{id}")
     public String list(Cache cache,
+                       HttpRequest req,
+                       SecurityManager security,
                        @Component Long id) throws Exception{
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
         businessService.setData(id, cache);
@@ -51,33 +71,40 @@ public class DesignRouter {
     }
 
     @Post("/designs/save")
-    public String save(HttpRequest req){
-        if(!authService.isAuthenticated()){
+    public String save(HttpRequest req,
+                       SecurityManager security){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
-        User authdUser = authService.getUser();
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
 
-        Design design = (Design) Qio.get(req, Design.class);
+        Design design = (Design) req.inflect(Design.class);
         designRepo.save(design);
 
         Design savedDesign = designRepo.getSaved();
         String permission = Giga.DESIGN_MAINTENANCE + savedDesign.getId();
-        userRepo.savePermission(authdUser.getId(), permission);
+        userRepo.savePermission(authUser.getId(), permission);
 
         return "[redirect]/designs/" + savedDesign.getBusinessId();
     }
 
-    @Get("/designs/edit/{{id}}")
+    @Get("/designs/edit/{id}")
     public String showcase(Cache cache,
+                           HttpRequest req,
+                           SecurityManager security,
                            @Component Long id) throws Exception {
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.DESIGN_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to edit this design.");
             return "[redirect]/";
         }
@@ -92,37 +119,40 @@ public class DesignRouter {
         return "/designs/auth.jsp";
     }
 
-    @Post("/designs/update/{{id}}")
-    public String update(HttpRequest req,
-                         Cache cache,
+    @Post("/designs/update/{id}")
+    public String update(Cache cache,
+                         HttpRequest req,
+                         SecurityManager security,
                          @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.DESIGN_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to edit this design.");
             return "[redirect]/";
         }
 
-        Design design = (Design) Qio.get(req, Design.class);
+        Design design = (Design) req.inflect(Design.class);
         designRepo.update(design);
 
         return "[redirect]/designs/edit/" + id;
     }
 
-    @Post("/designs/delete/{{id}}")
+    @Post("/designs/delete/{id}")
     public String delete(Cache cache,
+                         HttpRequest req,
+                         SecurityManager security,
                          @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.DESIGN_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to delete this design.");
             return "[redirect]/";
         }

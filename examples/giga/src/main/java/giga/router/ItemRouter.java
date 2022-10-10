@@ -2,16 +2,22 @@ package giga.router;
 
 import giga.Giga;
 import giga.model.*;
-import giga.service.ItemService;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpRequest;
-import qio.annotate.HttpRouter;
-import qio.annotate.Inject;
-import qio.annotate.Variable;
-import qio.annotate.verbs.Get;
-import qio.annotate.verbs.Post;
-import qio.model.web.Cache;
+import giga.repo.*;
+import giga.service.BusinessService;
+import giga.service.SeaService;
+import giga.service.SiteService;
+import net.plsar.annotations.Component;
+import net.plsar.annotations.HttpRouter;
+import net.plsar.annotations.Inject;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.Cache;
+import net.plsar.model.FileComponent;
+import net.plsar.model.HttpRequest;
+import net.plsar.model.RequestComponent;
+import net.plsar.security.SecurityManager;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
@@ -19,17 +25,41 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Router
+@HttpRouter
 public class ItemRouter {
 
     @Inject
-    ItemService itemService;
+    ItemRepo itemRepo;
 
-    @Get("/query/{{businessId}}")
-    public String configure(HttpRequest req,
-                            Cache cache,
+    @Inject
+    AssetRepo assetRepo;
+
+    @Inject
+    UserRepo userRepo;
+
+    @Inject
+    CategoryRepo categoryRepo;
+
+    @Inject
+    DesignRepo designRepo;
+
+    @Inject
+    BusinessRepo businessRepo;
+
+    BusinessService businessService;
+
+    public ItemRouter(){
+        this.businessService = new BusinessService();
+    }
+
+    @Get("/query/{businessId}")
+    public String configure(Cache cache,
+                            HttpRequest req,
+                            SecurityManager security,
                             @Component Long id){
-        String q = req.getParameter("q");
+        String q = req.getValue("q");
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
         Business business = businessRepo.get(id);
         List<Item> items = itemRepo.q(q, id);
         cache.set("q", q);
@@ -42,10 +72,11 @@ public class ItemRouter {
     }
 
 
-    @Get("/{{business}}/items/{{id}}")
-    public String getItem(HttpRequest req,
-                          Cache cache,
-                          @Component String business,
+    @Get("/{business}/items/{id}")
+    public String getItem(Cache cache,
+                          HttpRequest req,
+                          SecurityManager security,
+                          @Component String businessUri,
                           @Component Long id){
         Business business = businessRepo.get(businessUri);
         if(business == null){
@@ -59,6 +90,8 @@ public class ItemRouter {
 
         setData(id, cache);
 
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+
         cache.set("item", item);
         cache.set("business", business);
         cache.set("request", req);
@@ -68,9 +101,10 @@ public class ItemRouter {
     }
 
     @Get("/{{business}}/items/{{categoryId}}/{{id}}")
-    public String getItem(HttpRequest req,
-                          Cache cache,
-                          @Component String business,
+    public String getItem(Cache cache,
+                          HttpRequest req,
+                          SecurityManager security,
+                          @Component String businessUri,
                           @Component Long categoryId,
                           @Component Long id){
         System.out.println(id + " : " + categoryId + " : " + businessUri);
@@ -90,6 +124,7 @@ public class ItemRouter {
         }
 
         setData(id, cache);
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
 
         cache.set("item", item);
         cache.set("category", category);
@@ -100,10 +135,12 @@ public class ItemRouter {
         return "/pages/item/index.jsp";
     }
 
-    @Get("/items/new/{{businessId}}")
-    public String configure(Cache cache,
-                            @Component Long businessId){
-        if(!authService.isAuthenticated()){
+    @Get("/items/new/{businessId}")
+    public String configureSuper(Cache cache,
+                                HttpRequest req,
+                                SecurityManager security,
+                                @Component Long businessId){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
         businessService.setData(businessId, cache);
@@ -125,15 +162,19 @@ public class ItemRouter {
         return "/designs/auth.jsp";
     }
 
-    @Get("/items/{{businessId}}")
+    @Get("/items/{businessId}")
     public String list(Cache cache,
+                       HttpRequest req,
+                       SecurityManager security,
                        @Component Long businessId){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
-        businessService.setData(businessId, cache);
 
+        businessService.setData(businessId, cache);
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
         List<Item> items = itemRepo.getList(businessId);
+
         cache.set("items", items);
         cache.set("title", "Active Items");
         cache.set("siteService", siteService);
@@ -143,13 +184,16 @@ public class ItemRouter {
 
     @Get("/items/inactive/{{businessId}}")
     public String getListInactive(Cache cache,
-                       @Component Long businessId){
-        if(!authService.isAuthenticated()){
+                                  HttpRequest req,
+                                  SecurityManager security,
+                                  @Component Long businessId){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
         businessService.setData(businessId, cache);
-
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
         List<Item> items = itemRepo.getList(businessId, false);
+
         cache.set("items", items);
         cache.set("title", "Inactive Items");
         cache.set("siteService", siteService);
@@ -159,8 +203,10 @@ public class ItemRouter {
 
     @Get("/items/grid/{{businessId}}")
     public String grid(Cache cache,
+                       HttpRequest req,
+                       SecurityManager security,
                        @Component Long businessId){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
         businessService.setData(businessId, cache);
@@ -177,6 +223,8 @@ public class ItemRouter {
         }
         List<Design> designs = designRepo.getList(businessId);
         List<Category> categories = categoryRepo.getListAll(businessId);
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+
         cache.set("designs", designs);
         cache.set("categories", categories);
         cache.set("items", items);
@@ -187,23 +235,26 @@ public class ItemRouter {
 
     @Post("/items/save/{{businessId}}")
     public String save(HttpRequest req,
-                        @Component Long businessId) throws IOException, ServletException {
-        if(!authService.isAuthenticated()){
+                       SecurityManager security,
+                       @Component Long businessId) throws IOException {
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
-        User authUser = authService.getUser();
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
 
-        Item item = (Item) Qio.get(req, Item.class);
+        Item item = (Item) req.inflect(Item.class);
+        RequestComponent requestComponent = req.getRequestComponent("media");
+        List<FileComponent> fileComponents = requestComponent.getFileComponents();
 
-        List<Part> fileParts = req.getParts()
-                .stream()
-                .filter(part -> "media".equals(part.getName()) && part.getSize() > 0)
-                .collect(Collectors.toList());
-
-        for (Part part : fileParts) {
-            String original = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-            InputStream is = part.getInputStream();
+        SeaService seaService = new SeaService();
+        for (FileComponent fileComponent : fileComponents) {
+            String original = fileComponent.getFileName();
+            InputStream is = new ByteArrayInputStream(fileComponent.getFileBytes());
             String ext = Giga.getExt(original);
             String name = Giga.getString(9) + "." + ext;
             seaService.send(name, is);
@@ -218,8 +269,10 @@ public class ItemRouter {
         itemRepo.save(item);
         Item savedItem = itemRepo.getSaved();
 
-        String[] categories = req.getParameterValues("categories");
-        System.out.println("a " + req.getParameterValues("categories") + " : " + categories);
+        RequestComponent categoriesComponent = req.getRequestComponent("categories");
+        List<String> categories = categoriesComponent.getValues();
+
+        System.out.println("a: " + categories);
         for(String id : categories){
             CategoryItem categoryItem = new CategoryItem(savedItem.getId(), Long.valueOf(id.trim()), businessId);
             categoryRepo.saveItem(categoryItem);
@@ -233,15 +286,17 @@ public class ItemRouter {
 
     @Get("/items/edit/{{businessId}}/{{id}}")
     public String showcase(Cache cache,
+                           HttpRequest req,
+                           SecurityManager security,
                            @Component Long businessId,
-                           @Component Long id) throws Exception {
-        if(!authService.isAuthenticated()){
+                           @Component Long id) {
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.ITEM_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to edit this item.");
             return "[redirect]/";
         }
@@ -280,34 +335,34 @@ public class ItemRouter {
     }
 
     @Post("/items/update/{{businessId}}/{{id}}")
-    public String update(HttpRequest req,
-                         Cache cache,
+    public String update(Cache cache,
+                         HttpRequest req,
+                         SecurityManager security,
                          @Component Long businessId,
-                         @Component Long id) throws IOException, ServletException{
-        if(!authService.isAuthenticated()){
+                         @Component Long id) throws IOException{
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         Business business = businessRepo.get(businessId);
 
         String permission = Giga.ITEM_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to edit this design.");
             return "[redirect]/";
         }
 
-        Item item = (Item) Qio.get(req, Item.class);
+        Item item = (Item) req.inflect(Item.class);
 
-        if(req.getParameter("media") != null){
-            List<Part> fileParts = req.getParts()
-                    .stream()
-                    .filter(part -> "media".equals(part.getName()) && part.getSize() > 0)
-                    .collect(Collectors.toList());
+        if(req.getValue("media") != null){
+            RequestComponent requestComponent = req.getRequestComponent("media");
+            List<FileComponent> fileComponents = requestComponent.getFileComponents();
 
-            for (Part part : fileParts) {
-                String original = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-                InputStream is = part.getInputStream();
+            SeaService seaService = new SeaService();
+            for (FileComponent fileComponent : fileComponents) {
+                String original = fileComponent.getFileName();
+                InputStream is = new ByteArrayInputStream(fileComponent.getFileBytes());
                 String ext = Giga.getExt(original);
                 String name = Giga.getString(9) + "." + ext;
                 seaService.send(name, is);
@@ -317,9 +372,9 @@ public class ItemRouter {
 
         categoryRepo.deleteCategoryItems(id);
 
-        String[] categories = req.getParameterValues("categories");
+        RequestComponent categoriesComponent = req.getRequestComponent("categories");
+        List<String> categories = categoriesComponent.getValues();
         if(categories != null) {
-            System.out.println("a " + req.getParameterValues("categories") + " : " + categories);
             for (String categoryId : categories) {
                 CategoryItem categoryItem = new CategoryItem(item.getId(), Long.valueOf(categoryId.trim()), businessId);
                 categoryRepo.saveItem(categoryItem);
@@ -329,51 +384,44 @@ public class ItemRouter {
         if(business.getAffiliate() != null &&
                 business.getAffiliate() &&
                 (item.getAffiliatePrice().compareTo(item.getPrice()) == 1)){
-            cache.set("message", "Your price may not be lower than the business owners. I get it, you want to buy their products at a lower price. You're a genius. ; )");
-            if(onGrid){
-                return "[redirect]/items/grid/" + businessId;
-            }
+            cache.set("message", "Your price may not be lower than the business owners.");
             return "[redirect]/items/edit/" + businessId + "/" + id;
         }
 
         itemRepo.update(item);
         cache.set("message", "Successfully updated item");
-
-        if(onGrid){
-            return "[redirect]/items/grid/" + businessId;
-        }
         return "[redirect]/items/edit/" + businessId + "/" + id;
     }
 
     @Post("/items/grid/update/{{businessId}}/{{id}}")
-    public String gridUpdate(HttpRequest req,
-                         Cache cache,
-                         @Component Long businessId,
-                         @Component Long id) throws IOException, ServletException{
-        if(!authService.isAuthenticated()){
+    public String gridUpdate(Cache cache,
+                             HttpRequest req,
+                             SecurityManager security,
+                             @Component Long businessId,
+                             @Component Long id) {
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         Business business = businessRepo.get(businessId);
 
         String permission = Giga.ITEM_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to edit this design.");
             return "[redirect]/";
         }
 
-        Item item = (Item) Qio.get(req, Item.class);
+        Item item = (Item) req.inflect(Item.class);
 
-        if(req.getParameter("media") != null){
-            List<Part> fileParts = req.getParts()
-                    .stream()
-                    .filter(part -> "media".equals(part.getName()) && part.getSize() > 0)
-                    .collect(Collectors.toList());
+        if(req.getValue("media") != null){
+            RequestComponent requestComponent = req.getRequestComponent("media");
+            List<FileComponent> fileComponents = requestComponent.getFileComponents();
 
-            for (Part part : fileParts) {
-                String original = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-                InputStream is = part.getInputStream();
+            SeaService seaService = new SeaService();
+            for (FileComponent fileComponent : fileComponents) {
+                String original = fileComponent.getFileName();
+                InputStream is = new ByteArrayInputStream(fileComponent.getFileBytes());
                 String ext = Giga.getExt(original);
                 String name = Giga.getString(9) + "." + ext;
                 seaService.send(name, is);
@@ -383,9 +431,10 @@ public class ItemRouter {
 
         categoryRepo.deleteCategoryItems(id);
 
-        String[] categories = req.getParameterValues("categories");
+
+        RequestComponent categoriesComponent = req.getRequestComponent("categories");
+        List<String> categories = categoriesComponent.getValues();
         if(categories != null) {
-            System.out.println("a " + req.getParameterValues("categories") + " : " + categories);
             for (String categoryId : categories) {
                 CategoryItem categoryItem = new CategoryItem(item.getId(), Long.valueOf(categoryId.trim()), businessId);
                 categoryRepo.saveItem(categoryItem);
@@ -395,33 +444,29 @@ public class ItemRouter {
         if(business.getAffiliate() != null &&
                 business.getAffiliate() &&
                 (item.getAffiliatePrice().compareTo(item.getPrice()) == 1)){
-            cache.set("message", "Your price may not be lower than the business owners. I get it, you want to buy their products at a lower price. You're a genius. ; )");
-            if(onGrid){
-                return "[redirect]/items/grid/" + businessId;
-            }
-            return "[redirect]/items/edit/" + businessId + "/" + id;
+            cache.set("message", "Your price may not be lower than the business owners.");
+            return "[redirect]/items/grid/" + businessId;
         }
 
         itemRepo.update(item);
         cache.set("message", "Successfully updated item");
 
-        if(onGrid){
-            return "[redirect]/items/grid/" + businessId;
-        }
-        return "[redirect]/items/edit/" + businessId + "/" + id;
+        return "[redirect]/items/grid/" + businessId;
     }
 
     @Post("/items/delete/{{businessId}}/{{id}}")
     public String delete(Cache cache,
+                         HttpRequest req,
+                         SecurityManager security,
                          @Component Long businessId,
                          @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.ITEM_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
@@ -440,15 +485,17 @@ public class ItemRouter {
 
     @Get("/items/options/{{businessId}}/{{id}}")
     public String options(Cache cache,
-                           @Component Long businessId,
-                           @Component Long id) throws Exception {
-        if(!authService.isAuthenticated()){
+                          HttpRequest req,
+                          SecurityManager security,
+                          @Component Long businessId,
+                          @Component Long id) throws Exception {
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.ITEM_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
@@ -462,15 +509,17 @@ public class ItemRouter {
 
     @Get("/items/options/save/{{businessId}}/{{id}}")
     public String getOptions(Cache cache,
-                          @Component Long businessId,
-                          @Component Long id) throws Exception {
-        if(!authService.isAuthenticated()){
+                             HttpRequest req,
+                             SecurityManager security,
+                             @Component Long businessId,
+                             @Component Long id) throws Exception {
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.ITEM_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
@@ -483,40 +532,42 @@ public class ItemRouter {
     }
 
     @Post("/items/options/save/{{businessId}}/{{id}}")
-    public String saveOption(HttpRequest req,
-                             Cache cache,
+    public String saveOption(Cache cache,
+                             HttpRequest req,
+                             SecurityManager security,
                              @Component Long businessId,
                              @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.ITEM_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
 
-        ItemOption itemOption = (ItemOption) Qio.get(req, ItemOption.class);
+        ItemOption itemOption = (ItemOption) req.inflect(ItemOption.class);
         itemRepo.saveOption(itemOption);
 
         return "[redirect]/items/options/" + businessId + "/" + id;
     }
 
     @Post("/items/options/delete/{{businessId}}/{{optionId}}/{{id}}")
-    public String deleteOption(HttpRequest req,
-                             Cache cache,
-                             @Component Long businessId,
-                             @Component Long optionId,
-                             @Component Long id){
-        if(!authService.isAuthenticated()){
+    public String deleteOption(Cache cache,
+                               HttpRequest req,
+                               SecurityManager security,
+                               @Component Long businessId,
+                               @Component Long optionId,
+                               @Component Long id){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.ITEM_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
@@ -530,15 +581,17 @@ public class ItemRouter {
 
     @Get("/items/options/delete/{{businessId}}/{{optionId}}/{{id}}")
     public String deleteOption(Cache cache,
+                               HttpRequest req,
+                               SecurityManager security,
                                @Component Long businessId,
                                @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.ITEM_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
@@ -551,22 +604,23 @@ public class ItemRouter {
     }
 
     @Post("/items/options/values/save/{{businessId}}/{{id}}")
-    public String saveValue(HttpRequest req,
-                            Cache cache,
-                             @Component Long businessId,
-                             @Component Long id){
-        if(!authService.isAuthenticated()){
+    public String saveValue(Cache cache,
+                            HttpRequest req,
+                            SecurityManager security,
+                            @Component Long businessId,
+                            @Component Long id){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.ITEM_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
 
-        OptionValue optionValue = (OptionValue) Qio.get(req, OptionValue.class);
+        OptionValue optionValue = (OptionValue) req.inflect(OptionValue.class);
         itemRepo.saveValue(optionValue);
 
         return "[redirect]/items/options/" + businessId + "/" + id;
@@ -575,15 +629,17 @@ public class ItemRouter {
 
     @Get("/items/options/values/save/{{businessId}}/{{id}}")
     public String getValues(Cache cache,
+                            HttpRequest req,
+                            SecurityManager security,
                             @Component Long businessId,
                             @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.ITEM_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
@@ -596,18 +652,19 @@ public class ItemRouter {
     }
 
     @Post("/items/options/values/delete/{{businessId}}/{{valueId}}/{{id}}")
-    public String deleteValue(HttpRequest req,
-                             Cache cache,
-                             @Component Long businessId,
-                             @Component Long valueId,
-                             @Component Long id){
-        if(!authService.isAuthenticated()){
+    public String deleteValue(Cache cache,
+                              HttpRequest req,
+                              SecurityManager security,
+                              @Component Long businessId,
+                              @Component Long valueId,
+                              @Component Long id){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.ITEM_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
@@ -623,15 +680,17 @@ public class ItemRouter {
 
     @Get("/items/options/values/delete/{{businessId}}/{{valueId}}/{{id}}")
     public String deleteValue(Cache cache,
+                              HttpRequest req,
+                              SecurityManager security,
                               @Component Long businessId,
                               @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.ITEM_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Unauthorized to delete this item.");
             return "[redirect]/";
         }
@@ -641,6 +700,18 @@ public class ItemRouter {
 
         cache.set("page", "/pages/item/options.jsp");
         return "/designs/auth.jsp";
+    }
+
+
+    public void setData(Long id, Cache cache){
+        Item item = itemRepo.get(id);
+        List<ItemOption> itemOptions = itemRepo.getOptions(item.getId());
+        for(ItemOption itemOption : itemOptions){
+            List<OptionValue> optionValues = itemRepo.getValues(itemOption.getId());
+            itemOption.setOptionValues(optionValues);
+        }
+        cache.set("item", item);
+        cache.set("itemOptions", itemOptions);
     }
 
 }

@@ -141,14 +141,14 @@ public class HttpRequest {
         }
     }
 
-    public Object inflect(HttpRequest request, Class<?> klass){
+    public Object inflect(Class<?> klass){
         Object classInstance =  null;
         try {
             classInstance = klass.getConstructor().newInstance();
             Field[] classInstanceFields = klass.getDeclaredFields();
             for(Field classInstanceField : classInstanceFields){
                 String fieldName = classInstanceField.getName();
-                String fieldValue = request.value(fieldName);
+                String fieldValue = getValue(fieldName);
                 if(fieldValue != null &&
                         !fieldValue.equals("")){
 

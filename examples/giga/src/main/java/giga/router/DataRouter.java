@@ -207,7 +207,7 @@ public class DataRouter {
             return "[redirect]/";
         }
 
-        MediaImport mediaImport = (MediaImport) req.inflect(req, MediaImport.class);
+        MediaImport mediaImport = (MediaImport) req.inflect(MediaImport.class);
         String permission = Giga.MEDIA_IMPORT_MAINTENANCE + mediaImport.getId();
         if(!security.hasRole(Giga.SUPER_ROLE, req) &&
                 !security.hasPermission(permission, req)){

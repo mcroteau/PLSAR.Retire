@@ -93,7 +93,7 @@ public class AffiliateRouter {
         return "/designs/guest.jsp";
     }
 
-    @Get("/affiliates/requests/{{id}}")
+    @Get("/affiliates/requests/{id}")
     public String getRequests(@Component Long id,
                                 Cache cache,
                                 HttpRequest httpRequest,
@@ -108,7 +108,7 @@ public class AffiliateRouter {
         return "/designs/auth.jsp";
     }
 
-    @Get("/affiliates/onboarding/status/{{guid}}")
+    @Get("/affiliates/onboarding/status/{guid}")
     public String status(Cache cache,
                         @Component String guid){
         BusinessRequest businessRequest = businessRepo.getRequest(guid);
@@ -124,7 +124,7 @@ public class AffiliateRouter {
     @Post("/affiliates/onboarding/begin")
     public String begin(HttpRequest req,
                        Cache cache){
-        BusinessRequest businessRequest = (BusinessRequest) req.inflect(req, BusinessRequest.class);
+        BusinessRequest businessRequest = (BusinessRequest) req.inflect(BusinessRequest.class);
         businessRequest.setGuid(Giga.getString(7));
         businessRepo.saveRequest(businessRequest);
 
@@ -228,7 +228,7 @@ public class AffiliateRouter {
 
     @Post("/affiliates/onboarding/finalize/{id}")
     public String finalizeOnboarding(Cache cache, HttpRequest req, SecurityManager security) throws Exception {
-        Business business = (Business) req.inflect(req, Business.class);
+        Business business = (Business) req.inflect(Business.class);
 
         try {
 

@@ -132,7 +132,7 @@ public class CategoryRouter {
             authUser = userRepo.getPhone(credential);
         }
 
-        Category category = (Category) req.inflect(req, Category.class);
+        Category category = (Category) req.inflect(Category.class);
         if(category.getCategoryId() == null) {
             category.setTopLevel(true);
         }else{
@@ -203,7 +203,7 @@ public class CategoryRouter {
             return "[redirect]/";
         }
 
-        Category category = (Category) req.inflect(req, Category.class);
+        Category category = (Category) req.inflect(Category.class);
         if(category.getCategoryId() == null) {
             category.setTopLevel(true);
         }else{

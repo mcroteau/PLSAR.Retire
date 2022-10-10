@@ -5,36 +5,59 @@ import giga.model.Business;
 import giga.model.Design;
 import giga.model.Page;
 import giga.model.User;
-import giga.service.PageService;
-import jakarta.servlet.http.HttpRequest;
-import qio.annotate.HttpRouter;
-import qio.annotate.Inject;
-import qio.annotate.Variable;
-import qio.annotate.verbs.Get;
-import qio.annotate.verbs.Post;
-import qio.model.web.Cache;
-
+import giga.repo.*;
+import giga.service.BusinessService;
+import giga.service.SiteService;
+import net.plsar.annotations.Component;
+import net.plsar.annotations.HttpRouter;
+import net.plsar.annotations.Inject;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.Cache;
+import net.plsar.model.HttpRequest;
+import net.plsar.security.SecurityManager;
 import java.util.List;
 
 @HttpRouter
 public class PageRouter {
 
     @Inject
-    PageService pageService;
+    UserRepo userRepo;
+
+    @Inject
+    PageRepo pageRepo;
+
+    @Inject
+    DesignRepo designRepo;
+
+    @Inject
+    CategoryRepo categoryRepo;
+
+    @Inject
+    BusinessRepo businessRepo;
+
+    BusinessService businessService;
+
+    public PageRouter(){
+        this.businessService = new BusinessService();
+    }
 
     @Get("/{{business}}")
-    public String getHome(HttpRequest req,
-                          Cache cache,
-                          @Component String business){
+    public String getHome(Cache cache,
+                          HttpRequest req,
+                          SecurityManager security,
+                          @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]";
         }
 
-        Page activePage = pageRepo.get(business.getId(), page);
+        Page activePage = pageRepo.get(business.getId(), "home");
         if(activePage == null){
             return "[redirect]/" + businessUri + "";
         }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
 
         cache.set("request", req);
         cache.set("siteService", siteService);
@@ -43,12 +66,13 @@ public class PageRouter {
         return "/pages/page/index.jsp";
     }
 
-    @Get("/{{business}}/asset/{{page}}")
-    public String getPage(HttpRequest req,
-                          Cache cache,
-                          @Component String business,
+    @Get("/{{businessUri}}/asset/{{page}}")
+    public String getPage(Cache cache,
+                          HttpRequest req,
+                          SecurityManager security,
+                          @Component String businessUri,
                           @Component String page){
-        System.out.println("get page");
+
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]";
@@ -58,6 +82,8 @@ public class PageRouter {
         if(activePage == null){
             return "[redirect]/" + businessUri + "";
         }
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
 
         cache.set("request", req);
         cache.set("siteService", siteService);
@@ -68,8 +94,10 @@ public class PageRouter {
 
     @Get("/pages/new/{{businessId}}")
     public String configure(Cache cache,
+                            HttpRequest req,
+                            SecurityManager security,
                             @Component Long businessId){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
         businessService.setData(businessId, cache);
@@ -81,8 +109,10 @@ public class PageRouter {
 
     @Get("/pages/{{businessId}}")
     public String list(Cache cache,
+                       HttpRequest req,
+                       SecurityManager security,
                        @Component Long businessId){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
         businessService.setData(businessId, cache);
@@ -94,14 +124,20 @@ public class PageRouter {
     }
 
     @Post("/pages/save")
-    public String save(HttpRequest req) throws Exception {
-        if(!authService.isAuthenticated()){
+    public String save(Cache cache,
+                       HttpRequest req,
+                       SecurityManager security) throws Exception {
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
-        User authUser = authService.getUser();
+        String credential = security.getUser(req);
+        User authUser = userRepo.get(credential);
+        if(authUser == null){
+            authUser = userRepo.getPhone(credential);
+        }
 
-        Page page = (Page) Qio.get(req, Page.class);
+        Page page = (Page) req.inflect(Page.class);
         pageRepo.save(page);
         Page savedAsset = pageRepo.getSaved();
         String permission = Giga.PAGE_MAINTENANCE + savedAsset.getId();
@@ -112,15 +148,17 @@ public class PageRouter {
 
     @Post("/pages/delete/{{businessId}}/{{id}}")
     public String delete(Cache cache,
+                         HttpRequest req,
+                         SecurityManager security,
                          @Component Long businessId,
                          @Component Long id){
-        if(!authService.isAuthenticated()){
+        if(!security.isAuthenticated(req)){
             return "[redirect]/";
         }
 
         String permission = Giga.PAGE_MAINTENANCE + id;
-        if(!authService.isAdministrator() &&
-                !authService.hasPermission(permission)){
+        if(!security.hasRole(Giga.SUPER_ROLE, req) &&
+                !security.hasPermission(permission, req)){
             cache.set("message", "Whoa, people might be using this. Lol, this isn't yours.");
             return "[redirect]/";
         }

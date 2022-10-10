@@ -76,7 +76,7 @@ public class ItemService {
             return "[redirect]/" + businessUri;
         }
 
-        setData(id, cache);
+        (id, cache);
 
         cache.set("item", item);
         cache.set("business", business);
@@ -464,7 +464,7 @@ public class ItemService {
         businessService.setData(businessId, cache);
 
         return "[redirect]/items/options/" + businessId + "/" + id;
-    }
+    }setData
 
     public void setData(Long id, Cache cache){
         Item item = itemRepo.get(id);
