@@ -5,19 +5,15 @@ import giga.model.User;
 import giga.model.UserBusiness;
 import giga.repo.BusinessRepo;
 import giga.service.AuthService;
-import qio.annotate.HttpRouter;
-import qio.annotate.Inject;
-import qio.annotate.Property;
-import qio.annotate.verbs.Get;
-import qio.model.web.Cache;
+import net.plsar.annotations.HttpRouter;
+import net.plsar.annotations.Inject;
+import net.plsar.annotations.http.Get;
+import net.plsar.model.Cache;
 
 import java.util.List;
 
 @HttpRouter
 public class BasicRouter {
-
-	@Property("stripe.key")
-	String stripeKey;
 
 	@Inject
 	AuthService authService;
@@ -47,9 +43,9 @@ public class BasicRouter {
 	@Get("/home")
 	public String home(Cache cache){
 		List<Business> businesses = businessRepo.getList();
-		data.put("businesses", businesses);
-		data.set("title", "A Marketplace for Marketplaces.");
-		data.set("page", "/pages/index.jsp");
+		cache.set("businesses", businesses);
+		cache.set("title", "A Marketplace for Marketplaces.");
+		cache.set("page", "/pages/index.jsp");
 		return "/designs/guest.jsp";
 	}
 

@@ -196,7 +196,7 @@ public class CartService {
     }
 
 
-    public void setData(Cart cart, Business business, Cache cache, HttpRequest req){
+    public void setData(Cart cart, Business business, Cache cache, ItemRepo itemRepo, DesignRepo designRepo, CartRepo cartRepo, HttpRequest req, SiteService siteService){
         BigDecimal subtotal = new BigDecimal(0);
         List<CartItem> cartItems = cartRepo.getListItems(cart.getId());
         System.out.println("ci " + cartItems.size());

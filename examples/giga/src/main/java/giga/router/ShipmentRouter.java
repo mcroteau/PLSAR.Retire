@@ -7,25 +7,18 @@ import com.easypost.model.Rate;
 import com.easypost.model.Shipment;
 import giga.Giga;
 import giga.model.*;
-import giga.repo.BusinessRepo;
-import giga.repo.CartRepo;
-import giga.repo.ItemRepo;
-import giga.repo.UserRepo;
+import giga.repo.*;
 import giga.service.CartService;
-import giga.service.ShipmentService;
-import jakarta.servlet.http.HttpRequest;
+import giga.service.SiteService;
+import net.plsar.RouteAttributes;
 import net.plsar.annotations.Component;
 import net.plsar.annotations.HttpRouter;
 import net.plsar.annotations.Inject;
 import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
 import net.plsar.model.Cache;
 import net.plsar.model.HttpRequest;
-import qio.annotate.HttpRouter;
-import qio.annotate.Inject;
-import qio.annotate.Variable;
-import qio.annotate.verbs.Get;
-import qio.annotate.verbs.Post;
-import qio.model.web.Cache;
+import net.plsar.security.SecurityManager;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -45,25 +38,34 @@ public class ShipmentRouter {
     ItemRepo itemRepo;
 
     @Inject
+    CategoryRepo categoryRepo;
+
+    @Inject
+    DesignRepo designRepo;
+
+    @Inject
     BusinessRepo businessRepo;
 
 
     @Get("{{business}}/shipment")
     public String begin(Cache cache,
                         HttpRequest req,
+                        SecurityManager security,
                         @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
         }
 
-        Cart cart = cartService.getCart(business, req);
+        CartService cartService = new CartService();
+        Cart cart = cartService.getCart(business, cartRepo, req);
         List<CartItem> cartItems = cartRepo.getListItems(cart.getId());
         if(cartItems.size() == 0) {
             return "[redirect]/" + businessUri + "/cart";
         }
 
-        cartService.setData(cart, business, cache, req);
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        cartService.setData(cart, business, cache, itemRepo, designRepo, cartRepo, req, siteService);
 
         return "/pages/shipment/new.jsp";
     }
@@ -74,8 +76,9 @@ public class ShipmentRouter {
     }
 
     @Post("{{business}}/shipment/rates")
-    public String getRates(HttpRequest req,
-                           Cache cache,
+    public String getRates(Cache cache,
+                           HttpRequest req,
+                           SecurityManager security,
                            @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
@@ -83,9 +86,9 @@ public class ShipmentRouter {
         }
 
         CartService cartService = new CartService();
-        Cart cart = cartService.getCart(business, req);
+        Cart cart = cartService.getCart(business, cartRepo, req);//quarkus just copied. copyright infringement
 
-        User shipUser = (User) Qio.get(req, User.class);
+        User shipUser = (User) req.inflect(User.class);
 
         String phone = "";
         if(shipUser.getPhone() != null) phone = Giga.getPhone(shipUser.getPhone());
@@ -95,7 +98,7 @@ public class ShipmentRouter {
             User storedUsername = userRepo.get(shipUser.getUsername());
             if(storedUsername == null){
                 shipUser.setDateJoined(Giga.getDate());
-                shipUser.setPassword(Chico.dirty("gigabeat"));
+                shipUser.setPassword(security.hash("gigabeat"));
                 userRepo.save(shipUser);
                 storedPhone = userRepo.getSaved();
             }
@@ -127,9 +130,11 @@ public class ShipmentRouter {
 
         cache.set("weight", weight);
 
-        cartService.setData(cart, business, cache, req);
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        cartService.setData(cart, business, cache, itemRepo, designRepo, cartRepo, req, siteService);
 
-        EasyPost.apiKey = easypostKey;
+        RouteAttributes routeAttributes = req.getRouteAttributes();
+        EasyPost.apiKey = (String) routeAttributes.get("easypost.key");
 
         Map<String, Object> toAddress = new HashMap<>();
         toAddress.put("name", shipUser.getName());
@@ -191,14 +196,13 @@ public class ShipmentRouter {
 
     @Post("{{business}}/shipment/add")
     public String select(HttpRequest req,
-                        Cache cache,
-                        @Component String businessUri){
+                         @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
         }
 
-        ShipmentRate shipmentRate = (ShipmentRate) Qio.get(req, ShipmentRate.class);
+        ShipmentRate shipmentRate = (ShipmentRate) req.inflect(ShipmentRate.class);
         cartRepo.deleteRate(shipmentRate.getCartId());
         cartRepo.saveRate(shipmentRate);
 
@@ -206,30 +210,35 @@ public class ShipmentRouter {
     }
 
     @Get("{{business}}/shipment/create")
-    public String createShipment(HttpRequest req,
-                           Cache cache,
-                           @Component String businessUri){
+    public String createShipment(Cache cache,
+                                 HttpRequest req,
+                                 SecurityManager security,
+                                 @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
         }
 
-        Cart cart = cartService.getCart(business, req);
-        cartService.setData(cart, business, cache, req);
+        CartService cartService = new CartService();
+        Cart cart = cartService.getCart(business, cartRepo, req);
+
+        SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+        cartService.setData(cart, business, cache, itemRepo, designRepo, cartRepo, req, siteService);
 
         return "/pages/shipment/create.jsp";
     }
 
     @Post("{{business}}/shipment/save")
-    public String save(HttpRequest req,
-                           Cache cache,
-                           @Component String businessUri){
+    public String save(Cache cache,
+                       HttpRequest req,
+                       SecurityManager security,
+                       @Component String businessUri){
         Business business = businessRepo.get(businessUri);
         if(business == null){
             return "[redirect]/home";
         }
 
-        User user = (User) Qio.get(req, User.class);
+        User user = (User) req.inflect(User.class);
         if(!user.valid(user.getName()) ||
                 !user.valid(user.getShipStreet()) ||
                 !user.valid(user.getShipCity()) ||
@@ -257,7 +266,7 @@ public class ShipmentRouter {
             User storedPhone = userRepo.getPhone(phone);
             if(storedPhone == null){
                 user.setDateJoined(Giga.getDate());
-                user.setPassword(Chico.dirty("gigabeat"));
+                user.setPassword(security.hash("gigabeat"));
                 userRepo.save(user);
                 storedUsername = userRepo.getSaved();
             }else{
@@ -265,7 +274,8 @@ public class ShipmentRouter {
             }
         }
 
-        Cart cart = cartService.getCart(business, req);
+        CartService cartService = new CartService();
+        Cart cart = cartService.getCart(business, cartRepo, req);
         cart.setShipName(user.getName());
         cart.setShipPhone(user.getPhone());
         cart.setShipEmail(user.getUsername());

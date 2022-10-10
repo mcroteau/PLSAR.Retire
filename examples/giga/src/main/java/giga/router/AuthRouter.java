@@ -5,25 +5,28 @@ import giga.model.Business;
 import giga.model.Design;
 import giga.model.User;
 import giga.repo.BusinessRepo;
+import giga.repo.CategoryRepo;
 import giga.repo.DesignRepo;
+import giga.repo.UserRepo;
 import giga.service.SiteService;
-import jakarta.servlet.http.HttpRequest;
-import giga.service.AuthService;
-import qio.annotate.HttpRouter;
-import qio.annotate.Inject;
-import qio.annotate.Variable;
-import qio.annotate.verbs.Get;
-import qio.annotate.verbs.Post;
-import qio.model.web.Cache;
+import net.plsar.annotations.Component;
+import net.plsar.annotations.HttpRouter;
+import net.plsar.annotations.Inject;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.Cache;
+import net.plsar.model.HttpRequest;
+import net.plsar.model.HttpResponse;
+import net.plsar.security.SecurityManager;
 
 @HttpRouter
 public class AuthRouter {
 
 	@Inject
-    AuthService authService;
+	UserRepo userRepo;
 
 	@Inject
-	SiteService siteService;
+	CategoryRepo categoryRepo;
 
 	@Inject
 	DesignRepo designRepo;
@@ -33,18 +36,20 @@ public class AuthRouter {
 
 
 	@Post("/authenticate")
-	public String signin(HttpRequest req,
-							   Cache cache){
+	public String signin(Cache cache,
+						 HttpRequest req,
+						 HttpResponse resp,
+						 SecurityManager security){
 
 		try{
 
-			signout();
+			security.signout(req, resp);
 
-			String credential = req.getParameter("username");
+			String credential = req.getValue("username");
 			if(credential != null)credential = Giga.getSpaces(credential);
 
-			String passwordDirty = req.getParameter("password");
-			if(!signin(credential, passwordDirty)){
+			String passwordDirty = req.getValue("password");
+			if(!security.signin(credential, passwordDirty, req, resp)){
 				cache.set("message", "Wrong username and password");
 				return "[redirect]/signin";
 			}
@@ -54,8 +59,8 @@ public class AuthRouter {
 				authUser = userRepo.getPhone(credential);
 			}
 
-			req.getSession().setAttribute("username", authUser.getUsername());
-			req.getSession().setAttribute("userId", authUser.getId());
+			req.getSession(true).set("username", authUser.getUsername());
+			req.getSession(true).set("userId", authUser.getId());
 
 		} catch ( Exception e ) {
 			e.printStackTrace();
@@ -68,29 +73,62 @@ public class AuthRouter {
 
 	@Get("/signin")
 	public String signin(Cache cache){
-		data.set("page", "/pages/signin.jsp");
+		cache.set("page", "/pages/signin.jsp");
 		return "/designs/guest.jsp";
 	}
 
 	@Get("/{{shop}}/signin")
-	public String shopSignin(HttpRequest qer,
-							 Cache cache,
+	public String shopSignin(Cache cache,
+							 HttpRequest req,
+							 SecurityManager security,
 							 @Component String shopUri){
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 		Design design = designRepo.getBase(business.getId());
-		data.set("design", design);
-		data.set("business", business);
-		data.set("siteService", siteService);
-		data.set("request", qer);
+
+
+		SiteService siteService = new SiteService(security, designRepo, userRepo, categoryRepo);
+
+		cache.set("design", design);
+		cache.set("business", business);
+		cache.set("siteService", siteService);
+		cache.set("request", req);
 		return "/pages/business/signin.jsp";
 	}
 
 	@Post("/{{shop}}/signin")
-	public String shopAuthenticate(HttpRequest req,
-							   Cache cache,
-							   @Component String shopUri){
-		authService.authenticate(cache, req);
+	public String shopAuthenticate(Cache cache,
+								   HttpRequest req,
+								   HttpResponse resp,
+								   SecurityManager security,
+								   @Component String shopUri){
+		try{
+
+			security.signout(req, resp);
+
+			String credential = req.getValue("username");
+			if(credential != null)credential = Giga.getSpaces(credential);
+
+			String passwordDirty = req.getValue("password");
+			if(!security.signin(credential, passwordDirty, req, resp)){
+				cache.set("message", "Wrong username and password");
+				return "[redirect]/signin";
+			}
+
+			User authUser = userRepo.get(credential);
+			if(authUser == null){
+				authUser = userRepo.getPhone(credential);
+			}
+
+			req.getSession(true).set("username", authUser.getUsername());
+			req.getSession(true).set("userId", authUser.getId());
+
+		} catch ( Exception e ) {
+			e.printStackTrace();
+			cache.set("message", "Please yell at one of us, something is a little off!");
+			return "[redirect]/";
+		}
+
 		Business business = businessRepo.get(shopUri);
 		if(business == null)return "[redirect]/";
 		return "[redirect]/" + shopUri;
@@ -98,28 +136,32 @@ public class AuthRouter {
 
 	@Get("/signup")
 	public String signup(Cache cache){
-		data.set("page", "/pages/signup.jsp");
+		cache.set("page", "/pages/signup.jsp");
 		return "/designs/guest.jsp";
 	}
 
 	@Get("/signout")
-	public String signout(HttpRequest req,
-						  Cache cache){
-		signout();
+	public String signout(Cache cache,
+						  HttpRequest req,
+						  HttpResponse resp,
+						  SecurityManager security){
+		security.signout(req, resp);
 		cache.set("message", "Successfully signed out");
-		req.getSession().setAttribute("username", "");
-		req.getSession().setAttribute("userId", "");
+		req.getSession(true).set("username", "");
+		req.getSession(true).set("userId", "");
 		return "[redirect]/";
 	}
 
 	@Get("/{{shop}}/signout")
-	public String shopSignout(HttpRequest req,
-							  Cache cache,
+	public String shopSignout(Cache cache,
+							  HttpRequest req,
+							  HttpResponse resp,
+							  SecurityManager security,
 							  @Component String shopUri){
-		signout();
+		security.signout(req, resp);
 		cache.set("message", "Successfully signed out");
-		req.getSession().setAttribute("username", "");
-		req.getSession().setAttribute("userId", "");
+		req.getSession(true).set("username", "");
+		req.getSession(true).set("userId", "");
 		return "[redirect]/" + shopUri;
 	}
 
