@@ -12,21 +12,8 @@ import qio.annotate.Inject;
 import qio.annotate.Service;
 import qio.model.web.Cache;
 
-@Service
+
 public class AuthService {
-
-    @Inject
-    UserRepo userRepo;
-
-    @Inject
-    RoleRepo roleRepo;
-
-    @Inject
-    BusinessRepo businessRepo;
-
-    @Inject
-    BusinessService businessService;
-
 
     public boolean signin(String username, String password){
         String credential = Giga.getSpaces(username);
@@ -70,44 +57,44 @@ public class AuthService {
         return user;
     }
 
-    public String authenticate(Cache cache, HttpRequest req) {
+//    public String authenticate(Cache cache, HttpRequest req) {
+//
+//        try{
+//
+//            signout();
+//
+//            String credential = req.getParameter("username");
+//            if(credential != null)credential = Giga.getSpaces(credential);
+//
+//            String passwordDirty = req.getParameter("password");
+//            if(!signin(credential, passwordDirty)){
+//                cache.set("message", "Wrong username and password");
+//                return "[redirect]/signin";
+//            }
+//
+//            User authUser = userRepo.get(credential);
+//            if(authUser == null){
+//                authUser = userRepo.getPhone(credential);
+//            }
+//
+//            req.getSession().setAttribute("username", authUser.getUsername());
+//            req.getSession().setAttribute("userId", authUser.getId());
+//
+//        } catch ( Exception e ) {
+//            e.printStackTrace();
+//            cache.set("message", "Please yell at one of us, something is a little off!");
+//            return "[redirect]/";
+//        }
+//
+//        return "[redirect]/";
+//    }
 
-        try{
-
-            signout();
-
-            String credential = req.getParameter("username");
-            if(credential != null)credential = Giga.getSpaces(credential);
-
-            String passwordDirty = req.getParameter("password");
-            if(!signin(credential, passwordDirty)){
-                cache.set("message", "Wrong username and password");
-                return "[redirect]/signin";
-            }
-
-            User authUser = userRepo.get(credential);
-            if(authUser == null){
-                authUser = userRepo.getPhone(credential);
-            }
-
-            req.getSession().setAttribute("username", authUser.getUsername());
-            req.getSession().setAttribute("userId", authUser.getId());
-
-        } catch ( Exception e ) {
-            e.printStackTrace();
-            cache.set("message", "Please yell at one of us, something is a little off!");
-            return "[redirect]/";
-        }
-
-        return "[redirect]/";
-    }
-
-    public String deAuthenticate(Cache cache, HttpRequest req) {
-        signout();
-        cache.set("message", "Successfully signed out");
-        req.getSession().setAttribute("username", "");
-        req.getSession().setAttribute("userId", "");
-        return "[redirect]/";
-    }
+//    public String deAuthenticate(Cache cache, HttpRequest req) {
+//        signout();
+//        cache.set("message", "Successfully signed out");
+//        req.getSession().setAttribute("username", "");
+//        req.getSession().setAttribute("userId", "");
+//        return "[redirect]/";
+//    }
 
 }
