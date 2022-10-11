@@ -1,4 +1,4 @@
-package giga;
+package plsar;
 
 import net.plsar.PLSAR;
 import net.plsar.PersistenceConfig;
@@ -8,31 +8,50 @@ import net.plsar.environments.Environments;
 import net.plsar.security.renderer.AuthenticatedRenderer;
 import net.plsar.security.renderer.GuestRenderer;
 import net.plsar.security.renderer.UserRenderer;
+import plsar.assist.AuthSecurityAccess;
 
-public class GigaServer {
-    public static void main(String[] args){
-        PersistenceConfig persistenceConfig = new PersistenceConfig();
-        persistenceConfig.setDriver(Drivers.H2);
-        persistenceConfig.setUrl("jdbc:h2:~/devDb");
-        persistenceConfig.setUser("sa");
-        persistenceConfig.setPassword("");
+public class Main {
+    public static void main(String[] args) {
+        /*
+            ping each site getting a yes or no
+            store the site
+            scrape homepage
+                -> get links
+                -> get headings -> create 4-7 variance heading searches
+                -> remove all html wrappers div, span, p, strong, b, em,
+                -> go through document -> create 3 - 7 variance searches
+                -> exclude copyright, privacy, site map
+                -> get description
 
-        SchemaConfig schemaConfig = new SchemaConfig();
-        schemaConfig.setSchema("schema.sql");
-        schemaConfig.setEnvironment(Environments.DEVELOPMENT);
+                search engine stats
+                id | results_count | duration | time
 
-        PLSAR plsar = new PLSAR(1234);
-        plsar.setNumberOfPartitions(40);
-        plsar.setNumberOfRequestExecutors(100);
+                title variances
+                id | site | variances
 
-        plsar.setPersistenceConfig(persistenceConfig);
-        plsar.setSchemaConfig(schemaConfig);
+                site details
+                id | site | description
 
-        plsar.addViewRenderer(AuthenticatedRenderer.class);
-        plsar.addViewRenderer(GuestRenderer.class);
-        plsar.addViewRenderer(UserRenderer.class);
+                key words
+                id | site | variance
 
-        plsar.setSecurityAccess(AuthSecurityAccess.class);
-        plsar.start();
+                search variances
+                id | site | variance
+
+                site likes
+                id | site | likes
+
+                search stats
+                id | search | site
+
+                users
+                id | phone | email
+
+                user_sites
+                id | user_id | site_id
+         */
+
+
+
     }
 }

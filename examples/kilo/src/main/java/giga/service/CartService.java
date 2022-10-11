@@ -126,67 +126,67 @@ public class CartService {
 ////        return "[redirect]/" + businessUri + "/cart";
 ////    }
 //
-//    public Cart getCart(Business business, CartRepo cartRepo, HttpRequest req){
-//        Cart cart;
-//        User user = null;
-//        String sessionId = req.getSession().getId();
-//
-//        if(authService.isAuthenticated()){
-//            user = authService.getUser();
-//            cart = cartRepo.getActive(user.getId(), business.getId());
-//        }else{
-//            cart = cartRepo.getActive(sessionId, business.getId());
-//        }
-//
-//        if(cart == null) {
-//            cart = new Cart();
-//
-//            cart.setDateCreated(Giga.getDate());
-//            cart.setBusinessId(business.getId());
-//
-//            if (user != null) {
-//                cart.setUserId(user.getId());
-//            } else {
-//                System.out.println("session " + sessionId);
-//                cart.setSessionId(sessionId);
+    public Cart getCart(Business business, CartRepo cartRepo, HttpRequest req, SecurityManager security){
+        Cart cart;
+        User user = null;
+        String sessionId = req.getSession(true).getGuid()
+
+        if(authService.isAuthenticated()){
+            user = authService.getUser();
+            cart = cartRepo.getActive(user.getId(), business.getId());
+        }else{
+            cart = cartRepo.getActive(sessionId, business.getId());
+        }
+
+        if(cart == null) {
+            cart = new Cart();
+
+            cart.setDateCreated(Giga.getDate());
+            cart.setBusinessId(business.getId());
+
+            if (user != null) {
+                cart.setUserId(user.getId());
+            } else {
+                System.out.println("session " + sessionId);
+                cart.setSessionId(sessionId);
+            }
+
+            cart.setActive(true);
+            cartRepo.save(cart);
+            cart = cartRepo.getSaved();
+
+            cart.setTotal(new BigDecimal(0));
+            cart.setSubtotal(new BigDecimal(0));
+            cart.setShipping(new BigDecimal(0));
+        }
+
+        if(authService.isAuthenticated()){
+            cart.setShipName(user.getName());
+            cart.setShipPhone(user.getPhone());
+            cart.setShipEmail(user.getUsername());
+            cart.setShipStreet(user.getShipStreet());
+            cart.setShipStreetDos(user.getShipStreetDos());
+            cart.setShipCity(user.getShipCity());
+            cart.setShipState(user.getShipState());
+            cart.setShipCountry(user.getShipCountry());
+            cart.setShipZip(user.getShipZip());
+
+            //->
+            // setting to valid address regardless for now.
+            // mail service integration is easy, this is already
+            // setup with one.
+            cart.setValidAddress(true);
+
+//            if(shipmentService.validateAddress(user, business) &&
+//                    shipmentService.validateBusinessAddress(business)){
+//                ///-> mail integration done here.
 //            }
-//
-//            cart.setActive(true);
-//            cartRepo.save(cart);
-//            cart = cartRepo.getSaved();
-//
-//            cart.setTotal(new BigDecimal(0));
-//            cart.setSubtotal(new BigDecimal(0));
-//            cart.setShipping(new BigDecimal(0));
-//        }
-//
-//        if(authService.isAuthenticated()){
-//            cart.setShipName(user.getName());
-//            cart.setShipPhone(user.getPhone());
-//            cart.setShipEmail(user.getUsername());
-//            cart.setShipStreet(user.getShipStreet());
-//            cart.setShipStreetDos(user.getShipStreetDos());
-//            cart.setShipCity(user.getShipCity());
-//            cart.setShipState(user.getShipState());
-//            cart.setShipCountry(user.getShipCountry());
-//            cart.setShipZip(user.getShipZip());
-//
-//            //->
-//            // setting to valid address regardless for now.
-//            // mail service integration is easy, this is already
-//            // setup with one.
-//            cart.setValidAddress(true);
-//
-////            if(shipmentService.validateAddress(user, business) &&
-////                    shipmentService.validateBusinessAddress(business)){
-////                ///-> mail integration done here.
-////            }
-//
-//            cartRepo.update(cart);
-//        }
-//
-//        return cart;
-//    }
+
+            cartRepo.update(cart);
+        }
+
+        return cart;
+    }
 
 
     public void setData(Cart cart, Business business, Cache cache, ItemRepo itemRepo, DesignRepo designRepo, CartRepo cartRepo, HttpRequest req, SiteService siteService){

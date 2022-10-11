@@ -1,9 +1,9 @@
-package plsar.assist;
+package giga;
 
+import giga.model.User;
+import giga.model.UserPermission;
+import giga.model.UserRole;
 import net.plsar.Dao;
-import plsar.model.User;
-import plsar.model.UserPermission;
-import plsar.model.UserRole;
 import net.plsar.security.SecurityAccess;
 
 import java.util.ArrayList;
@@ -30,6 +30,17 @@ public class AuthSecurityAccess implements SecurityAccess {
         return user;
     }
 
+    public Set<String> getRoles(String credential){
+        User user = getUser(credential);
+        String sql = "select r.name as name from user_roles ur inner join roles r on r.id = ur.role_id where ur.user_id = [+]";
+        List<UserRole> rolesList = (ArrayList) dao.getList(sql, new Object[]{ user.getId() }, UserRole.class);
+        Set<String> roles = new HashSet<>();
+        for(UserRole role: rolesList){
+            roles.add(role.getName());
+        }
+        return roles;
+    }
+
     public Set<String> getPermissions(String credential){
         User user = getUser(credential);
         String sql = "select permission from user_permissions where user_id = [+]";
@@ -41,7 +52,7 @@ public class AuthSecurityAccess implements SecurityAccess {
         return permissions;
     }
 
-    public void setPersistence(Dao dao){
+    public void setDao(Dao dao){
         this.dao = dao;
     }
 

@@ -1,5 +1,6 @@
 rootProject.name = "PLSAR"
 include "plsar"
 include "examples:giga"
+include "examples:kilo"
 include "examples:security"
 
