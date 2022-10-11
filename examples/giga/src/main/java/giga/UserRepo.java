@@ -1,4 +1,4 @@
-package plsar;
+package giga;
 
 import net.plsar.Dao;
 import net.plsar.annotations.Repository;

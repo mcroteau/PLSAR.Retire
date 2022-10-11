@@ -1,4 +1,4 @@
-package plsar;
+package giga;
 
 import net.plsar.annotations.Inject;
 import net.plsar.model.HttpResponse;
@@ -8,7 +8,6 @@ import net.plsar.annotations.http.Post;
 import net.plsar.model.HttpRequest;
 import net.plsar.model.Cache;
 import net.plsar.security.SecurityManager;
-import plsar.model.User;
 
 @HttpRouter
 public class IdentityRouter {
@@ -19,18 +18,13 @@ public class IdentityRouter {
     @Get("/")
     public String signin(Cache cache, HttpRequest httpRequest, SecurityManager securityManager) {
         cache.set("instructions", "effort.");
-        cache.set("cache", cache);
-        cache.set("resp", cache);
-        cache.set("request", httpRequest);
-        cache.set("securityManager", securityManager);
-        cache.set("fooService", new FooService());
         return "/index.htm";
     }
 
     @Post("/authenticate")
     public String authenticate(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, SecurityManager securityManager) {
-        String user = httpRequest.value("user");
-        String pass = httpRequest.value("pass");
+        String user = httpRequest.getValue("user");
+        String pass = httpRequest.getValue("pass");
 
         if(securityManager.signin(user, pass, httpRequest, httpResponse)){
             httpRequest.getSession(true).set("user", user);
@@ -42,7 +36,7 @@ public class IdentityRouter {
 
     @Get("/secret")
     public String secret(Cache cache, HttpRequest httpRequest, SecurityManager securityManager) {
-        if(securityManager.userIsAuthenticated(httpRequest)){
+        if(securityManager.isAuthenticated(httpRequest)){
             return "/secret.html";
         }
         cache.set("message", "authenticate please.");

@@ -1,6 +1,6 @@
 
 <%@ page import="chico.Chico" %>
-<%@ page import="giga.Giga" %>
+<%@ page import="kilo.Giga" %>
 
 
 <plsar:if spec="${message != ''}">

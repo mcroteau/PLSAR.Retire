@@ -1,4 +1,4 @@
-package plsar.model;
+package giga.model;
 
 public class User {
     Integer id;

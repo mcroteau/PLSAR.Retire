@@ -49,7 +49,7 @@
 <body>
 
 <div id="header-identity">
-<%--    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 134 134" id="giga-bolt">--%>
+<%--    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 134 134" id="kilo-bolt">--%>
 <%--        <path d="M49 1L21 88L57 88L42 134L84 134L113 47L92 47L79 47L75 47L91 1L49 1Z" />--%>
 <%--    </svg>--%>
 </div>

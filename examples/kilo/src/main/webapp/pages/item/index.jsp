@@ -1,5 +1,5 @@
 
-<%@ page import="giga.Giga" %>
+<%@ page import="kilo.Giga" %>
 
 <plsar:if spec="${category != null}">
     ${siteService.getItemBit(Giga.HEAD, item, category, business, request)}

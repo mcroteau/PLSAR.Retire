@@ -1,16 +1,10 @@
-package plsar;
+package giga;
 
-import net.plsar.PLSAR;
-import net.plsar.PersistenceConfig;
-import net.plsar.SchemaConfig;
-import net.plsar.drivers.Drivers;
-import net.plsar.environments.Environments;
-import net.plsar.security.renderer.AuthenticatedRenderer;
-import net.plsar.security.renderer.GuestRenderer;
-import net.plsar.security.renderer.UserRenderer;
-import plsar.assist.AuthSecurityAccess;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
-public class Main {
+//todo:11:33
+public class GigaServer {
     public static void main(String[] args) {
         /*
             ping each site getting a yes or no
@@ -42,7 +36,7 @@ public class Main {
                 id | site | likes
 
                 search stats
-                id | search | site
+                id | user_id | search | site
 
                 users
                 id | phone | email
@@ -51,7 +45,16 @@ public class Main {
                 id | user_id | site_id
          */
 
+        URL url = new URL(project.getUri());
 
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("HEAD");
+        connection.setConnectTimeout(6701);
+        int statusCode = connection.getResponseCode();
+        connection.disconnect();
 
     }
+
+
+    
 }

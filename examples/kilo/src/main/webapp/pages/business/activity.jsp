@@ -1,5 +1,5 @@
 
-<%@ page import="giga.Giga" %>
+<%@ page import="kilo.Giga" %>
 
 ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
 

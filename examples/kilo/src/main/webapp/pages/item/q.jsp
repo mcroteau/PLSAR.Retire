@@ -1,6 +1,6 @@
 
-<%@ page import="giga.Giga" %>
-<%@ page import="giga.model.Item" %>
+<%@ page import="kilo.Giga" %>
+<%@ page import="kilo.model.Item" %>
 <%@ page import="java.util.List" %>
 
 ${siteService.getQueryBit(Giga.HEAD, business, request)}

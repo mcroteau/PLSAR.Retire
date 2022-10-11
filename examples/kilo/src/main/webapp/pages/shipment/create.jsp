@@ -1,6 +1,6 @@
 
 <%@ taglib prefix="chico" uri="/META-INF/tags/chico.tld" %>
-<%@ page import="giga.Giga" %>
+<%@ page import="kilo.Giga" %>
 
 ${siteService.getBaseBit(Giga.HEAD, design, business, request)}
 
