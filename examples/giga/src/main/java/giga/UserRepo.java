@@ -1,10 +1,9 @@
 package giga;
 
+import giga.model.Permission;
+import giga.model.User;
 import net.plsar.Dao;
 import net.plsar.annotations.Repository;
-import plsar.model.User;
-import plsar.model.UserPermission;
-import plsar.model.UserRole;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -117,9 +116,9 @@ public class UserRepo {
 
     public Set<String> getUserPermissions(long id) {
         String sql = "select permission from user_permissions where user_id = [+]";
-        List<UserPermission> permissionsList = (ArrayList) dao.getList(sql, new Object[]{ id }, UserPermission.class);
+        List<Permission> permissionsList = (ArrayList) dao.getList(sql, new Object[]{ id }, Permission.class);
         Set<String> permissions = new HashSet<>();
-        for(UserPermission permission: permissionsList){
+        for(Permission permission: permissionsList){
             permissions.add(permission.getPermission());
         }
         return permissions;
