@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 //todo:11:33
 public class GigaServer {
@@ -62,7 +64,6 @@ public class GigaServer {
          */
 
         getSiteContent("http://www.getongrazie.com");
-        ConcurrentMap<String, Boolean> sites = new ConcurrentHashMap<>(0, 1, 65000);
     }
 
 
@@ -128,14 +129,14 @@ public class GigaServer {
                 result.write(buffer, 0, length);
             }
             String output = result.toString("UTF-8");
+            String document = cleanupWriteDocument(output);
 
             Path filePath = Paths.get("src", "main", "resources", "grazie.txt");
             File file = new File(filePath.toAbsolutePath().toString());
             if(!file.exists())file.createNewFile();
 
-            System.out.println(output);
             FileWriter fileWriter = new FileWriter(file);
-            fileWriter.write(output);
+            fileWriter.write(document);
             fileWriter.close();
         }
 
@@ -172,18 +173,35 @@ public class GigaServer {
                 result.write(buffer, 0, length);
             }
             String output = result.toString("UTF-8");
+            String document = cleanupWriteDocument(output);
 
             Path filePath = Paths.get("src", "main", "resources", "grazie.txt");
             File file = new File(filePath.toAbsolutePath().toString());
             if(!file.exists())file.createNewFile();
 
-            System.out.println(output);
             FileWriter fileWriter = new FileWriter(file);
-            fileWriter.write(output);
+            fileWriter.write(document);
             fileWriter.close();
         }
 
         connection.disconnect();
     }
 
+    public static String cleanupWriteDocument(String document){
+        String withContextPattern = "<a href=\"\\/([a-zA-Z0-9\\-\\_\\/]+){1,}\">([a-zA-Z0-9\\-\\_\\-\\s]+){1,}<\\/a>";
+        String withoutContextPattern = "<a href=\"([a-zA-Z0-9\\-\\_\\/]+){1,}\">([a-zA-Z0-9\\-\\_\\-\\s]+){1,}<\\/a>";
+        String contextCleanupDocument = removeHrefs(withContextPattern, document);
+        String withoutContextCleanupDocument = removeHrefs(withoutContextPattern, contextCleanupDocument);
+        return withoutContextCleanupDocument;
+    }
+
+    public static String removeHrefs(String hrefPattern, String document){
+        Pattern withContextPattern = Pattern.compile(hrefPattern);
+        Matcher urlMatcher = withContextPattern.matcher(document);
+        while(urlMatcher.find()){
+            String element = urlMatcher.group();
+            System.out.println(element);
+        }
+        return document;
+    }
 }
