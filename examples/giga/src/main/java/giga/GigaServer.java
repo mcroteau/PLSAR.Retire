@@ -4,6 +4,7 @@ import javax.net.ssl.*;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,12 +13,11 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,129 +63,199 @@ public class GigaServer {
                 id | user_id | site_id
          */
 
-        getSiteContent("http://www.getongrazie.com");
+        ExecutorService executors = Executors.newFixedThreadPool(1);
+        executors.execute(new SiteInterpreter("http://www.getongrazie.com", executors));
     }
 
+//todo: reuben st. amad
+    public static class SiteInterpreter implements Runnable{
 
-    public static void getSslSiteContent(String locationUrl) throws IOException, KeyManagementException, NoSuchAlgorithmException {
-        SSLContext sslContext = SSLContext.getInstance("SSL");
+        String siteUrl;
+        ExecutorService executors;
 
-        sslContext.init(null, new TrustManager[] { new X509TrustManager() {
-            public X509Certificate[] getAcceptedIssuers() {
-                System.out.println("getAcceptedIssuers =============");
-                return null;
-            }
+        public SiteInterpreter(String siteUrl, ExecutorService executors){
+            this.siteUrl = siteUrl;
+            this.executors = executors;
+        }
 
-            public void checkClientTrusted(X509Certificate[] certs,
-                                           String authType) {
-                System.out.println("checkClientTrusted =============");
-            }
+        @Override
+        public void run() {
 
-            public void checkServerTrusted(X509Certificate[] certs,
-                                           String authType) {
-                System.out.println("checkServerTrusted =============");
-            }
-        } }, new SecureRandom());
+            try {
 
-        HttpsURLConnection.setDefaultSSLSocketFactory(
-                sslContext.getSocketFactory());
+                URL url = new URL(siteUrl);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestProperty("accept", "text/html");
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(9701);
+                connection.setInstanceFollowRedirects(true);
+                int statusCode = connection.getResponseCode();
+                InputStream inputStream = connection.getInputStream();
 
-        HttpsURLConnection
-                .setDefaultHostnameVerifier(new HostnameVerifier() {
-                    public boolean verify(String arg0, SSLSession arg1) {
-                        System.out.println("hostnameVerifier =============");
-                        return true;
+                List<Integer> redirectsCodes = Arrays.asList(new Integer[]{301, 302, 303, 308, 702});
+
+                if(redirectsCodes.contains(statusCode)){
+                    String redirectSite = connection.getHeaderField("Location");
+                    if(redirectSite.startsWith("https:")){
+                        System.out.println("302ssl:" + redirectSite);
+                        executors.execute(new SslSiteInterpreter(redirectSite, executors));
+                    }else{
+                        System.out.println("302:" + redirectSite);
+                        executors.execute(new SiteInterpreter(redirectSite, executors));
                     }
-                });
+                }
 
-        URL url = new URL(locationUrl);
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-        connection.setSSLSocketFactory(sslContext.getSocketFactory() );
-        connection.setRequestProperty("accept", "text/html");
-        connection.setRequestMethod("GET");
-        connection.setConnectTimeout(9701);
-        connection.setInstanceFollowRedirects(true);
-        int statusCode = connection.getResponseCode();
-        InputStream inputStream = connection.getInputStream();
+                if (statusCode == 200) {
 
-        List<Integer> redirectsCodes = Arrays.asList(new Integer[]{301, 302, 303, 308, 702});
+                    ByteArrayOutputStream result = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    for (int length; (length = inputStream.read(buffer)) != -1; ) {
+                        result.write(buffer, 0, length);
+                    }
+                    String output = result.toString("UTF-8");
+                    String document = cleanupWriteDocument(output);
 
-        if(redirectsCodes.contains(statusCode)){
-            String redirectLocation = connection.getHeaderField("Location");
-            if(redirectLocation.startsWith("https:")){
-                System.out.println("302ssl:" + redirectLocation);
-                getSslSiteContent(redirectLocation);
-            }else{
-                System.out.println("302:" + redirectLocation);
-                getSiteContent(redirectLocation);
+                    Path filePath = Paths.get("src", "main", "resources", "grazie.txt");
+                    File file = new File(filePath.toAbsolutePath().toString());
+                    if(!file.exists())file.createNewFile();
+
+                    FileWriter fileWriter = new FileWriter(file);
+                    fileWriter.write(document);
+                    fileWriter.close();
+                }
+
+                connection.disconnect();
+
+            } catch (ProtocolException e) {
+                e.printStackTrace();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
-
-        if (statusCode == 200) {
-
-            ByteArrayOutputStream result = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            for (int length; (length = inputStream.read(buffer)) != -1; ) {
-                result.write(buffer, 0, length);
-            }
-            String output = result.toString("UTF-8");
-            String document = cleanupWriteDocument(output);
-
-            Path filePath = Paths.get("src", "main", "resources", "grazie.txt");
-            File file = new File(filePath.toAbsolutePath().toString());
-            if(!file.exists())file.createNewFile();
-
-            FileWriter fileWriter = new FileWriter(file);
-            fileWriter.write(document);
-            fileWriter.close();
-        }
-
-        connection.disconnect();
     }
 
-    public static void getSiteContent(String locationUrl) throws IOException, NoSuchAlgorithmException, KeyManagementException {
-        URL url = new URL(locationUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestProperty("accept", "text/html");
-        connection.setRequestMethod("GET");
-        connection.setConnectTimeout(9701);
-        connection.setInstanceFollowRedirects(true);
-        int statusCode = connection.getResponseCode();
-        InputStream inputStream = connection.getInputStream();
 
-        if(statusCode == 301 || statusCode == 302 || statusCode == 702){
-            String redirectLocation = connection.getHeaderField("Location");
-            System.out.println(".'" + redirectLocation + "'");
-            if(redirectLocation.startsWith("https:")){
-                System.out.println("302ssl:" + redirectLocation);
-                getSslSiteContent(redirectLocation);
-            }else{
-                System.out.println("302:" + redirectLocation);
-                getSiteContent(redirectLocation);
-            }
+    public static class SslSiteInterpreter implements Runnable{
+
+        String siteUrl;
+        ExecutorService executors;
+
+        public SslSiteInterpreter(String siteUrl, ExecutorService executors){
+            this.siteUrl = siteUrl;
+            this.executors = executors;
         }
 
-        if (statusCode == 200) {
+        @Override
+        public void run() {
 
-            ByteArrayOutputStream result = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            for (int length; (length = inputStream.read(buffer)) != -1; ) {
-                result.write(buffer, 0, length);
+            try {
+
+                SSLContext sslContext = SSLContext.getInstance("SSL");
+
+                sslContext.init(null, new TrustManager[] { new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+                    public void checkClientTrusted(X509Certificate[] certs,
+                                                   String authType) { }
+                    public void checkServerTrusted(X509Certificate[] certs,
+                                                   String authType) { }
+                } }, new SecureRandom());
+
+
+                HttpsURLConnection.setDefaultSSLSocketFactory(
+                        sslContext.getSocketFactory());
+
+                HttpsURLConnection
+                        .setDefaultHostnameVerifier(new HostnameVerifier() {
+                            public boolean verify(String arg0, SSLSession arg1) {
+                                return true;
+                            }
+                        });
+
+                URL url = new URL(siteUrl);
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                connection.setSSLSocketFactory(sslContext.getSocketFactory() );
+                connection.setRequestProperty("accept", "text/html");
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(9701);
+                connection.setInstanceFollowRedirects(true);
+                int statusCode = connection.getResponseCode();
+                InputStream inputStream = connection.getInputStream();
+
+                List<Integer> redirectsCodes = Arrays.asList(new Integer[]{301, 302, 303, 308, 702});
+
+                if(redirectsCodes.contains(statusCode)){
+                    String redirectSite = connection.getHeaderField("Location");
+                    if(redirectSite.startsWith("https:")){
+                        System.out.println("302ssl:" + redirectSite);
+                        executors.execute(new SslSiteInterpreter(redirectSite, executors));
+                    }else{
+                        System.out.println("302:" + redirectSite);
+                        executors.execute(new SiteInterpreter(redirectSite, executors));
+                    }
+                }
+
+                if (statusCode == 200) {
+
+                    ByteArrayOutputStream result = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    for (int length; (length = inputStream.read(buffer)) != -1; ) {
+                        result.write(buffer, 0, length);
+                    }
+                    String output = result.toString("UTF-8");
+
+                    ConcurrentMap<String, Boolean> refs = getDocumentRefs(output);
+                    for(Map.Entry<String, Boolean> refEntry : refs.entrySet()){
+                        String link = refEntry.getKey();
+                        if(!refs.get(link) && !link.startsWith("http:") && !link.startsWith("https:")){
+                            String ref = siteUrl + link;
+                            executors.execute(new SiteInterpreter(ref, executors));
+                            refs.put(link, true);
+                        }
+                    }
+                    String document = cleanupWriteDocument(output);
+
+                    Path filePath = Paths.get("src", "main", "resources", "grazie.txt");
+                    File file = new File(filePath.toAbsolutePath().toString());
+                    if(!file.exists())file.createNewFile();
+
+                    FileWriter fileWriter = new FileWriter(file);
+                    fileWriter.write(document);
+                    fileWriter.close();
+                }
+
+                connection.disconnect();
+
+            } catch (KeyManagementException | NoSuchAlgorithmException | ProtocolException e) {
+                e.printStackTrace();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            String output = result.toString("UTF-8");
-            String document = cleanupWriteDocument(output);
-
-            Path filePath = Paths.get("src", "main", "resources", "grazie.txt");
-            File file = new File(filePath.toAbsolutePath().toString());
-            if(!file.exists())file.createNewFile();
-
-            FileWriter fileWriter = new FileWriter(file);
-            fileWriter.write(document);
-            fileWriter.close();
         }
-
-        connection.disconnect();
     }
+
+    static ConcurrentMap<String, Boolean> getDocumentRefs(String document){
+        ConcurrentMap<String, Boolean> refs = new ConcurrentHashMap<>();
+        Pattern refPattern = Pattern.compile("href=\"[\\w\\W]+?\"");
+        Matcher refMatcher = refPattern.matcher(document);
+        while(refMatcher.find()){
+            String ref = refMatcher.group();
+            String link = ref.replace("href=\"", "")
+                    .replace("\"", "");
+            refs.put(link, false);
+        }
+        return refs;
+    }
+
 
     public static String cleanupWriteDocument(String document){
         String stylePattern = "(<style>[\\w\\W\\s\\n]+?<\\/style>)|(<style\\s[\\w\\W]+?>[\\w\\W\\s\\n]+?<\\/style>)";
