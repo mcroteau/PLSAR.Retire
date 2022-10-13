@@ -188,11 +188,26 @@ public class GigaServer {
     }
 
     public static String cleanupWriteDocument(String document){
+        String hrefAttributesPattern = "\\s[a-zA-Z]+=\"[a-zA-z0-9\\n\\s\\(\\)!:;-]+\"";
+        String minusAttributesDocument = removeAttributes(hrefAttributesPattern, document);
+
         String withContextPattern = "<a href=\"\\/([a-zA-Z0-9\\-\\_\\/]+){1,}\">([a-zA-Z0-9\\-\\_\\-\\s]+){1,}<\\/a>";
         String withoutContextPattern = "<a href=\"([a-zA-Z0-9\\-\\_\\/]+){1,}\">([a-zA-Z0-9\\-\\_\\-\\s]+){1,}<\\/a>";
-        String contextCleanupDocument = removeHrefs(withContextPattern, document);
+        String contextCleanupDocument = removeHrefs(withContextPattern, minusAttributesDocument);
         String withoutContextCleanupDocument = removeHrefs(withoutContextPattern, contextCleanupDocument);
         return withoutContextCleanupDocument;
+    }
+
+    static String removeAttributes(String hrefAttributesPattern, String document) {
+        Pattern withContextPattern = Pattern.compile(hrefAttributesPattern);
+        Matcher urlMatcher = withContextPattern.matcher(document);
+        while(urlMatcher.find()){
+            String element = urlMatcher.group();
+            System.out.println(element);
+            String replace = escapeMetaCharacters(element);
+            document = document.replaceAll(replace, "");
+        }
+        return document;
     }
 
     public static String removeHrefs(String hrefPattern, String document){
@@ -203,5 +218,16 @@ public class GigaServer {
             System.out.println(element);
         }
         return document;
+    }
+
+    public static String escapeMetaCharacters(String inputString){
+        final String[] metaCharacters = {"\\","^","$","{","}","[","]","(",")",".","*","+","?","|","<",">","-","&","%"};
+
+        for (int i = 0 ; i < metaCharacters.length ; i++){
+            if(inputString.contains(metaCharacters[i])){
+                inputString = inputString.replace(metaCharacters[i],"\\"+metaCharacters[i]);
+            }
+        }
+        return inputString;
     }
 }

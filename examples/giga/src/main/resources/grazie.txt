@@ -6,12 +6,12 @@
 <head>
     <title>Grazie! : Home!</title>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1">
 
-    <link rel="icon" type="image/png" href="/benefit/media/icon.png?v=1665540072937">
-    <link rel="stylesheet" href="/benefit/css/packages/grid.css?v=1665540072937">
-    <link rel="stylesheet" href="/benefit/css/default.css?v=1665540072937">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link type="image/png" href="/benefit/media/icon.png?v=1665631393733">
+    <link href="/benefit/css/packages/grid.css?v=1665631393733">
+    <link href="/benefit/css/default.css?v=1665631393733">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
 
     <script type="text/javascript" src="/benefit/js/packages/jquery.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -60,51 +60,47 @@
     #tagline{z-index:3;font-size:19px;margin:-40px 0px 40px;display:block;}
 </style>
 
-<div class="container">
-    <div class="row">
-        <div class="col-sm-12">
-            <div id="guest-wrapper" style="margin:0px 30px;">
-                <a href="/home" class="logo-wrapper left-float" style="display:block;margin:0px 0px 0px;">
-                    <h1 class="logo" style="color:#000">
+<div>
+    <div>
+        <div>
+            <div>
+                <a href="/home">
+                    <h1 style="color:#000">
                         Grazie
-                        <span style="font-family: Dongle !important;
-                                    transform: rotate(9deg);
-                                    display:inline-block;
-                                    font-size:90px;
-                                    margin-left:-10px;">!</span></span>
-                        <span class="lightf" id="tagline">
+                        <span>!</span></span>
+                        <span>
                             Because the guy at <br/>McDonald's works hard!</span>
                     </h1>
                 </a>
 
                 
-                    <a href="/signup" class="href-dotted-black right-float"
-                       style="margin-left:15px;margin-top:20px;display:inline-block">Signup!</a>
-                    <a href="/signin" class="href-dotted-black right-float"
-                            style="margin-left:15px;margin-top:20px;display:inline-block">Signin</a>
+                    <a href="/signup"
+                      >Signup!</a>
+                    <a href="/signin"
+                           >Signin</a>
                 
 
-                <br class="clear"/>
+                <br/>
                 
 
                 
 
     
 
-    <div class="left-float">
-        <a href="/discover#town" class="left-float button green serious bubble"
-            style="margin:10px 5px;">Send Someone a tip $</a>
-        <span class="tiny" style="display:block;margin:0px 20px">Send someone a tip<br/> if they are registed on Grazie!</span>
+    <div>
+        <a href="/discover#town"
+           >Send Someone a tip $</a>
+        <span>Send someone a tip<br/> if they are registed on Grazie!</span>
     </div>
-    <div class="left-float">
-	<a href="/signup" class="button retro serious bubble" 
-		style="text-align: center;margin:10px 5px">Signup Now!</a>
+    <div>
+	<a href="/signup" 
+	>Signup Now!</a>
 
-        <span class="tiny" style="display:block;margin:0px 20px">Signup to start receiving tips!</span>
+        <span>Signup to start receiving tips!</span>
     </div>
-    <br class="clear"/>
+    <br/>
 
-    <h2 style="margin-top:70px;">What is Grazie?</h2>
+    <h2>What is Grazie?</h2>
     <p>Hello! My name is Mike Croteau, CEO of
         Grazie! An online gratuities platform.</p>
 
@@ -118,16 +114,16 @@
     <p>Mike</p>
 
     <p>I would like to receive tips on Grazie!</p>
-    <a href="/signup" class="button retro" style="display:block;text-align: center;">Signup Now!</a>
+    <a href="/signup">Signup Now!</a>
 
     
     <p>You may request your
     place of employment to be listed!
-    <a href="/signup_request" class="button yellow serious bubble"
-				      style="text-align: center;margin:10px 5px;">Request a Business!</a>
+    <a href="/signup_request"
+				     >Request a Business!</a>
 	</p>
 
-    <h2 style="margin-top:70px;">The Details!</h2>
+    <h2>The Details!</h2>
     <p>Once someone is registered on this site. They can accept tips for the work they have
         done for you.  The person has to go through a registration process,
         but after that, they are ready to go!</p>
@@ -150,7 +146,7 @@
 
 
                 
-	        <div class="align-center" style="margin:30px 0px;">
+	        <div>
 			&copy; 2022 Grazie
 		</div>
 		
