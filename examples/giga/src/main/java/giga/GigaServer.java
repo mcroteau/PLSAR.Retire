@@ -188,14 +188,23 @@ public class GigaServer {
     }
 
     public static String cleanupWriteDocument(String document){
-        String hrefAttributesPattern = "\\s[a-zA-Z]+=\"[a-zA-z0-9\\n\\s\\(\\)!:;-]+\"";
-        String minusAttributesDocument = removeAttributes(hrefAttributesPattern, document);
+        String stylePattern = "(<style>[\\w\\W\\s\\n]+?<\\/style>)|(<style\\s[\\w\\W]+?>[\\w\\W\\s\\n]+?<\\/style>)";
+        String removedStyleDocument = removeAttributes(stylePattern, document);
 
-        String withContextPattern = "<a href=\"\\/([a-zA-Z0-9\\-\\_\\/]+){1,}\">([a-zA-Z0-9\\-\\_\\-\\s]+){1,}<\\/a>";
-        String withoutContextPattern = "<a href=\"([a-zA-Z0-9\\-\\_\\/]+){1,}\">([a-zA-Z0-9\\-\\_\\-\\s]+){1,}<\\/a>";
-        String contextCleanupDocument = removeHrefs(withContextPattern, minusAttributesDocument);
-        String withoutContextCleanupDocument = removeHrefs(withoutContextPattern, contextCleanupDocument);
-        return withoutContextCleanupDocument;
+        String scriptPattern = "(<script>[\\w\\W\\s\\n]+?<\\/script>)|(<script\\s[\\w\\W]+?>[\\w\\W\\s\\n]+?<\\/script>)";
+        String removedScriptDocument = removeAttributes(scriptPattern, removedStyleDocument);
+
+        String elementsPattern = "<[\\w]+>";
+        String removedElementsDocument = removeAttributes(elementsPattern, removedScriptDocument);
+
+        String elementsWithAttributes = "<[\\w]+\\s[\\w\\W]+?>";
+        String removedElementsWithAttributesDocument = removeAttributes(elementsWithAttributes, removedElementsDocument);
+
+        String endElementsPattern = "(</[\\w]+>)|(<[\\w]+/>)";
+        String removedEndElementsDocument = removeAttributes(endElementsPattern, removedElementsWithAttributesDocument);
+
+        String documentDotReady = removeAttributes("(\\s{2})|(\n{2})|(\r{2})", removedEndElementsDocument);
+        return documentDotReady;
     }
 
     static String removeAttributes(String hrefAttributesPattern, String document) {
@@ -203,19 +212,8 @@ public class GigaServer {
         Matcher urlMatcher = withContextPattern.matcher(document);
         while(urlMatcher.find()){
             String element = urlMatcher.group();
-            System.out.println(element);
             String replace = escapeMetaCharacters(element);
-            document = document.replaceAll(replace, "");
-        }
-        return document;
-    }
-
-    public static String removeHrefs(String hrefPattern, String document){
-        Pattern withContextPattern = Pattern.compile(hrefPattern);
-        Matcher urlMatcher = withContextPattern.matcher(document);
-        while(urlMatcher.find()){
-            String element = urlMatcher.group();
-            System.out.println(element);
+            document = document.replaceAll(replace, " ");
         }
         return document;
     }
