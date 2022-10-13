@@ -189,31 +189,44 @@ public class GigaServer {
 
     public static String cleanupWriteDocument(String document){
         String stylePattern = "(<style>[\\w\\W\\s\\n]+?<\\/style>)|(<style\\s[\\w\\W]+?>[\\w\\W\\s\\n]+?<\\/style>)";
-        String removedStyleDocument = removeAttributes(stylePattern, document);
+        String removedStyleDocument = replaceAttributes(stylePattern, document);
 
         String scriptPattern = "(<script>[\\w\\W\\s\\n]+?<\\/script>)|(<script\\s[\\w\\W]+?>[\\w\\W\\s\\n]+?<\\/script>)";
-        String removedScriptDocument = removeAttributes(scriptPattern, removedStyleDocument);
+        String removedScriptDocument = replaceAttributes(scriptPattern, removedStyleDocument);
 
         String elementsPattern = "<[\\w]+>";
-        String removedElementsDocument = removeAttributes(elementsPattern, removedScriptDocument);
+        String removedElementsDocument = replaceAttributes(elementsPattern, removedScriptDocument);
 
         String elementsWithAttributes = "<[\\w]+\\s[\\w\\W]+?>";
-        String removedElementsWithAttributesDocument = removeAttributes(elementsWithAttributes, removedElementsDocument);
+        String removedElementsWithAttributesDocument = replaceAttributes(elementsWithAttributes, removedElementsDocument);
 
         String endElementsPattern = "(</[\\w]+>)|(<[\\w]+/>)";
-        String removedEndElementsDocument = removeAttributes(endElementsPattern, removedElementsWithAttributesDocument);
+        String removedEndElementsDocument = replaceAttributes(endElementsPattern, removedElementsWithAttributesDocument);
 
-        String documentDotReady = removeAttributes("(\\s{2})|(\n{2})|(\r{2})", removedEndElementsDocument);
-        return documentDotReady;
+        String documentPre = replaceAttributes("(\\s{2})|(\n{2})|(\r{2})", removedEndElementsDocument);
+        String documentReady = createNewLines(documentPre);
+
+        return documentReady;
     }
 
-    static String removeAttributes(String hrefAttributesPattern, String document) {
-        Pattern withContextPattern = Pattern.compile(hrefAttributesPattern);
+    static String replaceAttributes(String attributesPattern, String document) {
+        Pattern withContextPattern = Pattern.compile(attributesPattern);
         Matcher urlMatcher = withContextPattern.matcher(document);
         while(urlMatcher.find()){
             String element = urlMatcher.group();
             String replace = escapeMetaCharacters(element);
             document = document.replaceAll(replace, " ");
+        }
+        return document;
+    }
+
+    static String createNewLines(String document) {
+        Pattern withContextPattern = Pattern.compile("(\\.)|(\\!)");
+        Matcher urlMatcher = withContextPattern.matcher(document);
+        while(urlMatcher.find()){
+            String element = urlMatcher.group();
+            String replace = escapeMetaCharacters(element);
+            document = document.replaceAll(replace, "\n").trim();
         }
         return document;
     }
