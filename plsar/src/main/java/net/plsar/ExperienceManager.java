@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class UserExperienceManager {
+public class ExperienceManager {
 
     final Integer ZERO = 0;
     final Integer ONE  = 1;

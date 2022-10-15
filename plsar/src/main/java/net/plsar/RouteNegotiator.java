@@ -29,7 +29,7 @@ public class RouteNegotiator {
 
         try {
             ServerResources serverResources = new ServerResources();
-            UserExperienceManager userExperienceManager = new UserExperienceManager();
+            ExperienceManager experienceManager = new ExperienceManager();
 
             RouteAttributes routeAttributes = httpRequest.getRouteAttributes();
             RouteEndpointHolder routeEndpointHolder = routeAttributes.getRouteEndpointHolder();
@@ -60,16 +60,43 @@ public class RouteNegotiator {
             for(Field routeField : routeFields){
                 if(routeField.isAnnotationPresent(Inject.class)){
                     String fieldKey = routeField.getName().toLowerCase();
-                    Class<?> componentKlass = componentsHolder.getComponents().get(fieldKey);
-                    Constructor<?> componentKlassConstructor = componentKlass.getConstructor(Dao.class);
-                    Object componentInstance = componentKlassConstructor.newInstance(routeDao);
-                    routeField.setAccessible(true);
-                    routeField.set(routeInstance, componentInstance);
+
+                    if(componentsHolder.getServices().containsKey(fieldKey)){
+                        Class<?> serviceKlass = componentsHolder.getServices().get(fieldKey);
+                        Constructor<?> serviceKlassConstructor = serviceKlass.getConstructor();
+                        Object serviceInstance = serviceKlassConstructor.newInstance();
+
+                        Field[] serviceFields = serviceInstance.getClass().getDeclaredFields();
+                        for(Field serviceField : serviceFields) {
+                            if (serviceField.isAnnotationPresent(Inject.class)) {
+                                String serviceFieldKey = serviceField.getName().toLowerCase();
+
+                                if(componentsHolder.getRepositories().containsKey(serviceFieldKey)){
+                                    Class<?> repositoryKlass = componentsHolder.getRepositories().get(fieldKey);
+                                    Constructor<?> repositoryKlassConstructor = repositoryKlass.getConstructor(Dao.class);
+                                    Object repositoryInstance = repositoryKlassConstructor.newInstance(routeDao);
+                                    routeField.setAccessible(true);
+                                    routeField.set(routeInstance, repositoryInstance);
+                                }
+                            }
+                        }
+
+                        routeField.setAccessible(true);
+                        routeField.set(routeInstance, serviceInstance);
+                    }
+
+                    if(componentsHolder.getRepositories().containsKey(fieldKey)){
+                        Class<?> componentKlass = componentsHolder.getRepositories().get(fieldKey);
+                        Constructor<?> componentKlassConstructor = componentKlass.getConstructor(Dao.class);
+                        Object componentInstance = componentKlassConstructor.newInstance(routeDao);
+                        routeField.setAccessible(true);
+                        routeField.set(routeInstance, componentInstance);
+                    }
                 }
             }
 
             try {
-                Method setPersistenceMethod = routeInstance.getClass().getMethod("setPersistence", Dao.class);
+                Method setPersistenceMethod = routeInstance.getClass().getMethod("setDao", Dao.class);
                 setPersistenceMethod.invoke(routeInstance, new Dao(persistenceConfig));
             }catch(NoSuchMethodException nsme){ }
 
@@ -140,11 +167,11 @@ public class RouteNegotiator {
                     completePage = completePage.replace("${description}", description);
                 }
 
-                String designOutput = userExperienceManager.execute(completePage, cache, httpRequest, viewRenderers);
+                String designOutput = experienceManager.execute(completePage, cache, httpRequest, viewRenderers);
                 return new RouteResponse(designOutput);
 
             }else{
-                String pageOutput = userExperienceManager.execute(pageContent, cache, httpRequest, viewRenderers);
+                String pageOutput = experienceManager.execute(pageContent, cache, httpRequest, viewRenderers);
                 return new RouteResponse(pageOutput);
             }
 

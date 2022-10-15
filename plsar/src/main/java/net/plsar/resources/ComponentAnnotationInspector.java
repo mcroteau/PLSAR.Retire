@@ -1,6 +1,7 @@
 package net.plsar.resources;
 
 import net.plsar.annotations.Repository;
+import net.plsar.annotations.Service;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -55,7 +56,14 @@ public class ComponentAnnotationInspector {
                     annotationComponent.setKlass(klass);
                     String[] componentElements = klass.getName().split("\\.");
                     String componentKey = componentElements[componentElements.length -1].toLowerCase();
-                    componentsHolder.getComponents().put(componentKey, klass);
+                    componentsHolder.getRepositories().put(componentKey, klass);
+                }
+                if(klass.isAnnotationPresent(Service.class)){
+                    AnnotationComponent annotationComponent = new AnnotationComponent();
+                    annotationComponent.setKlass(klass);
+                    String[] componentElements = klass.getName().split("\\.");
+                    String componentKey = componentElements[componentElements.length -1].toLowerCase();
+                    componentsHolder.getServices().put(componentKey, klass);
                 }
 
             }catch (Exception ex){
