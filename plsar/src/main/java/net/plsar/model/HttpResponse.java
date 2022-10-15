@@ -58,5 +58,8 @@ public class HttpResponse {
     public void removeRedirectLocation() {
         this.redirectLocation = null;
     }
+
+    public void send(String url) {
+    }
 }
 
