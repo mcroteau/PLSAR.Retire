@@ -21,9 +21,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-public class PLSAR {
+public class BlueOcean {
 
-    static Logger Log = Logger.getLogger(PLSAR.class.getName());
+    static Logger Log = Logger.getLogger(BlueOcean.class.getName());
 
     Integer port;
     SchemaConfig schemaConfig;
@@ -33,7 +33,7 @@ public class PLSAR {
     Class<?> securityAccessClass;
     List<Class<?>> viewRenderers;
 
-    public PLSAR(int port){
+    public BlueOcean(int port){
         this.port = port;
         this.viewRenderers = new ArrayList<>();
     }
@@ -49,10 +49,15 @@ public class PLSAR {
             StartupAnnotationInspector startupAnnotationInspector = new StartupAnnotationInspector(new ComponentsHolder());
             startupAnnotationInspector.inspect();
             ComponentsHolder componentsHolder = startupAnnotationInspector.getComponentsHolder();
+            AnnotationComponent routeRegistration = componentsHolder.getRouteRegistration();
             AnnotationComponent serverStartup = componentsHolder.getServerStartup();
 
+            Log.info("Running startup routine, please wait...");
+            Method startupMethod = serverStartup.getKlass().getMethod("startup");
+            startupMethod.invoke(serverResources.getInstance(serverStartup.getKlass()));
+
             Log.info("Registering route negotiators, please wait...");
-            List<RouteNegotiator> routeNegotiators = getRouteNegotiators(TOTAL_NUMBER_EXECUTORS, serverResources, serverStartup);
+            List<RouteNegotiator> routeNegotiators = getRouteNegotiators(TOTAL_NUMBER_EXECUTORS, serverResources, routeRegistration);
             ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry = registerRouteDirectors(routeNegotiators);
 
             RedirectRegistry redirectRegistry = new RedirectRegistry();
@@ -77,12 +82,12 @@ public class PLSAR {
         return routeDirectorRegistry;
     }
 
-    List<RouteNegotiator> getRouteNegotiators(Integer TOTAL_NUMBER_EXECUTORS, ServerResources serverResources, AnnotationComponent serverStartup) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    List<RouteNegotiator> getRouteNegotiators(Integer TOTAL_NUMBER_EXECUTORS, ServerResources serverResources, AnnotationComponent routeRegistration) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         List<RouteNegotiator> routeNegotiators = new ArrayList();
         for(Integer activeIndex = 0; activeIndex < TOTAL_NUMBER_EXECUTORS; activeIndex++){//todo:set guid
-            Method startupMethod = serverStartup.getKlass().getMethod("startup");
+            Method startupMethod = routeRegistration.getKlass().getMethod("register");
 
-            RouteAttributes routeAttributes = (RouteAttributes) startupMethod.invoke(serverResources.getInstance(serverStartup.getKlass()));
+            RouteAttributes routeAttributes = (RouteAttributes) startupMethod.invoke(serverResources.getInstance(routeRegistration.getKlass()));
 
             RouteEndpointsResolver routeEndpointsResolver = new RouteEndpointsResolver(serverResources);
             RouteEndpointHolder routeEndpointHolder = routeEndpointsResolver.resolve();
@@ -98,7 +103,7 @@ public class PLSAR {
 
             Dao dao = new Dao(persistenceConfig);
             SecurityAccess securityAccessInstance = (SecurityAccess) securityAccessClass.getConstructor().newInstance();
-            Method setPersistence = securityAccessInstance.getClass().getMethod("setPersistence", Dao.class);
+            Method setPersistence = securityAccessInstance.getClass().getMethod("setDao", Dao.class);
             setPersistence.invoke(securityAccessInstance, dao);
             SecurityManager securityManager = new SecurityManager(securityAccessInstance);
             routeAttributes.setSecurityManager(securityManager);
@@ -155,7 +160,7 @@ public class PLSAR {
 
         final Integer REQUEST_METHOD = 0;
         final Integer REQUEST_PATH = 1;
-        final Integer VERSION = 2;
+        final Integer REQUEST_VERSION = 2;
 
         Socket socketClient;
         ExecutorService executors;
@@ -213,9 +218,10 @@ public class PLSAR {
 
                 String requestVerb = methodPathVersionComponents[REQUEST_METHOD];
                 String requestPath = methodPathVersionComponents[REQUEST_PATH];
+                String requestVersion = methodPathVersionComponents[REQUEST_VERSION];
 
-                HttpRequest httpRequest = new HttpRequest(requestVerb, requestPath, serverResources, sessionRouteRegistry);
-                if(httpRequest.getUriPath().equals(IGNORE_CHROME)){
+                NetworkRequest networkRequest = new NetworkRequest(requestVerb, requestPath, serverResources);
+                if(networkRequest.getUriPath().equals(IGNORE_CHROME)){
                     requestInputStream.close();
                     clientOutput.flush();
                     clientOutput.close();
@@ -223,11 +229,10 @@ public class PLSAR {
                     return;
                 }
 
-                HttpResponse httpResponse = new HttpResponse();
-                httpResponse.setResponseStream(clientOutput);
-                httpResponse.setContentType("text/html");
+                NetworkResponse networkResponse = new NetworkResponse();
+                networkResponse.setResponseStream(clientOutput);
 
-                ComponentCompiler requestComponentCompiler = new ComponentCompiler(byteArrayOutputStream.toByteArray(), httpRequest);
+                ComponentCompiler requestComponentCompiler = new ComponentCompiler(byteArrayOutputStream.toByteArray(), networkRequest);
                 requestComponentCompiler.ingestRequest();
 
                 String[] headerComponents = headerComponent.split(BREAK);
@@ -236,13 +241,13 @@ public class PLSAR {
                     if(headerLineComponents.length == 2) {
                         String fieldKey = headerLineComponents[0].trim();
                         String content = headerLineComponents[1].trim();
-                        httpRequest.getHeaders().put(fieldKey.toLowerCase(), content);
+                        networkRequest.getHeaders().put(fieldKey.toLowerCase(), content);
                     }
                 }
 
                 Long time = serverResources.getTime(0);
 
-                String sessionGuid = serverResources.getCookie(httpRequest.getHeaders());
+                String sessionGuid = serverResources.getCookie(networkRequest.getHeaders());
                 if(sessionGuid == null) sessionGuid = serverResources.getGuid(24);
 
                 String routeDirectorGuid = sessionRouteRegistry.get(sessionGuid);
@@ -254,70 +259,78 @@ public class PLSAR {
                     routeNegotiator = getRouteDirector(routeDirectorRegistry);
                 }
 
-                HttpSession activeHttpSession = routeNegotiator.getRouteAttributes().getSessions().get(sessionGuid);
-                if(activeHttpSession == null) activeHttpSession = new HttpSession(time, sessionGuid);
-                httpRequest.setSession(activeHttpSession);
+                NetworkSession activeNetworkSession = routeNegotiator.getRouteAttributes().getSessions().get(sessionGuid);
+                if(activeNetworkSession == null) activeNetworkSession = new NetworkSession(time, sessionGuid);
+                networkRequest.setSession(activeNetworkSession);
 
                 Cache cache = new Cache();
                 routeDirectorGuid = routeNegotiator.getGuid();
                 if(redirectRegistry.getRegistry().containsKey(routeDirectorGuid) &&
                         redirectRegistry.getRegistry().get(routeDirectorGuid).containsKey(HTTPREQUEST)) {
-                    HttpRequest storedHttpRequest = (HttpRequest) redirectRegistry.getRegistry().get(routeDirectorGuid).get(HTTPREQUEST);
-                    httpResponse = (HttpResponse) redirectRegistry.getRegistry().get(routeDirectorGuid).get(HTTPRESPONSE);
+                    NetworkRequest storedNetworkRequest = (NetworkRequest) redirectRegistry.getRegistry().get(routeDirectorGuid).get(HTTPREQUEST);
+                    networkResponse = (NetworkResponse) redirectRegistry.getRegistry().get(routeDirectorGuid).get(HTTPRESPONSE);
                     cache = (Cache) redirectRegistry.getRegistry().get(routeDirectorGuid).get(CACHE);
-                    activeHttpSession = storedHttpRequest.getSession(true);
-                    httpRequest.setSession(activeHttpSession);
-                    httpRequest.setVerb("get");
+                    activeNetworkSession = storedNetworkRequest.getSession(true);
+                    networkRequest.setSession(activeNetworkSession);
+                    networkRequest.setVerb("get");
                 }
 
-                setSessionAttributesCache(cache, activeHttpSession);
+                setSessionAttributesCache(cache, activeNetworkSession);
 
                 RouteAttributes routeAttributes = routeNegotiator.getRouteAttributes();
-                httpRequest.setRouteAttributes(routeAttributes);
+                networkRequest.setRouteAttributes(routeAttributes);
                 SecurityManager securityManager = routeAttributes.getSecurityManager();
-                RouteResponse routeResponse = routeNegotiator.negotiate(cache, httpRequest, httpResponse, securityManager, viewRenderers);
+                RouteResponse routeResponse = routeNegotiator.negotiate(cache, networkRequest, networkResponse, securityManager, viewRenderers);
 
-                sessionGuid = httpRequest.getSession(true).getGuid();
+                sessionGuid = networkRequest.getSession(true).getGuid();
                 if(!routeNegotiator.getRouteAttributes().getSessions().containsKey(sessionGuid)){
-                    routeNegotiator.getRouteAttributes().getSessions().put(sessionGuid, activeHttpSession);
+                    routeNegotiator.getRouteAttributes().getSessions().put(sessionGuid, activeNetworkSession);
                 }else{
-                    routeNegotiator.getRouteAttributes().getSessions().replace(sessionGuid, activeHttpSession);
+                    routeNegotiator.getRouteAttributes().getSessions().replace(sessionGuid, activeNetworkSession);
                 }
 
                 sessionRouteRegistry.put(sessionGuid, routeNegotiator.getGuid());
                 routeDirectorRegistry.replace(routeNegotiator.getGuid(), routeNegotiator);
 
                 StringBuilder sessionValues = new StringBuilder();
-                sessionValues.append(serverResources.getSessionId()).append("=").append(httpRequest.getSession(true).getGuid() + ";");
-                for(SecurityAttribute securityAttribute : httpResponse.getSecurityAttributes()){
+                sessionValues.append(serverResources.getSessionId()).append("=").append(networkRequest.getSession(true).getGuid() + "; path=/;");
+                for(SecurityAttribute securityAttribute : networkResponse.getSecurityAttributes()){
                     sessionValues.append(securityAttribute.getName()).append("=").append(securityAttribute.getValue());
                 }
 
-                String redirectLocation = httpResponse.getRedirectLocation();
+                String redirectLocation = networkResponse.getRedirectLocation();
                 if(redirectLocation == null || redirectLocation.equals("")){
                     redirectRegistry.getRegistry().remove(routeDirectorGuid);
-                    String content = routeResponse.getContent();
-                    StringBuilder response = new StringBuilder();
-                    response.append("HTTP/1.1 200 OK" + BREAK);
-                    response.append("Content-Length:" + content.getBytes().length + BREAK);
-                    response.append("Content-Type:" + httpResponse.getContentType() + BREAK);
-                    response.append("Set-Cookie:" + sessionValues + BREAK);
-                    response.append(BREAK);
-                    response.append(content + BREAK);
-                    response.append(DOUBLEBREAK);
-                    clientOutput.write(response.toString().getBytes());
+
+                    clientOutput.write(requestVersion.getBytes());
+                    clientOutput.write(routeResponse.getResponseCode().getBytes());
+                    clientOutput.write(BREAK.getBytes());
+
+                    clientOutput.write("Content-Length:".getBytes());
+                    clientOutput.write(routeResponse.getResponseBytes().length);
+                    clientOutput.write(BREAK.getBytes());
+
+                    clientOutput.write("Content-Type:".getBytes());
+                    clientOutput.write(routeResponse.getContentType().getBytes());
+                    clientOutput.write(BREAK.getBytes());
+
+                    clientOutput.write("Set-Cookie:".getBytes());
+                    clientOutput.write(sessionValues.toString().getBytes());
+
+                    clientOutput.write(DOUBLEBREAK.getBytes());
+                    clientOutput.write(routeResponse.getResponseBytes());
                 }else{
                     Map<String, Object> redirectAttributes = new HashMap<>();
-                    redirectAttributes.put(PLSAR.HTTPREQUEST, httpRequest);
-                    redirectAttributes.put(PLSAR.HTTPRESPONSE, httpResponse);
-                    redirectAttributes.put(PLSAR.CACHE, cache);
+                    redirectAttributes.put(BlueOcean.HTTPREQUEST, networkRequest);
+                    redirectAttributes.put(BlueOcean.HTTPRESPONSE, networkResponse);
+                    redirectAttributes.put(BlueOcean.CACHE, cache);
                     redirectRegistry.getRegistry().put(routeDirectorGuid, redirectAttributes);
                     StringBuilder response = new StringBuilder();
                     response.append("HTTP/1.1 307\r\n");
-                    response.append("Content-Type:" + httpResponse.getContentType() + BREAK);
+                    response.append("Content-Type:text/html" + BREAK);
                     response.append("Location:" + redirectLocation + SPACE + BREAK);
                     response.append("Content-Length: -1" + BREAK);
-                    httpResponse.removeRedirectLocation();
+                    networkResponse.removeRedirectLocation();
                     clientOutput.write(response.toString().getBytes());
                 }
 
@@ -334,8 +347,8 @@ public class PLSAR {
             }
         }
 
-        void setSessionAttributesCache(Cache cache, HttpSession httpSession) {
-            for(Map.Entry<String, Object> sessionEntry : httpSession.getAttributes().entrySet()){
+        void setSessionAttributesCache(Cache cache, NetworkSession networkSession) {
+            for(Map.Entry<String, Object> sessionEntry : networkSession.getAttributes().entrySet()){
                 cache.set(sessionEntry.getKey(), sessionEntry.getValue());
             }
         }
@@ -378,12 +391,12 @@ public class PLSAR {
         this.numberOfRequestExecutors = numberOfRequestExecutors;
     }
 
-    public PLSAR addViewRenderer(Class<?> viewRenderer){
+    public BlueOcean addViewRenderer(Class<?> viewRenderer){
         this.viewRenderers.add(viewRenderer);
         return this;
     }
 
-    public PLSAR setPersistenceConfig(PersistenceConfig persistenceConfig) {
+    public BlueOcean setPersistenceConfig(PersistenceConfig persistenceConfig) {
         this.persistenceConfig = persistenceConfig;
         return this;
     }

@@ -1,14 +1,13 @@
 package plsar;
 
 import net.plsar.annotations.Inject;
-import net.plsar.model.HttpResponse;
+import net.plsar.model.NetworkResponse;
 import net.plsar.annotations.HttpRouter;
 import net.plsar.annotations.http.Get;
 import net.plsar.annotations.http.Post;
-import net.plsar.model.HttpRequest;
+import net.plsar.model.NetworkRequest;
 import net.plsar.model.Cache;
 import net.plsar.security.SecurityManager;
-import plsar.model.User;
 
 @HttpRouter
 public class IdentityRouter {
@@ -17,18 +16,18 @@ public class IdentityRouter {
     UserRepo userRepo;
 
     @Get("/")
-    public String signin(Cache cache, HttpRequest httpRequest) {
+    public String signin(Cache cache, NetworkRequest networkRequest) {
         cache.set("instructions", "effort.");
         return "/index.htm";
     }
 
     @Post("/authenticate")
-    public String authenticate(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, SecurityManager securityManager) {
-        String user = httpRequest.getValue("user");
-        String pass = httpRequest.getValue("pass");
+    public String authenticate(Cache cache, NetworkRequest networkRequest, NetworkResponse networkResponse, SecurityManager securityManager) {
+        String user = networkRequest.getValue("user");
+        String pass = networkRequest.getValue("pass");
 
-        if(securityManager.signin(user, pass, httpRequest, httpResponse)){
-            httpRequest.getSession(true).set("user", user);
+        if(securityManager.signin(user, pass, networkRequest, networkResponse)){
+            networkRequest.getSession(true).set("user", user);
             return "[redirect]/secret";
         }
         cache.set("message", "authentication failed.");
@@ -36,8 +35,8 @@ public class IdentityRouter {
     }
 
     @Get("/secret")
-    public String secret(Cache cache, HttpRequest httpRequest, SecurityManager securityManager) {
-        if(securityManager.isAuthenticated(httpRequest)){
+    public String secret(Cache cache, NetworkRequest networkRequest, SecurityManager securityManager) {
+        if(securityManager.isAuthenticated(networkRequest)){
             return "/secret.html";
         }
         cache.set("message", "authenticate please.");
@@ -45,8 +44,8 @@ public class IdentityRouter {
     }
 
     @Get("/signout")
-    public String signout(HttpRequest httpRequest, HttpResponse httpResponse, SecurityManager securityManager) {
-        securityManager.signout(httpRequest, httpResponse);
+    public String signout(NetworkRequest networkRequest, NetworkResponse networkResponse, SecurityManager securityManager) {
+        securityManager.signout(networkRequest, networkResponse);
         return "[redirect]/";
     }
 

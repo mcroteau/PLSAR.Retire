@@ -1,14 +1,14 @@
-<plsar:authenticated>
-    Hello <plsar:user/>!
+<blueOcean:authenticated>
+    Hello <blueOcean:user/>!
     You are authenticated.
     <a href="/signout">Signout</a>
-</plsar:authenticated>
+</blueOcean:authenticated>
 
-<plsar:guest>
+<blueOcean:guest>
 
-    <plsar:if spec="${message != ''}">
+    <blueOcean:if spec="${message != ''}">
         ${message}
-    </plsar:if>
+    </blueOcean:if>
 
     <h1>Signin.</h1>
     <form action="/authenticate" method="post">
@@ -24,6 +24,6 @@
         username : croteau.mike+dos@gmail.com<br/>
         password : effort.
     </p>
-</plsar:guest>
+</blueOcean:guest>
 
 Special instructions: ${instructions}

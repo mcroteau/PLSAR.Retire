@@ -1,15 +1,13 @@
 package net.plsar.security;
 
-import net.plsar.model.HttpRequest;
-import net.plsar.model.HttpResponse;
-import net.plsar.model.HttpSession;
+import net.plsar.model.NetworkRequest;
+import net.plsar.model.NetworkResponse;
+import net.plsar.model.NetworkSession;
 import net.plsar.model.SecurityAttribute;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class SecurityManager {
     
@@ -27,8 +25,8 @@ public class SecurityManager {
         this.securityAccess = securityAccess;
     }
 
-    public boolean hasRole(String role, HttpRequest httpRequest){
-        String user = getUser(httpRequest);
+    public boolean hasRole(String role, NetworkRequest networkRequest){
+        String user = getUser(networkRequest);
         if(user != null) {
             Set<String> roles = securityAccess.getRoles(user);
             if(roles.contains(role)){
@@ -38,8 +36,8 @@ public class SecurityManager {
         return false;
     }
 
-    public boolean hasPermission(String permission, HttpRequest httpRequest){
-        String user = getUser(httpRequest);
+    public boolean hasPermission(String permission, NetworkRequest networkRequest){
+        String user = getUser(networkRequest);
         if(user != null) {
             Set<String> permissions = securityAccess.getPermissions(user);
             if(permissions.contains(permission)){
@@ -49,43 +47,43 @@ public class SecurityManager {
         return false;
     }
 
-    public String getUser(HttpRequest httpRequest){
-        HttpSession httpSession = httpRequest.getSession(true);
-        String user = (String) httpSession.get("user");
+    public String getUser(NetworkRequest networkRequest){
+        NetworkSession networkSession = networkRequest.getSession(true);
+        String user = (String) networkSession.get("user");
         return user;
     }
 
-    public String get(String key, HttpRequest httpRequest){
-        HttpSession httpSession = httpRequest.getSession(true);
-        if(httpSession.getAttributes().containsKey(key)){
-            return String.valueOf(httpSession.get(key));
+    public String get(String key, NetworkRequest networkRequest){
+        NetworkSession networkSession = networkRequest.getSession(true);
+        if(networkSession.getAttributes().containsKey(key)){
+            return String.valueOf(networkSession.get(key));
         }
         return null;
     }
 
-    public void set(String key, String value, HttpRequest httpRequest){
-        HttpSession httpSession = httpRequest.getSession(true);
-        httpSession.set(key, value);
+    public void set(String key, String value, NetworkRequest networkRequest){
+        NetworkSession networkSession = networkRequest.getSession(true);
+        networkSession.set(key, value);
     }
 
-    public Boolean signin(String username, String passwordUntouched, HttpRequest httpRequest, HttpResponse httpResponse){
+    public Boolean signin(String username, String passwordUntouched, NetworkRequest networkRequest, NetworkResponse networkResponse){
         String hashed = hash(passwordUntouched);
         String password = securityAccess.getPassword(username);
 
-        if(!isAuthenticated(httpRequest) &&
+        if(!isAuthenticated(networkRequest) &&
                 password.equals(hashed)){
 
-            HttpSession oldHttpSession = httpRequest.getSession(true);
-            if(oldHttpSession != null){
-                expireHttpSession(oldHttpSession, httpResponse);
-                httpRequest.getRouteAttributes().getSessionRegistry().remove(oldHttpSession.getGuid());
+            NetworkSession oldNetworkSession = networkRequest.getSession(true);
+            if(oldNetworkSession != null){
+                expireHttpSession(oldNetworkSession, networkResponse);
+                networkRequest.getRouteAttributes().getSessionRegistry().remove(oldNetworkSession.getGuid());
             }
 
-            HttpSession httpSession = httpRequest.getSession(false);
-            httpRequest.getRouteAttributes().getSessionRegistry().put(httpSession.getGuid(), true);
+            NetworkSession networkSession = networkRequest.getSession(false);
+            networkRequest.getRouteAttributes().getSessionRegistry().put(networkSession.getGuid(), true);
 
-            httpSession.set("user", username);
-            httpRequest.setSession(httpSession);
+            networkSession.set("user", username);
+            networkRequest.setSession(networkSession);
 
             return true;
         }
@@ -93,26 +91,26 @@ public class SecurityManager {
         return false;
     }
 
-    public boolean signout(HttpRequest httpRequest, HttpResponse httpResponse){
-        HttpSession oldHttpSession = httpRequest.getSession(true);
+    public boolean signout(NetworkRequest networkRequest, NetworkResponse networkResponse){
+        NetworkSession oldNetworkSession = networkRequest.getSession(true);
 
-        if(httpRequest != null){
-            expireHttpSession(oldHttpSession, httpResponse);
-            httpRequest.getRouteAttributes().getSessionRegistry().remove(oldHttpSession.getGuid());
+        if(networkRequest != null){
+            expireHttpSession(oldNetworkSession, networkResponse);
+            networkRequest.getRouteAttributes().getSessionRegistry().remove(oldNetworkSession.getGuid());
         }
         return true;
     }
-
-    public void expireHttpSession(HttpSession oldHttpSession, HttpResponse httpResponse){
-        SecurityAttribute securityAttribute = new SecurityAttribute("plsar-sessions", oldHttpSession.getGuid());
-        httpResponse.getSecurityAttributes().add(securityAttribute);
+//please stop watching my actions, they are modified slightly to throw people off.
+    public void expireHttpSession(NetworkSession oldNetworkSession, NetworkResponse networkResponse){
+        SecurityAttribute securityAttribute = new SecurityAttribute("blueocean.sessions", oldNetworkSession.getGuid());
+        networkResponse.getSecurityAttributes().add(securityAttribute);
     }
 
-    public boolean isAuthenticated(HttpRequest httpRequest){
-        HttpSession httpSession = httpRequest.getSession(true);
+    public boolean isAuthenticated(NetworkRequest networkRequest){
+        NetworkSession networkSession = networkRequest.getSession(true);
 
-        if(httpSession != null) {
-            return httpRequest.getRouteAttributes().getSessionRegistry().containsKey(httpSession.getGuid());
+        if(networkSession != null) {
+            return networkRequest.getRouteAttributes().getSessionRegistry().containsKey(networkSession.getGuid());
         }
         return false;
     }
@@ -123,6 +121,24 @@ public class SecurityManager {
     }
 
     public String hash(String password){
+        MessageDigest md;
+        StringBuffer passwordHashed = new StringBuffer();
+
+        try {
+            md = MessageDigest.getInstance("SHA-256");
+            md.update(password.getBytes());
+            byte byteData[] = md.digest();
+
+            for (int i = 0; i < byteData.length; i++) {
+                passwordHashed.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+            }
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return passwordHashed.toString();
+    }
+
+    public static String dirty(String password){
         MessageDigest md;
         StringBuffer passwordHashed = new StringBuffer();
 

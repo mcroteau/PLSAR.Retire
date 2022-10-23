@@ -30,7 +30,7 @@ public class DatabaseEnvironmentManager {
             InputStream in = new FileInputStream(schemaConfigFile);
 
             if (in == null || in.available() == 0) {
-                Log.info("src/main/resources/schema.sql contains no tables. project will be treated as a non persistent application.");
+                Log.info("src/main/resources/{schema}.sql contains no tables. project will be treated as a non persistent application.");
                 Log.info("database environment setup complete");
                 return;
             }
@@ -45,7 +45,6 @@ public class DatabaseEnvironmentManager {
             }
 
             DataSource datasource = new ExecutableDatasource.Builder()
-                    .connections(persistenceConfig.getConnections())
                     .url(persistenceConfig.getUrl())
                     .driver(persistenceConfig.getDriver())
                     .user(persistenceConfig.getUser())

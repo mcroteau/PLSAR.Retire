@@ -1,23 +1,28 @@
 package net.plsar;
 
+import net.plsar.annotations.Design;
 import net.plsar.annotations.Inject;
 import net.plsar.annotations.Meta;
 import net.plsar.model.Cache;
-import net.plsar.model.HttpRequest;
-import net.plsar.model.HttpResponse;
+import net.plsar.model.NetworkRequest;
+import net.plsar.model.NetworkResponse;
+import net.plsar.model.RouteAttribute;
 import net.plsar.resources.ComponentsHolder;
+import net.plsar.resources.MimeResolver;
 import net.plsar.security.SecurityManager;
 import net.plsar.resources.ServerResources;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RouteNegotiator {
 
@@ -25,20 +30,85 @@ public class RouteNegotiator {
     RouteAttributes routeAttributes;
     ComponentsHolder componentsHolder;
 
-    public RouteResponse negotiate(Cache cache, HttpRequest httpRequest, HttpResponse httpResponse, SecurityManager securityManager, List<Class<?>> viewRenderers){
+    public RouteResponse negotiate(Cache cache, NetworkRequest networkRequest, NetworkResponse networkResponse, SecurityManager securityManager, List<Class<?>> viewRenderers){
+
+        String completePageRendered = "";
+        String errorMessage = "";
 
         try {
             ServerResources serverResources = new ServerResources();
             ExperienceManager experienceManager = new ExperienceManager();
 
-            RouteAttributes routeAttributes = httpRequest.getRouteAttributes();
+            RouteAttributes routeAttributes = networkRequest.getRouteAttributes();
             RouteEndpointHolder routeEndpointHolder = routeAttributes.getRouteEndpointHolder();
 
-            String routeUriPath = httpRequest.getUriPath();
-            String routeVerb = httpRequest.getVerb();
+            String routeUriPath = networkRequest.getUriPath();
+            String routeVerb = networkRequest.getVerb();
 
-            RouteEndpoint routeEndpoint = serverResources.getRouteEndpoint(routeVerb, routeUriPath, routeEndpointHolder);
-            Object[] signature = serverResources.getRouteParameters(routeUriPath, routeEndpoint, cache, httpRequest, httpResponse, securityManager);
+            if(routeUriPath.contains("/assets/")) {
+                String assetsPath = Paths.get("src", "main", "webapp").toString();
+                String filePath = assetsPath.concat(routeUriPath);
+                File staticResourcefile = new File(filePath);
+                InputStream fileInputStream = new FileInputStream(staticResourcefile);
+
+                if (fileInputStream != null && routeVerb.equals("get")) {
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    byte[] bytes = new byte[(int) staticResourcefile.length()];
+                    MimeResolver mimeGetter = new MimeResolver(filePath);
+                    int bytesRead;
+                    try {
+                        while ((bytesRead = fileInputStream.read(bytes, 0, bytes.length)) != -1) {
+                            outputStream.write(bytes, 0, bytesRead);
+                        }
+
+                        fileInputStream.close();
+                        outputStream.flush();
+                        outputStream.close();
+
+                    } catch (IOException ex) {
+                        //todo:broken pipe issue on second request and subsequent requests on audio.src.
+                    }
+                    return new RouteResponse(outputStream.toByteArray(), "200 OK", mimeGetter.resolve());
+                }
+            }
+
+            RouteEndpoint routeEndpoint = null;
+            routeUriPath = routeUriPath.toLowerCase().trim();
+
+            if(routeUriPath.equals("")){
+                routeUriPath = "/";
+                String routeKey = routeVerb.toLowerCase() + routeUriPath.toLowerCase();
+                routeEndpoint = routeEndpointHolder.getRouteEndpoints().get(routeKey);
+            }
+
+            if(routeEndpoint == null) {
+                if (routeUriPath.length() > 1 && routeUriPath.endsWith("/")) {
+                    int endIndex = routeUriPath.indexOf("/", routeUriPath.length() - 1);
+                    routeUriPath = routeUriPath.substring(0, endIndex);
+                }
+
+                if (routeEndpointHolder.getRouteEndpoints().containsKey(routeVerb + ":" + routeUriPath)) {
+                    routeEndpoint = routeEndpointHolder.getRouteEndpoints().get(routeVerb + ":" + routeUriPath);
+                }
+            }
+
+            if(routeEndpoint == null) {
+                for (Map.Entry<String, RouteEndpoint> routeEndpointEntry : routeEndpointHolder.getRouteEndpoints().entrySet()) {
+                    RouteEndpoint activeRouteEndpoint = routeEndpointEntry.getValue();
+                    Matcher routeEndpointMatcher = Pattern.compile(activeRouteEndpoint.getRegexRoutePath()).matcher(routeUriPath);
+                    if (routeEndpointMatcher.matches() &&
+                            getRouteVariablesMatch(routeUriPath, activeRouteEndpoint) &&
+                            activeRouteEndpoint.isRegex()) {
+                        routeEndpoint = activeRouteEndpoint;
+                    }
+                }
+            }
+
+            if(routeEndpoint == null){
+                return new RouteResponse("404".getBytes(), "404", "text/html");
+            }
+
+            List<Object> routeMethodAttributes = getRouteMethodAttributes(routeUriPath, cache, networkRequest, networkResponse, securityManager, routeEndpoint);
             Method routeMethod = routeEndpoint.getRouteMethod();
 
             String design = null, title = null, keywords = null, description = null;
@@ -66,17 +136,17 @@ public class RouteNegotiator {
                         Constructor<?> serviceKlassConstructor = serviceKlass.getConstructor();
                         Object serviceInstance = serviceKlassConstructor.newInstance();
 
-                        Field[] serviceFields = serviceInstance.getClass().getDeclaredFields();
-                        for(Field serviceField : serviceFields) {
-                            if (serviceField.isAnnotationPresent(Inject.class)) {
-                                String serviceFieldKey = serviceField.getName().toLowerCase();
+                        Field[] repoFields = serviceInstance.getClass().getDeclaredFields();
+                        for(Field repoField : repoFields) {
+                            if (repoField.isAnnotationPresent(Inject.class)) {
+                                String repoFieldKey = repoField.getName().toLowerCase();
 
-                                if(componentsHolder.getRepositories().containsKey(serviceFieldKey)){
-                                    Class<?> repositoryKlass = componentsHolder.getRepositories().get(fieldKey);
+                                if(componentsHolder.getRepositories().containsKey(repoFieldKey)){
+                                    Class<?> repositoryKlass = componentsHolder.getRepositories().get(repoFieldKey);
                                     Constructor<?> repositoryKlassConstructor = repositoryKlass.getConstructor(Dao.class);
                                     Object repositoryInstance = repositoryKlassConstructor.newInstance(routeDao);
-                                    routeField.setAccessible(true);
-                                    routeField.set(routeInstance, repositoryInstance);
+                                    repoField.setAccessible(true);
+                                    repoField.set(serviceInstance, repositoryInstance);
                                 }
                             }
                         }
@@ -100,18 +170,18 @@ public class RouteNegotiator {
                 setPersistenceMethod.invoke(routeInstance, new Dao(persistenceConfig));
             }catch(NoSuchMethodException nsme){ }
 
-            String methodResponse = String.valueOf(routeMethod.invoke(routeInstance, signature));
+            String methodResponse = String.valueOf(routeMethod.invoke(routeInstance, routeMethodAttributes.toArray()));
             if(methodResponse == null){
-                return new RouteResponse("404");
+                return new RouteResponse("404".getBytes(), "404", "text/html");
             }
 
-            if(methodResponse.startsWith("[redirect]")) {
+            if(methodResponse.startsWith("redirect:")) {
                 String redirectRouteUri = serverResources.getRedirect(methodResponse);
-                httpResponse.setRedirectLocation(redirectRouteUri);
-                return new RouteResponse("redirect:");
+                networkResponse.setRedirectLocation(redirectRouteUri);
+                return new RouteResponse("307".getBytes(), "307", "text/html");
             }
 
-            Path webPath = Paths.get("src", "webapp");
+            Path webPath = Paths.get("src", "main", "webapp");
             if(methodResponse.startsWith("/")){
                 methodResponse = methodResponse.replaceFirst("/", "");
             }
@@ -119,7 +189,7 @@ public class RouteNegotiator {
             String htmlPath = webPath.toFile().getAbsolutePath().concat(File.separator + methodResponse);
             File viewFile = new File(htmlPath);
             ByteArrayOutputStream unebaos = new ByteArrayOutputStream();
-            String pageContent;
+
 
             InputStream pageInput = new FileInputStream(viewFile);
             byte[] bytes = new byte[1024 * 13];
@@ -127,16 +197,21 @@ public class RouteNegotiator {
             while ((unelength = pageInput.read(bytes)) != -1) {
                 unebaos.write(bytes, 0, unelength);
             }
-            pageContent = unebaos.toString(StandardCharsets.UTF_8.name());//todo? ugly
+            completePageRendered = unebaos.toString(StandardCharsets.UTF_8.name());//todo? ugly
 
+            if(routeMethod.isAnnotationPresent(Design.class)){
+                Design annotation = routeMethod.getAnnotation(Design.class);
+                design = annotation.value();
+            }
 
             if(design != null) {
-                String designPath = "/webapp/" + design;
-                InputStream designInput = this.getClass().getResourceAsStream(designPath);
+                Path designPath = Paths.get("src", "main", "webapp");
+                String designFilePath = designPath + design;
+                InputStream designInput = new FileInputStream(designFilePath);
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 String designContent;
-                bytes = new byte[1024 * 13];
+                bytes = new byte[1024 * 3];
                 int length;
                 while ((length = designInput.read(bytes)) != -1) {
                     baos.write(bytes, 0, length);
@@ -144,58 +219,113 @@ public class RouteNegotiator {
                 designContent = baos.toString(StandardCharsets.UTF_8.name());
 
                 if(designContent == null){
-                    return new RouteResponse("501");
+                    return new RouteResponse("design not found.".getBytes(), "200 OK", "text/html");
                 }
 
-                if(!designContent.contains("<plsar:content/>")){
-                    return new RouteResponse("Your html template file is missing <plsar:content/>");
+                if(!designContent.contains("<ocean:content/>")){
+                    return new RouteResponse("Your html template file is missing <ocean:content/>".getBytes(), "200 OK", "text/html");
                 }
 
-                String[] bits = designContent.split("<plsar:content/>");
+                String[] bits = designContent.split("<ocean:content/>");
                 String header = bits[0];
                 String bottom = "";
                 if(bits.length > 1) bottom = bits[1];
 
-                header = header + pageContent;
-                String completePage = header + bottom;
-                completePage = completePage.replace("${title}", title);
+                header = header + completePageRendered;
+                completePageRendered = header + bottom;
 
+                if(title != null) {
+                    completePageRendered = completePageRendered.replace("${title}", title);
+                }
                 if(keywords != null) {
-                    completePage = completePage.replace("${keywords}", keywords);
+                    completePageRendered = completePageRendered.replace("${keywords}", keywords);
                 }
                 if(description != null){
-                    completePage = completePage.replace("${description}", description);
+                    completePageRendered = completePageRendered.replace("${description}", description);
                 }
 
-                String designOutput = experienceManager.execute(completePage, cache, httpRequest, viewRenderers);
-                return new RouteResponse(designOutput);
+                completePageRendered = experienceManager.execute(completePageRendered, cache, networkRequest, viewRenderers);
+                return new RouteResponse(completePageRendered.getBytes(), "200 OK", "text/html");
 
             }else{
-                String pageOutput = experienceManager.execute(pageContent, cache, httpRequest, viewRenderers);
-                return new RouteResponse(pageOutput);
+                completePageRendered = experienceManager.execute(completePageRendered, cache, networkRequest, viewRenderers);
+                return new RouteResponse(completePageRendered.getBytes(), "200 OK", "text/html");
             }
 
-        }catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        } catch (PlsarException e) {
-            e.printStackTrace();
-        }
 
-        return new RouteResponse("404");
+        }catch (IllegalAccessException ex) {
+            errorMessage = "<p style=\"border:solid 1px #ff0000; color:#ff0000;\">" + ex.getMessage() + "</p>";
+            ex.printStackTrace();
+        } catch (InvocationTargetException ex) {
+            errorMessage = "<p style=\"border:solid 1px #ff0000; color:#ff0000;\">" + ex.getMessage() + "</p>";
+            ex.printStackTrace();
+        } catch (NoSuchFieldException ex) {
+            errorMessage = "<p style=\"border:solid 1px #ff0000; color:#ff0000;\">" + ex.getMessage() + "</p>";
+            ex.printStackTrace();
+        } catch (NoSuchMethodException ex) {
+            errorMessage = "<p style=\"border:solid 1px #ff0000; color:#ff0000;\">" + ex.getMessage() + "</p>";
+            ex.printStackTrace();
+        } catch (InstantiationException ex) {
+            errorMessage = "<p style=\"border:solid 1px #ff0000; color:#ff0000;\">" + ex.getMessage() + "</p>";
+            ex.printStackTrace();
+        } catch (UnsupportedEncodingException ex) {
+            errorMessage = "<p style=\"border:solid 1px #ff0000; color:#ff0000;\">" + ex.getMessage() + "</p>";
+            ex.printStackTrace();
+        } catch (FileNotFoundException ex) {
+            errorMessage = "<p style=\"border:solid 1px #ff0000; color:#ff0000;\">" + ex.getMessage() + "</p>";
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            errorMessage = "<p style=\"border:solid 1px #ff0000; color:#ff0000;\">" + ex.getMessage() + "</p>";
+            ex.printStackTrace();
+        } catch (BlueOceanException ex) {
+            errorMessage = "<p style=\"border:solid 1px #ff0000; color:#ff0000;\">" + ex.getMessage() + "</p>";
+            ex.printStackTrace();
+        }
+        String erroredPageRendered = errorMessage + completePageRendered;
+        return new RouteResponse(erroredPageRendered.getBytes(), "404", "text/html");
+    }
+
+
+    List<Object> getRouteMethodAttributes(String routeUriPath, Cache cache, NetworkRequest networkRequest, NetworkResponse networkResponse, SecurityManager securityManager, RouteEndpoint routeEndpoint) {
+        List<Object> routeMethodAttributes = new ArrayList<>();
+        Type[] methodAttributes = routeEndpoint.getRouteMethod().getParameterTypes();
+        String routeUriPathClean = routeUriPath.replaceFirst("/", "");
+        String[] routePathUriAttributes = routeUriPathClean.split("/");
+        Integer PATH_VARIABLE_INDEX = 0;
+        for(int foo = 0; foo < methodAttributes.length; foo++){
+            Type methodAttribute = methodAttributes[foo];
+            RouteAttribute routeAttribute = routeEndpoint.getRouteAttributes().get(foo);//todo:do we do anything?
+            PATH_VARIABLE_INDEX = routeAttribute.getRoutePosition() != null ? routeAttribute.getRoutePosition() : 0;
+            if(methodAttribute.getTypeName().equals("net.plsar.security.SecurityManager")){
+                routeMethodAttributes.add(securityManager);
+            }
+            if(methodAttribute.getTypeName().equals("net.plsar.model.NetworkRequest")){
+                routeMethodAttributes.add(networkRequest);
+            }
+            if(methodAttribute.getTypeName().equals("net.plsar.model.NetworkResponse")){
+                routeMethodAttributes.add(networkResponse);
+            }
+            if(methodAttribute.getTypeName().equals("net.plsar.model.Cache")){
+                routeMethodAttributes.add(cache);
+            }
+            if(methodAttribute.getTypeName().equals("java.lang.Integer")){
+                routeMethodAttributes.add(Integer.valueOf(routePathUriAttributes[PATH_VARIABLE_INDEX]));
+            }
+            if(methodAttribute.getTypeName().equals("java.lang.Long")){
+                routeMethodAttributes.add(Long.valueOf(routePathUriAttributes[PATH_VARIABLE_INDEX]));
+            }
+            if(methodAttribute.getTypeName().equals("java.lang.String")){
+                routeMethodAttributes.add(String.valueOf(routePathUriAttributes[PATH_VARIABLE_INDEX]));
+            }
+        }
+        return routeMethodAttributes;
+    }
+
+    boolean getRouteVariablesMatch(String routeUriPath, RouteEndpoint routeEndpoint) {
+        String[] routeUriParts = routeUriPath.split("/");
+        String[] routeEndpointParts = routeEndpoint.getRoutePath().split("/");
+        if(routeUriParts.length != routeEndpointParts.length)return false;
+        return true;
     }
 
     public RouteNegotiator(){

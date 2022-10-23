@@ -11,17 +11,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class HttpRequest {
+public class NetworkRequest {
     String uriPath;
     String verb;
     String requestBody;
-    HttpSession httpSession;
+    NetworkSession networkSession;
     Map<String, String> headers;
     ServerResources serverResources;
     Map<String, RequestComponent> requestComponents;
     RouteAttributes routeAttributes;
 
-    public HttpRequest(String verb, String uriPath, ServerResources serverResources, Map<String, String> sessionRouteRegistry) {
+    public NetworkRequest(String verb, String uriPath, ServerResources serverResources) {
         this.uriPath = uriPath;
         this.verb = verb;
         this.headers = new HashMap<>();
@@ -72,16 +72,16 @@ public class HttpRequest {
         this.requestComponents.put(elementName, requestComponent);
     }
 
-    public HttpSession getSession(boolean existingSession) {
+    public NetworkSession getSession(boolean existingSession) {
         if(!existingSession) {
             Long time = serverResources.getTime(0);
-            this.httpSession = new HttpSession(time, serverResources);
+            this.networkSession = new NetworkSession(time, serverResources);
         }
-        return this.httpSession;
+        return this.networkSession;
     }
 
-    public void setSession(HttpSession httpSession) {
-        this.httpSession = httpSession;
+    public void setSession(NetworkSession networkSession) {
+        this.networkSession = networkSession;
     }
 
     public void setRequestComponent(String key, RequestComponent requestComponent){

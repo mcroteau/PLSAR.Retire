@@ -5,24 +5,24 @@ import net.plsar.resources.ServerResources;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpSession {
+public class NetworkSession {
     String guid;
     Long time;
     Map<String, Object> attributes;
 
-    public HttpSession(Long time, String guid, ServerResources serverResources){
+    public NetworkSession(Long time, String guid, ServerResources serverResources){
         this.guid = guid;
         this.time = time;
         this.attributes = new HashMap<>();
     }
 
-    public HttpSession(Long time, String guid){
+    public NetworkSession(Long time, String guid){
         this.guid = guid;
         this.time = time;
         this.attributes = new HashMap<>();
     }
 
-    public HttpSession(Long time, ServerResources serverResources){
+    public NetworkSession(Long time, ServerResources serverResources){
         this.guid = serverResources.getGuid(24);
         this.time = time;
         this.attributes = new HashMap<>();

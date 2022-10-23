@@ -1,6 +1,6 @@
 package net.plsar.implement;
 
-import net.plsar.model.HttpRequest;
+import net.plsar.model.NetworkRequest;
 
 public interface ViewRenderer {
 
@@ -17,8 +17,8 @@ public interface ViewRenderer {
      */
     public Boolean isEval();
 
-    public boolean truthy(HttpRequest httpRequest);
+    public boolean truthy(NetworkRequest networkRequest);
 
-    public String render(HttpRequest httpRequest);
+    public String render(NetworkRequest networkRequest);
 
 }

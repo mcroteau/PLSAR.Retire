@@ -1,12 +1,9 @@
 package net.plsar;
 
 import net.plsar.implement.ViewRenderer;
-import net.plsar.model.HttpSession;
-import net.plsar.resources.ComponentsHolder;
+import net.plsar.model.NetworkSession;
 import net.plsar.security.SecurityManager;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -23,7 +20,7 @@ public class RouteAttributes {
     PersistenceConfig persistenceConfig;
 
     ConcurrentMap<String, Object> attributes;
-    ConcurrentMap<String, HttpSession> sessions;
+    ConcurrentMap<String, NetworkSession> sessions;
     ConcurrentMap<String, ViewRenderer> viewRenderers;
     ConcurrentMap<String, Boolean> sessionRegistry;
     RouteEndpointHolder routeEndpointHolder;
@@ -36,6 +33,10 @@ public class RouteAttributes {
             return this.attributes.get(key);
         }
         return null;
+    }
+
+    public void set(String key, Object value){
+        this.attributes.put(key, value);
     }
 
     public RouteAttributes getRouteAttributes() {
@@ -62,11 +63,11 @@ public class RouteAttributes {
         this.attributes = attributes;
     }
 
-    public ConcurrentMap<String, HttpSession> getSessions() {
+    public ConcurrentMap<String, NetworkSession> getSessions() {
         return sessions;
     }
 
-    public void setSessions(ConcurrentMap<String, HttpSession> sessions) {
+    public void setSessions(ConcurrentMap<String, NetworkSession> sessions) {
         this.sessions = sessions;
     }
 

@@ -107,12 +107,11 @@ public class ExecutableDatasource implements DataSource{
     }
 
     public static class Builder {
-        int c;
+        int c = 1;
         String ur;
         String u;
         String p;
         String d;
-        int count;
 
         Properties props;
 

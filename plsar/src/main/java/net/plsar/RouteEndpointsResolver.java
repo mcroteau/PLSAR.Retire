@@ -5,9 +5,7 @@ import net.plsar.annotations.Component;
 import net.plsar.annotations.http.Get;
 import net.plsar.annotations.http.Delete;
 import net.plsar.annotations.http.Post;
-import net.plsar.model.TypeAttributes;
-import net.plsar.model.UrlBit;
-import net.plsar.model.UrlBitFeatures;
+import net.plsar.model.RouteAttribute;
 import net.plsar.resources.ServerResources;
 
 import java.io.File;
@@ -16,8 +14,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RouteEndpointsResolver {
     ServerResources serverResources;
@@ -72,21 +70,21 @@ public class RouteEndpointsResolver {
                             Get annotation = routeMethod.getAnnotation(Get.class);
                             String routePath = annotation.value();
                             RouteEndpoint routeEndpoint = getCompleteRouteEndpoint("get", routePath, routeMethod, klass);
-                            String routeKey = routeEndpoint.getRouteVerb().toLowerCase() + routeEndpoint.getRoutePath().toLowerCase();
+                            String routeKey = routeEndpoint.getRouteVerb() + ":" + routeEndpoint.getRoutePath().toLowerCase();
                             routeEndpointHolder.getRouteEndpoints().put(routeKey, routeEndpoint);
                         }
                         if(routeMethod.isAnnotationPresent(Post.class)){
                             Post annotation = routeMethod.getAnnotation(Post.class);
                             String routePath = annotation.value();
                             RouteEndpoint routeEndpoint = getCompleteRouteEndpoint("post", routePath, routeMethod, klass);
-                            String routeKey = routeEndpoint.getRouteVerb() + routeEndpoint.getRoutePath();
+                            String routeKey = routeEndpoint.getRouteVerb() + ":" + routeEndpoint.getRoutePath();
                             routeEndpointHolder.getRouteEndpoints().put(routeKey, routeEndpoint);
                         }
                         if(routeMethod.isAnnotationPresent(Delete.class)){
                             Delete annotation = routeMethod.getAnnotation(Delete.class);
                             String routePath = annotation.value();
                             RouteEndpoint routeEndpoint = getCompleteRouteEndpoint("delete", routePath, routeMethod, klass);
-                            String routeKey = routeEndpoint.getRouteVerb() + routeEndpoint.getRoutePath();
+                            String routeKey = routeEndpoint.getRouteVerb() + ":" + routeEndpoint.getRoutePath();
                             routeEndpointHolder.getRouteEndpoints().put(routeKey, routeEndpoint);
                         }
                     }
@@ -101,67 +99,58 @@ public class RouteEndpointsResolver {
     RouteEndpoint getCompleteRouteEndpoint(String routeVerb, String routePath, Method routeMethod, Class<?> klass) throws Exception {
         RouteEndpoint routeEndpoint = new RouteEndpoint();
         routeEndpoint.setRouteVerb(routeVerb);
+        routeEndpoint.setRoutePath(routePath.toLowerCase());
         routeEndpoint.setRouteMethod(routeMethod);
         routeEndpoint.setKlass(klass);
 
-
-        Type[] types = routeMethod.getGenericParameterTypes();
-        for(Type type : types)routeEndpoint.getTypeNames().add(type.getTypeName());
-
-        Annotation[][] paramAnnotations = routeMethod.getParameterAnnotations();
-        Class<?>[] paramTypes = routeMethod.getParameterTypes();
-        for (int foo = 0; foo < paramAnnotations.length; foo++) {
-            for (Annotation annotation : paramAnnotations[foo]) {
-                if (annotation instanceof Component) {
-                    TypeAttributes typeAttributes = new TypeAttributes();
-                    typeAttributes.setQualifiedName(paramTypes[foo].getTypeName());
-                    typeAttributes.setTypeKlass(paramTypes[foo].getTypeName());
-                    routeEndpoint.getTypeDetails().add(typeAttributes);
-                }
-            }
-        }
-
-        StringBuilder regexRoutePath = new StringBuilder();
-        regexRoutePath.append("\\/(");
-        int count = 0;
-        String[] parts = routePath.split("/");
-        for(String part: parts){
-            count++;
-            if(!part.equals("")) {
-                if (part.matches("(\\{[a-zA-Z]*\\})")) {
-                    regexRoutePath.append("(.*[A-Za-z0-9])");
-                    routeEndpoint.getVariablePositions().add(count - 1);
-                } else {
-                    regexRoutePath.append("(" + part.toLowerCase() + "){1}");
-                }
-                if (count < parts.length) {
-                    regexRoutePath.append("\\/");
-                }
-            }
-        }
-        regexRoutePath.append(")$");
-
-        if(routeEndpointHolder.getRouteEndpoints().containsKey(regexRoutePath)){
-            throw new Exception("request path + " + routePath + " exists multiple times.");//todo:
-        }
-
-        routeEndpoint.setRegexRoutePath(regexRoutePath.toString());
-        routeEndpoint.setRoutePath(routePath);
-
-        String[] bits = routePath.split("/");
-        UrlBitFeatures urlBitFeatures = new UrlBitFeatures();
-        List<UrlBit> urlBits = new ArrayList<>();
-        for(String bit : bits){
-            UrlBit urlBit = new UrlBit();
-            if(bit.contains("{") && bit.contains("}")){
-                urlBit.setVariable(true);
+        String routeRegex = new String();
+        String[] routeParts = routePath.split("/");
+        for(String routePart : routeParts){
+            if(routePart.equals(""))continue;
+            routeRegex += "/";
+            if(routePart.contains("{") && routePart.contains("}")){
+                routeRegex += "[a-zA-Z0-9]*";
             }else{
-                urlBit.setVariable(false);
+                routeRegex += routePart;
             }
-            urlBits.add(urlBit);
         }
-        urlBitFeatures.setUrlBits(urlBits);
-        routeEndpoint.setUrlBitFeatures(urlBitFeatures);
+
+        routeEndpoint.setRegexRoutePath(routeRegex);
+
+        if(routeEndpoint.getRegexRoutePath().contains("["))routeEndpoint.setRegex(true);
+        if(!routeEndpoint.getRegexRoutePath().contains("["))routeEndpoint.setRegex(false);
+
+        Type[] parameterAttributes = routeMethod.getGenericParameterTypes();
+
+        int index = 0;
+        for(Type parameterAttribute : parameterAttributes){
+            RouteAttribute routeAttribute = new RouteAttribute();
+            routeAttribute.setTypeKlass(parameterAttribute.getTypeName());
+            if(!parameterAttribute.getTypeName().startsWith("net.plsar")){
+                routeEndpoint.setRegex(true);
+                routeAttribute.setRouteVariable(true);
+            }else{
+                routeAttribute.setRouteVariable(false);
+            }
+            routeEndpoint.getRouteAttributes().put(index, routeAttribute);index++;
+        }
+
+        Map<Integer, Boolean> processed = new HashMap<>();
+        for(Map.Entry<Integer, RouteAttribute> routeAttributeEntry : routeEndpoint.getRouteAttributes().entrySet()){
+            int pathIndex = 0;
+            for(String routePart : routeParts){
+                if(routePart.equals(""))continue;
+                RouteAttribute routeAttribute = routeAttributeEntry.getValue();
+                if(routePart.contains("{") && routePart.contains("}") && routeAttribute.getRouteVariable()){
+                    if(!processed.containsKey(routeAttribute.getRoutePosition())){
+                        processed.put(routeAttribute.getRoutePosition(), true);
+                        routeAttribute.setRoutePosition(pathIndex);
+                    }
+                }
+                pathIndex++;
+            }
+        }
+
         return routeEndpoint;
     }
 

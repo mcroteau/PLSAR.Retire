@@ -5,7 +5,6 @@ import net.plsar.model.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,19 +17,19 @@ public class ExperienceManager {
     final String DOT      = "\\.";
     final String NEWLINE  = "\n";
     final String LOCATOR  = "\\$\\{[a-zA-Z+\\.+\\(\\a-zA-Z+)]*\\}";
-    final String FOREACH  = "<plsar:iterate";
-    final String ENDEACH  = "</plsar:iterate>";
-    final String IFSPEC   = "<plsar:if";
-    final String ENDIF    = "</plsar:if>";
-    final String SETVAR   = "<plsar:set";
-    final String OPENSPEC = "<plsar:if spec=\"${";
+    final String FOREACH  = "<ocean:each";
+    final String ENDEACH  = "</ocean:each>";
+    final String IFSPEC   = "<ocean:if";
+    final String ENDIF    = "</ocean:if>";
+    final String SETVAR   = "<ocean:set";
+    final String OPENSPEC = "<ocean:if spec=\"${";
     final String ENDSPEC  = "}";
 
     final String COMMENT      = "<%--";
     final String HTML_COMMENT = "<!--";
 
     //todo: please.
-    public String execute(String pageElement, Cache cache, HttpRequest req, List<Class<?>> viewRenderers) throws PlsarException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
+    public String execute(String pageElement, Cache cache, NetworkRequest req, List<Class<?>> viewRenderers) throws BlueOceanException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
         List<String> elementEntries = Arrays.asList(pageElement.split("\n"));
         List<String> viewRendererElementEntries = getInterpretedRenderers(req, elementEntries, viewRenderers);
 
@@ -108,7 +107,7 @@ public class ExperienceManager {
         return dataPartials;
     }
 
-    List<String> getInterpretedRenderers(HttpRequest req, List<String> elementEntries, List<Class<?>> viewRenderers) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    List<String> getInterpretedRenderers(NetworkRequest req, List<String> elementEntries, List<Class<?>> viewRenderers) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
 
         for(Class<?> viewRendererKlass : viewRenderers){
             Object viewRendererInstance = viewRendererKlass.getConstructor().newInstance();
@@ -123,7 +122,7 @@ public class ExperienceManager {
 
                 String elementEntry = elementEntries.get(tao);
                 Method isEval = viewRendererInstance.getClass().getDeclaredMethod("isEval");
-                Method truthy = viewRendererInstance.getClass().getDeclaredMethod("truthy", HttpRequest.class);
+                Method truthy = viewRendererInstance.getClass().getDeclaredMethod("truthy", NetworkRequest.class);
 
                 if ((Boolean) isEval.invoke(viewRendererInstance) &&
                         (elementEntry.contains(openRendererKey)) &&
@@ -148,7 +147,7 @@ public class ExperienceManager {
                 }
                 if(!(Boolean) isEval.invoke(viewRendererInstance) &&
                         elementEntry.contains(completeRendererKey)){
-                    Method render = viewRendererInstance.getClass().getDeclaredMethod("render", HttpRequest.class);
+                    Method render = viewRendererInstance.getClass().getDeclaredMethod("render", NetworkRequest.class);
                     String rendered = (String) render.invoke(viewRendererInstance, req);
                     elementEntries.set(tao, rendered);
                 }
@@ -157,7 +156,7 @@ public class ExperienceManager {
         return elementEntries;
     }
 
-    List<DataPartial> getCompletedPartials(List<DataPartial> dataPartialsPre, Cache resp) throws InvocationTargetException, NoSuchMethodException, PlsarException, NoSuchFieldException, IllegalAccessException {
+    List<DataPartial> getCompletedPartials(List<DataPartial> dataPartialsPre, Cache resp) throws InvocationTargetException, NoSuchMethodException, BlueOceanException, NoSuchFieldException, IllegalAccessException {
 
         List<DataPartial> dataPartials = new ArrayList<>();
         for(DataPartial dataPartial : dataPartialsPre) {
@@ -306,7 +305,7 @@ public class ExperienceManager {
     }
 
 
-    List<DataPartial> getInflatedPartials(List<DataPartial> dataPartials, Cache resp) throws NoSuchFieldException, IllegalAccessException, PlsarException {
+    List<DataPartial> getInflatedPartials(List<DataPartial> dataPartials, Cache resp) throws NoSuchFieldException, IllegalAccessException, BlueOceanException {
 
         List<DataPartial> dataPartialsPre = new ArrayList<>();
         for(int tao = 0; tao < dataPartials.size(); tao++) {
@@ -468,7 +467,7 @@ public class ExperienceManager {
         return specPartialsReady;
     }
 
-    List<DataPartial> getIterablePartials(int openIdx, List<DataPartial> dataPartials) throws PlsarException {
+    List<DataPartial> getIterablePartials(int openIdx, List<DataPartial> dataPartials) throws BlueOceanException {
         Integer openCount = 1, endCount = 0;
         List<DataPartial> dataPartialsDeux = new ArrayList<>();
         for (int foo = openIdx; foo < dataPartials.size(); foo++) {
@@ -484,7 +483,7 @@ public class ExperienceManager {
         return dataPartialsDeux;
     }
 
-    List<DataPartial> getIterablePartialsNested(int openIdx, List<DataPartial> dataPartials) throws PlsarException {
+    List<DataPartial> getIterablePartialsNested(int openIdx, List<DataPartial> dataPartials) throws BlueOceanException {
         List<DataPartial> dataPartialsDeux = new ArrayList<>();
         Integer endIdx = getEndEach(openIdx, dataPartials);
         for (int foo = openIdx; foo < endIdx; foo++) {
@@ -494,7 +493,7 @@ public class ExperienceManager {
         return dataPartialsDeux;
     }
 
-    int getEndEach(int openIdx, List<DataPartial> basePartials) throws PlsarException {
+    int getEndEach(int openIdx, List<DataPartial> basePartials) throws BlueOceanException {
         Integer openEach = 1;
         Integer endEach = 0;
         for (int qxro = openIdx + 1; qxro < basePartials.size(); qxro++) {
@@ -502,12 +501,12 @@ public class ExperienceManager {
             String basicEntry = basePartial.getEntry();
             if(basicEntry.contains(this.ENDEACH))endEach++;
 
-            if(openEach > 3)throw new PlsarException("too many nested <plsar:iterate>.");
+            if(openEach > 3)throw new BlueOceanException("too many nested <ocean:each>.");
             if(basicEntry.contains(this.ENDEACH) && endEach == openEach && endEach != 0){
                 return qxro + 1;
             }
         }
-        throw new PlsarException("missing end </plsar:iterate>");
+        throw new BlueOceanException("missing end </ocean:each>");
     }
 
 
@@ -653,7 +652,8 @@ public class ExperienceManager {
                     String subjectValue = String.valueOf(activeObjectValue);
                     Integer subjectNumericValue = Integer.parseInt(subjectValue);
                     Integer predicateNumericValue = Integer.parseInt(predicateValue);
-                    if(!getValidation(subjectNumericValue, predicateNumericValue, conditionalElement, expressionElement))return false;
+                    if(getValidation(subjectNumericValue, predicateNumericValue, conditionalElement, expressionElement))return true;
+                    return false;
                 }
 
                 String[] subjectFieldElements = subjectElement.split(DOT, 2);
@@ -948,7 +948,7 @@ public class ExperienceManager {
         return null;
     }
 
-    boolean passesSpec(Object object, DataPartial specPartial, DataPartial dataPartial, Cache resp) throws NoSuchMethodException, PlsarException, IllegalAccessException, NoSuchFieldException, InvocationTargetException {
+    boolean passesSpec(Object object, DataPartial specPartial, DataPartial dataPartial, Cache resp) throws NoSuchMethodException, BlueOceanException, IllegalAccessException, NoSuchFieldException, InvocationTargetException {
         if(dataPartial.isWithinIterable() && passesIterableSpec(specPartial, object, resp)){
             return true;
         }

@@ -5,7 +5,7 @@ import net.plsar.annotations.HttpRouter;
 import net.plsar.annotations.Inject;
 import net.plsar.annotations.http.Get;
 import net.plsar.model.Cache;
-import net.plsar.model.HttpRequest;
+import net.plsar.model.NetworkRequest;
 import net.plsar.security.SecurityManager;
 import plsar.model.User;
 
@@ -20,7 +20,7 @@ public class EffortRouter {
     EffortRepo effortRepo;
 
     @Get("/efforts/{id}")
-    public String efforts(Cache cache, @Component Long id, HttpRequest req, SecurityManager security){
+    public String efforts(Cache cache, @Component Long id, NetworkRequest req, SecurityManager security){
         if(!security.isAuthenticated(req)){
             cache.set("message", "please sign in.");
             return "[redirect:]/";

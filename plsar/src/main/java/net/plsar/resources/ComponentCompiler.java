@@ -2,7 +2,7 @@ package net.plsar.resources;
 
 import net.plsar.model.Component;
 import net.plsar.model.FileComponent;
-import net.plsar.model.HttpRequest;
+import net.plsar.model.NetworkRequest;
 import net.plsar.model.RequestComponent;
 
 import java.io.ByteArrayOutputStream;
@@ -17,15 +17,15 @@ import java.util.regex.Pattern;
 public class ComponentCompiler {
 
     byte[] requestBytes;
-    HttpRequest httpRequest;
+    NetworkRequest networkRequest;
 
-    public ComponentCompiler(byte[] requestBytes, HttpRequest httpRequest){
+    public ComponentCompiler(byte[] requestBytes, NetworkRequest networkRequest){
         this.requestBytes = requestBytes;
-        this.httpRequest = httpRequest;
+        this.networkRequest = networkRequest;
     }
 
     public void ingestRequest(){
-        Map<String, String> headers = httpRequest.getHeaders();
+        Map<String, String> headers = networkRequest.getHeaders();
         String contentType = headers.get("content-type");
         String[] boundaryParts = contentType != null ? contentType.split("boundary=") : new String[]{};
 
@@ -35,7 +35,7 @@ public class ComponentCompiler {
             List<RequestComponent> requestComponents = getRequestComponents(formDelimiter, requestPayload);
             requestComponents.forEach(requestComponent -> {
                 String requestComponentKey = requestComponent.getName();
-                httpRequest.setRequestComponent(requestComponentKey, requestComponent);
+                networkRequest.setRequestComponent(requestComponentKey, requestComponent);
             });
 
         }else if(requestBytes.length > 0){
@@ -45,7 +45,8 @@ public class ComponentCompiler {
                 String queryBytes = new String(requestBytes, "utf-8");
                 String requestQueryComplete = java.net.URLDecoder.decode(queryBytes, StandardCharsets.UTF_8.name());
                 String[] requestQueryParts = requestQueryComplete.split("\r\n\r\n", 2);
-                if(requestQueryParts.length == 2) {
+                if(requestQueryParts.length == 2 &&
+                        !requestQueryParts[1].equals("")) {
                     String requestQuery =  requestQueryParts[1];
                     for (String entry : requestQuery.split("&")) {
                         RequestComponent requestComponent = new RequestComponent();
@@ -59,7 +60,7 @@ public class ComponentCompiler {
                             requestComponent.setName(key);
                             requestComponent.setValue("");
                         }
-                        httpRequest.put(key, requestComponent);
+                        networkRequest.put(key, requestComponent);
                     }
                 }
 

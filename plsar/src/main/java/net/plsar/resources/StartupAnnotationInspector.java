@@ -1,5 +1,6 @@
 package net.plsar.resources;
 
+import net.plsar.annotations.RouteRegistration;
 import net.plsar.annotations.ServerStartup;
 
 import java.io.File;
@@ -20,7 +21,7 @@ public class StartupAnnotationInspector {
     }
 
     public void inspect(){
-        Path filePath = Paths.get("build");//requires build directory
+        Path filePath = Paths.get("build");//requires "build" directory
         String completeFilePath = filePath.toAbsolutePath().toString();
         inspectFilePath(completeFilePath);
     }
@@ -53,6 +54,11 @@ public class StartupAnnotationInspector {
 
                 if (klass.isAnnotation() || klass.isInterface()) continue;
 
+                if(klass.isAnnotationPresent(RouteRegistration.class)) {
+                    AnnotationComponent annotationComponent = new AnnotationComponent();
+                    annotationComponent.setKlass(klass);
+                    componentsHolder.setRouteRegistration(annotationComponent);
+                }
                 if(klass.isAnnotationPresent(ServerStartup.class)) {
                     AnnotationComponent annotationComponent = new AnnotationComponent();
                     annotationComponent.setKlass(klass);

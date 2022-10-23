@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class ComponentsHolder {
     AnnotationComponent serverStartup;
+    AnnotationComponent routeRegistration;
     ConcurrentMap<String, Class<?>> repositories;
     ConcurrentMap<String, Class<?>> services;
 
@@ -37,4 +38,11 @@ public class ComponentsHolder {
         this.serverStartup = serverStartup;
     }
 
+    public AnnotationComponent getRouteRegistration() {
+        return routeRegistration;
+    }
+
+    public void setRouteRegistration(AnnotationComponent routeRegistration) {
+        this.routeRegistration = routeRegistration;
+    }
 }

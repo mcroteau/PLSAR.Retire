@@ -4,10 +4,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HttpResponse {
+public class NetworkResponse {
     String redirectLocation;
-    String contentType;
-    String content;
     List<SecurityAttribute> securityAttributes;
     OutputStream responseStream;
 
@@ -17,22 +15,6 @@ public class HttpResponse {
 
     public void setRedirectLocation(String redirectLocation) {
         this.redirectLocation = redirectLocation;
-    }
-
-    public String getContentType() {
-        return contentType;
-    }
-
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
     }
 
     public List<SecurityAttribute> getSecurityAttributes() {
@@ -51,7 +33,7 @@ public class HttpResponse {
         this.responseStream = responseStream;
     }
 
-    public HttpResponse(){
+    public NetworkResponse(){
         this.securityAttributes = new ArrayList();
     }
 

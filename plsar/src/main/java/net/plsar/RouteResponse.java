@@ -4,15 +4,34 @@ import java.util.Map;
 
 public class RouteResponse {
 
-    String content;
+    byte[] responseBytes;
+    String contentType;
+    String responseCode;
+
     Map<String, Object> redirectAttributes;
 
-    public String getContent() {
-        return content;
+    public byte[] getResponseBytes() {
+        return responseBytes;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setResponseBytes(byte[] responseBytes) {
+        this.responseBytes = responseBytes;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public String getResponseCode() {
+        return responseCode;
+    }
+
+    public void setResponseCode(String responseCode) {
+        this.responseCode = responseCode;
     }
 
     public Map<String, Object> getRedirectAttributes() {
@@ -27,8 +46,10 @@ public class RouteResponse {
         this.redirectAttributes = redirectAttributes;
     }
 
-    public RouteResponse(String content) {
-        this.content = content;
+    public RouteResponse(byte[] responseBytes, String responseCode, String contentType) {
+        this.responseBytes = responseBytes;
+        this.responseCode = responseCode;
+        this.contentType = contentType;
     }
 
     public RouteResponse() { }

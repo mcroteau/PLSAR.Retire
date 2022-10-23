@@ -1,6 +1,6 @@
 package plsar;
 
-import net.plsar.PLSAR;
+import net.plsar.BlueOcean;
 import net.plsar.PersistenceConfig;
 import net.plsar.SchemaConfig;
 import net.plsar.drivers.Drivers;
@@ -22,18 +22,18 @@ public class Main {
         schemaConfig.setSchema("schema.sql");
         schemaConfig.setEnvironment(Environments.DEVELOPMENT);
 
-        PLSAR plsar = new PLSAR(1234);
-        plsar.setNumberOfPartitions(40);
-        plsar.setNumberOfRequestExecutors(100);
+        BlueOcean blueOcean = new BlueOcean(1234);
+        blueOcean.setNumberOfPartitions(40);
+        blueOcean.setNumberOfRequestExecutors(100);
 
-        plsar.setPersistenceConfig(persistenceConfig);
-        plsar.setSchemaConfig(schemaConfig);
+        blueOcean.setPersistenceConfig(persistenceConfig);
+        blueOcean.setSchemaConfig(schemaConfig);
 
-        plsar.addViewRenderer(AuthenticatedRenderer.class);
-        plsar.addViewRenderer(GuestRenderer.class);
-        plsar.addViewRenderer(UserRenderer.class);
+        blueOcean.addViewRenderer(AuthenticatedRenderer.class);
+        blueOcean.addViewRenderer(GuestRenderer.class);
+        blueOcean.addViewRenderer(UserRenderer.class);
 
-        plsar.setSecurityAccess(AuthSecurityAccess.class);
-        plsar.start();
+        blueOcean.setSecurityAccess(AuthSecurityAccess.class);
+        blueOcean.start();
     }
 }

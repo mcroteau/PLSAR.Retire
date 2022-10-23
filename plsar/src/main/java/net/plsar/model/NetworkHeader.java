@@ -1,6 +1,6 @@
 package net.plsar.model;
 
-public class HttpHeader {
+public class NetworkHeader {
     String header;
     String content;
 
@@ -20,7 +20,7 @@ public class HttpHeader {
         this.content = content;
     }
 
-    public HttpHeader(String header, String content) {
+    public NetworkHeader(String header, String content) {
         this.header = header;
         this.content = content;
     }

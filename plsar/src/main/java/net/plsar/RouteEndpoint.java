@@ -1,11 +1,12 @@
 package net.plsar;
 
-import net.plsar.model.TypeAttributes;
-import net.plsar.model.UrlBitFeatures;
+import net.plsar.model.RouteAttribute;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RouteEndpoint {
     String routePath;
@@ -14,16 +15,13 @@ public class RouteEndpoint {
 
     Method routeMethod;
 
-    List<TypeAttributes> typeDetails;
-    List<String> typeNames;
-    List<Integer> variablePositions;
+    Map<Integer, RouteAttribute> routeAttributes;
 
     Class<?> klass;
-
-    UrlBitFeatures urlBitFeatures;
+    Boolean regex;
 
     public RouteEndpoint(){
-        this.typeNames = new ArrayList<>();
+        this.routeAttributes = new HashMap<>();
     }
 
     public String getRoutePath() {
@@ -58,28 +56,12 @@ public class RouteEndpoint {
         this.routeMethod = routeMethod;
     }
 
-    public List<TypeAttributes> getTypeDetails() {
-        return typeDetails;
+    public Map<Integer, RouteAttribute> getRouteAttributes() {
+        return routeAttributes;
     }
 
-    public void setTypeDetails(List<TypeAttributes> typeDetails) {
-        this.typeDetails = typeDetails;
-    }
-
-    public List<String> getTypeNames() {
-        return typeNames;
-    }
-
-    public void setTypeNames(List<String> typeNames) {
-        this.typeNames = typeNames;
-    }
-
-    public List<Integer> getVariablePositions() {
-        return variablePositions;
-    }
-
-    public void setVariablePositions(List<Integer> variablePositions) {
-        this.variablePositions = variablePositions;
+    public void setRouteAttributes(Map<Integer, RouteAttribute> routeAttributes) {
+        this.routeAttributes = routeAttributes;
     }
 
     public Class<?> getKlass() {
@@ -90,11 +72,11 @@ public class RouteEndpoint {
         this.klass = klass;
     }
 
-    public UrlBitFeatures getUrlBitFeatures() {
-        return urlBitFeatures;
+    public Boolean isRegex() {
+        return regex;
     }
 
-    public void setUrlBitFeatures(UrlBitFeatures urlBitFeatures) {
-        this.urlBitFeatures = urlBitFeatures;
+    public void setRegex(Boolean regex) {
+        this.regex = regex;
     }
 }
