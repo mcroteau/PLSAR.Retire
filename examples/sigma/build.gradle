@@ -15,5 +15,5 @@ repositories {
 }
 
 dependencies {
-    implementation project(":plsar")
+    implementation project(":blueocean")
 }

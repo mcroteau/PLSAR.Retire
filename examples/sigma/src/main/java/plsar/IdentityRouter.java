@@ -1,13 +1,13 @@
 package plsar;
 
-import net.plsar.annotations.Inject;
-import net.plsar.model.NetworkResponse;
-import net.plsar.annotations.HttpRouter;
-import net.plsar.annotations.http.Get;
-import net.plsar.annotations.http.Post;
-import net.plsar.model.NetworkRequest;
-import net.plsar.model.Cache;
-import net.plsar.security.SecurityManager;
+import dev.blueocean.annotations.Inject;
+import dev.blueocean.model.NetworkResponse;
+import dev.blueocean.annotations.HttpRouter;
+import dev.blueocean.annotations.http.Get;
+import dev.blueocean.annotations.http.Post;
+import dev.blueocean.model.NetworkRequest;
+import dev.blueocean.model.Cache;
+import dev.blueocean.security.SecurityManager;
 
 @HttpRouter
 public class IdentityRouter {

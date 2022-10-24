@@ -1,7 +1,7 @@
 package plsar;
 
-import net.plsar.Dao;
-import net.plsar.annotations.Repository;
+import dev.blueocean.Dao;
+import dev.blueocean.annotations.Repository;
 import plsar.model.User;
 import plsar.model.Permission;
 

@@ -1,7 +1,7 @@
 package plsar;
 
-import net.plsar.model.Cache;
-import net.plsar.model.NetworkRequest;
+import dev.blueocean.model.Cache;
+import dev.blueocean.model.NetworkRequest;
 
 public class FooService {
     public String foo(Cache cache, NetworkRequest request, SecurityManager securityManager){

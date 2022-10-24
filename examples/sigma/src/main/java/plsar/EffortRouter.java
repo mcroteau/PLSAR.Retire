@@ -1,12 +1,12 @@
 package plsar;
 
-import net.plsar.annotations.Component;
-import net.plsar.annotations.HttpRouter;
-import net.plsar.annotations.Inject;
-import net.plsar.annotations.http.Get;
-import net.plsar.model.Cache;
-import net.plsar.model.NetworkRequest;
-import net.plsar.security.SecurityManager;
+import dev.blueocean.annotations.Component;
+import dev.blueocean.annotations.HttpRouter;
+import dev.blueocean.annotations.Inject;
+import dev.blueocean.annotations.http.Get;
+import dev.blueocean.model.Cache;
+import dev.blueocean.model.NetworkRequest;
+import dev.blueocean.security.SecurityManager;
 import plsar.model.User;
 
 //todo:5:40pm : Thu 13 Oct

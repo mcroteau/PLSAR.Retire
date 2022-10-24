@@ -1,9 +1,9 @@
 package plsar.assist;
 
-import net.plsar.Dao;
+import dev.blueocean.Dao;
 import plsar.model.User;
 import plsar.model.Permission;
-import net.plsar.security.SecurityAccess;
+import dev.blueocean.security.SecurityAccess;
 
 import java.util.ArrayList;
 import java.util.HashSet;
