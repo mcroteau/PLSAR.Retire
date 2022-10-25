@@ -45,14 +45,14 @@ public class Informant {
         blueOcean.start();
     }
 
-    public static Long getDate(int days){
+    public Long getDate(int days){
         LocalDateTime ldt = LocalDateTime.now().minusDays(days);
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DATE_FORMAT);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern(getDateFormat());
         String date = dtf.format(ldt);
         return Long.valueOf(date);
     }
 
-    public static String getPhone(String phone){
+    public String getPhone(String phone){
         if(phone != null)
             return phone
                     .replaceAll("[^a-zA-Z0-9]", "")
@@ -60,13 +60,13 @@ public class Informant {
         return "";
     }
 
-    public static String getEmail(String email){
+    public String getEmail(String email){
         if(email != null)
             return email.replaceAll("([^\\S\\r\\n])+|(?:\\r?\\n)+", "");
         return "";
     }
 
-    public static String getExtension(final String path) {
+    public String getExtension(final String path) {
         String result = null;
         if (path != null) {
             result = "";
@@ -80,7 +80,7 @@ public class Informant {
         return result;
     }
 
-    public static String getBasePrefix(String name) {
+    public String getBasePrefix(String name) {
         String ext = getExtension(name);
         if(ext.equals("jpeg"))return "data:image/jpeg;base64,";
         if(ext.equals("jpg"))return "data:image/jpeg;base64,";
@@ -137,8 +137,12 @@ public class Informant {
         return "";
     }
 
-    public static final String DELIMITER = ":::::::amadeus:::::::";
-    public static final String DATE_FORMAT = "yyyyMMddHHmmssSSS";
-    public static final String DATE_PRETTY = "HH:mmaa dd MMM";
+    public String getDateFormat(){
+        return "yyyyMMddHHmmssSSS";
+    }
+
+    public String getDelimeter(){
+        return ":::::::amadeus:::::::";
+    }
 
 }

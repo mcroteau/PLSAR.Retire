@@ -14,8 +14,11 @@ import java.nio.file.Paths;
 
 @ServerStartup
 public class InformantStartup implements ServerListener {
+
     @Override//todo:∆ from setup complete to initialized
     public void startup() {
+
+        Informant informant = new Informant();
 
         PersistenceConfig persistenceConfig = new PersistenceConfig();
         persistenceConfig.setDriver(Drivers.H2);
@@ -31,31 +34,31 @@ public class InformantStartup implements ServerListener {
         Path audiPath = Paths.get("src", "main", "webapp", "resources", "media", "audi.jpg");
         String audiUri = audiPath.toAbsolutePath().toString();
         StringBuilder audi = new StringBuilder();
-        audi.append(Informant.getBasePrefix("audi.jpg"));
-        audi.append(Informant.getEncoded(audiUri));
+        audi.append(informant.getBasePrefix("audi.jpg"));
+        audi.append(informant.getEncoded(audiUri));
 
         Path royksoppPath = Paths.get("src", "main", "webapp", "resources", "media", "royksopp.jpg");
         String royksoppUri = royksoppPath.toAbsolutePath().toString();
         StringBuilder royksopp = new StringBuilder();
-        royksopp.append(Informant.getBasePrefix("royksopp.jpg"));
-        royksopp.append(Informant.getEncoded(royksoppUri));
+        royksopp.append(informant.getBasePrefix("royksopp.jpg"));
+        royksopp.append(informant.getEncoded(royksoppUri));
 
         Path saabPath = Paths.get("src", "main", "webapp", "resources", "media", "saab.jpg");
         String saabUri = saabPath.toAbsolutePath().toString();
         StringBuilder saab = new StringBuilder();
-        saab.append(Informant.getBasePrefix("saab.jpg"));
-        saab.append(Informant.getEncoded(saabUri));
+        saab.append(informant.getBasePrefix("saab.jpg"));
+        saab.append(informant.getEncoded(saabUri));
 
         StringBuilder persistence = new StringBuilder();
         persistence.append(saab);
-        persistence.append(Informant.DELIMITER);
+        persistence.append(informant.getDelimeter());
         persistence.append(royksopp);
 
         Paper paper = new Paper();
         paper.setContent("They trooped down the hillside silently, they'd abjured unnecessary speech, along with sex and liquor. Some stopped to pour out food they wouldn't need, covering the path with flour.");
         paper.setUserId(1L);
         paper.setSixtyFour(audi.toString());
-        paper.setTimeCreated(Informant.getDate(0));
+        paper.setTimeCreated(informant.getDate(0));
         paperRepo.save(paper);
 
         String permissionUne = "sheets:maintenance:1";
@@ -65,7 +68,7 @@ public class InformantStartup implements ServerListener {
         paperDeux.setContent("Abjure unnecessary speech with sex and liquor, stalled don't");
         paperDeux.setUserId(2L);
         paperDeux.setSixtyFour(persistence.toString());
-        paperDeux.setTimeCreated(Informant.getDate(2));
+        paperDeux.setTimeCreated(informant.getDate(2));
         paperRepo.save(paperDeux);
 
         String permissionDeux = "sheets:maintenance:2";
@@ -76,7 +79,7 @@ public class InformantStartup implements ServerListener {
         paperTrois.setOriginId(2L);
         paperTrois.setOriginContent("Abjure unnecessary speech, along with sex and liquor.");
         paperTrois.setUserId(1L);
-        paperTrois.setTimeCreated(Informant.getDate(3));
+        paperTrois.setTimeCreated(informant.getDate(3));
         paperRepo.save(paperTrois);
 
         String permissionTrois = "sheets:maintenance:3";

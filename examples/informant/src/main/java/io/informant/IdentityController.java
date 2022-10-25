@@ -14,6 +14,13 @@ import io.informant.repo.UserRepo;
 @Controller
 public class IdentityController {
 
+
+    public IdentityController(){
+        informant = new Informant();
+    }
+
+    Informant informant;
+
     @Bind
     UserRepo userRepo;
 
@@ -41,23 +48,25 @@ public class IdentityController {
         }
         return securityManager.signin(credential, password, req, resp);
     }
+
     @Post("/authenticate")
     public String authenticate(Cache cache,
                                NetworkRequest req,
                                NetworkResponse resp,
                                SecurityManager securityManager){
-        String phone = Informant.getPhone(req.getValue("credential"));
-        String email = Informant.getEmail(req.getValue("credential"));
+        String credential = informant.getPhone(req.getValue("credential"));
         String password = req.getValue("password");
 
-        if(!securityManager.signin(phone, password, req, resp) || !securityManager.signin(email, password, req, resp)){
+        if(!securityManager.signin(credential, password, req, resp)){
             cache.set("message", "Wrong phone or email and password");
-            return "[redirect]/signin";
+            return "redirect:/signin";
         }
 
-        User authdUser = userRepo.getPhone(phone);
-        req.getSession(true).set("userId", authdUser.getId());
-        req.getSession(true).set("photo", authdUser.getPhoto());
+        User authUser = userRepo.getPhone(credential);
+        if(authUser == null) authUser = userRepo.getPhone(credential);
+
+        req.getSession(true).set("userId", authUser.getId());
+        req.getSession(true).set("photo", authUser.getPhoto());
 
         return "redirect:/";
     }

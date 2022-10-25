@@ -21,6 +21,13 @@ import java.util.List;
 @Service
 public class ControllerHelper {
 
+    Informant informant;
+
+    public ControllerHelper(){
+        this.informant = new Informant();
+    }
+
+
     @Bind
     UserRepo userRepo;
 
@@ -52,7 +59,7 @@ public class ControllerHelper {
     List<Paper> getPopulatePapersMetaData(List<Paper> papers) throws ParseException {
         List<Paper> papersGo = new ArrayList<>();
         for(Paper paper : papers){
-            SimpleDateFormat format = new SimpleDateFormat(Informant.DATE_FORMAT);
+            SimpleDateFormat format = new SimpleDateFormat(informant.getDateFormat());
             Date postedDate = format.parse(Long.toString(paper.getTimeCreated()));
 
             PrettyTime prettyTime = new PrettyTime();
@@ -61,7 +68,7 @@ public class ControllerHelper {
             if(paper.getVideo() != null && !paper.getVideo().equals(""))paper.setHasVideo(true);
 
             if(!paper.getSixtyFour().equals("")) {
-                List<String> photos = Arrays.asList(paper.getSixtyFour().split(Informant.DELIMITER));
+                List<String> photos = Arrays.asList(paper.getSixtyFour().split(informant.getDelimeter()));
                 paper.setPhotos(photos);
             }
             papersGo.add(paper);

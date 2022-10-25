@@ -23,7 +23,11 @@ import java.util.*;
 @Controller
 public class PaperController {
 
-    Gson gson = new Gson();
+    Informant informant;
+
+    public PaperController(){
+        this.informant = new Informant();
+    }
 
     @Bind
     UserRepo userRepo;
@@ -46,13 +50,13 @@ public class PaperController {
     @Get("/sheets/{offset}")
     public String activity(Cache cache, NetworkRequest req, SecurityManager securityManager, @Component Integer offset) throws ParseException {
         if(!securityManager.isAuthenticated(req)){
-            return gson.toJson(new SecurityResponse());
+            return "redirect:/signin";
         }
 
         User authUser = controllerHelper.getUser(req, securityManager);
 
-        long startTime = Informant.getDate(4);
-        long endTime = Informant.getDate(0);
+        long startTime = informant.getDate(4);
+        long endTime = informant.getDate(0);
 
         String query = req.getValue("q");
         SheetsResponse sheetsResponse = new SheetsResponse(0L, new ArrayList());
@@ -73,7 +77,7 @@ public class PaperController {
                     List<Paper> papers = controllerHelper.getPapersQuery("u.name", usersQuery, startTime, endTime, offset);
                     sheetsResponse = new SheetsResponse(papersCount, papers);
                 }else{
-                    return gson.toJson(new SheetsResponse(0L, new ArrayList<>()));
+                    return "redirect:/sheets/0";
                 }
             }else if(query.contains("activity:")){
                 Long papersCount = paperRepo.getCountQuery("p.content", query, startTime, endTime);
@@ -98,7 +102,7 @@ public class PaperController {
     @Post("/sheets/save")
     public String save(NetworkRequest req, SecurityManager securityManager) throws ParseException, IOException {
         if(!securityManager.isAuthenticated(req)){
-            return gson.toJson(new SecurityResponse());
+            return "redirect:/signin";
         }
 
         User authdUser = controllerHelper.getUser(req, securityManager);
@@ -114,11 +118,11 @@ public class PaperController {
             StringBuilder photosBuilder = new StringBuilder();
             int index = 1;
             for (FileComponent fileComponent : fileComponents) {
-                photosBuilder.append(Informant.getBasePrefix(fileComponent.getFileName()));
+                photosBuilder.append(informant.getBasePrefix(fileComponent.getFileName()));
                 photosBuilder.append(Base64.getEncoder().withoutPadding().encodeToString(fileComponent.getFileBytes()));
 
                 if (index < fileComponents.size()) {
-                    photosBuilder.append(Informant.DELIMITER);
+                    photosBuilder.append(informant.getDelimeter());
                 }
                 index++;
             }
@@ -147,7 +151,7 @@ public class PaperController {
 //            progressTracker.start();
 //        }
 
-        paper.setTimeCreated(Informant.getDate(0));
+        paper.setTimeCreated(informant.getDate(0));
         paperRepo.save(paper);
 
         Long lastId = paperRepo.getId();
@@ -156,14 +160,14 @@ public class PaperController {
         String permission = "sheets:maintenance:" + lastId;
         userRepo.savePermission(authdUser.getId(), permission);
 
-        SimpleDateFormat format = new SimpleDateFormat(Informant.DATE_FORMAT);
+        SimpleDateFormat format = new SimpleDateFormat(informant.getDateFormat());
         Date postedDate = format.parse(Long.toString(storedPaper.getTimeCreated()));
 
         PrettyTime prettyTime = new PrettyTime();
         storedPaper.setTimeAgo(prettyTime.format(postedDate));
 
         if(!storedPaper.getSixtyFour().equals("")) {
-            List<String> photos = Arrays.asList(storedPaper.getSixtyFour().split(Informant.DELIMITER));
+            List<String> photos = Arrays.asList(storedPaper.getSixtyFour().split(informant.getDelimeter()));
             storedPaper.setPhotos(photos);
         }
 
@@ -174,23 +178,23 @@ public class PaperController {
     @Get("/sheets/feature/{id}")
     public String paper(Cache cache, NetworkRequest req, SecurityManager securityManager, @Component Long id) throws ParseException {
         if(!securityManager.isAuthenticated(req)){
-            return gson.toJson(new SecurityResponse());
+            return "redirect:/signin";
         }
 
         Paper storedPaper = paperRepo.get(id);
 
         if(storedPaper == null){
-            return gson.toJson(new GenericResponse("horizons","paper with id " + id + " cannot un-discoverable"));
+            return "redirect:/";
         }
 
-        SimpleDateFormat format = new SimpleDateFormat(Informant.DATE_FORMAT);
+        SimpleDateFormat format = new SimpleDateFormat(informant.getDelimeter());
         Date postedDate = format.parse(Long.toString(storedPaper.getTimeCreated()));
 
         PrettyTime prettyTime = new PrettyTime();
         storedPaper.setTimeAgo(prettyTime.format(postedDate));
 
         if(!storedPaper.getSixtyFour().equals("")) {
-            List<String> photos = Arrays.asList(storedPaper.getSixtyFour().split(Informant.DELIMITER));
+            List<String> photos = Arrays.asList(storedPaper.getSixtyFour().split(informant.getDelimeter()));
             storedPaper.setPhotos(photos);
         }
 
@@ -261,14 +265,14 @@ public class PaperController {
             storedPaper.setLikesCount(likesCount);
         }
 
-        SimpleDateFormat format = new SimpleDateFormat(Informant.DATE_FORMAT);
+        SimpleDateFormat format = new SimpleDateFormat(informant.getDelimeter());
         Date postedDate = format.parse(Long.toString(storedPaper.getTimeCreated()));
 
         PrettyTime prettyTime = new PrettyTime();
         storedPaper.setTimeAgo(prettyTime.format(postedDate));
 
         if(!storedPaper.getSixtyFour().equals("")) {
-            List<String> photos = Arrays.asList(storedPaper.getSixtyFour().split(Informant.DELIMITER));
+            List<String> photos = Arrays.asList(storedPaper.getSixtyFour().split(informant.getDelimeter()));
             storedPaper.setPhotos(photos);
         }
 
