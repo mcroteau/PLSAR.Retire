@@ -1,8 +1,8 @@
 package plsar;
 
 import dev.blueocean.annotations.Component;
-import dev.blueocean.annotations.HttpRouter;
-import dev.blueocean.annotations.Inject;
+import dev.blueocean.annotations.Controller;
+import dev.blueocean.annotations.Bind;
 import dev.blueocean.annotations.http.Get;
 import dev.blueocean.model.Cache;
 import dev.blueocean.model.NetworkRequest;
@@ -10,13 +10,13 @@ import dev.blueocean.security.SecurityManager;
 import plsar.model.User;
 
 //todo:5:40pm : Thu 13 Oct
-@HttpRouter
+@Controller
 public class EffortRouter {
 
-    @Inject
+    @Bind
     UserRepo userRepo;
 
-    @Inject
+    @Bind
     EffortRepo effortRepo;
 
     @Get("/efforts/{id}")

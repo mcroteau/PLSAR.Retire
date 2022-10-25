@@ -1,6 +1,6 @@
 package dev.blueocean;
 
-import dev.blueocean.annotations.HttpRouter;
+import dev.blueocean.annotations.Controller;
 import dev.blueocean.annotations.http.Get;
 import dev.blueocean.annotations.http.Delete;
 import dev.blueocean.annotations.http.Post;
@@ -60,7 +60,7 @@ public class RouteEndpointsResolver {
 
                 if (klass.isAnnotation() || klass.isInterface()) continue;
 
-                if(klass.isAnnotationPresent(HttpRouter.class)) {
+                if(klass.isAnnotationPresent(Controller.class)) {
                     Method[] routeMethods = klass.getDeclaredMethods();
                     for(Method routeMethod: routeMethods){
 

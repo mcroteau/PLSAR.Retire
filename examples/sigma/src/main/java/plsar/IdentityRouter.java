@@ -1,18 +1,18 @@
 package plsar;
 
-import dev.blueocean.annotations.Inject;
+import dev.blueocean.annotations.Bind;
 import dev.blueocean.model.NetworkResponse;
-import dev.blueocean.annotations.HttpRouter;
+import dev.blueocean.annotations.Controller;
 import dev.blueocean.annotations.http.Get;
 import dev.blueocean.annotations.http.Post;
 import dev.blueocean.model.NetworkRequest;
 import dev.blueocean.model.Cache;
 import dev.blueocean.security.SecurityManager;
 
-@HttpRouter
+@Controller
 public class IdentityRouter {
 
-    @Inject
+    @Bind
     UserRepo userRepo;
 
     @Get("/")

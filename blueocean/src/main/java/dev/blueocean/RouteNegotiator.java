@@ -1,7 +1,7 @@
 package dev.blueocean;
 
 import dev.blueocean.annotations.Design;
-import dev.blueocean.annotations.Inject;
+import dev.blueocean.annotations.Bind;
 import dev.blueocean.annotations.Meta;
 import dev.blueocean.model.Cache;
 import dev.blueocean.model.NetworkRequest;
@@ -127,7 +127,7 @@ public class RouteNegotiator {
 
             Field[] routeFields = routeInstance.getClass().getDeclaredFields();
             for(Field routeField : routeFields){
-                if(routeField.isAnnotationPresent(Inject.class)){
+                if(routeField.isAnnotationPresent(Bind.class)){
                     String fieldKey = routeField.getName().toLowerCase();
 
                     if(componentsHolder.getServices().containsKey(fieldKey)){
@@ -137,7 +137,7 @@ public class RouteNegotiator {
 
                         Field[] repoFields = serviceInstance.getClass().getDeclaredFields();
                         for(Field repoField : repoFields) {
-                            if (repoField.isAnnotationPresent(Inject.class)) {
+                            if (repoField.isAnnotationPresent(Bind.class)) {
                                 String repoFieldKey = repoField.getName().toLowerCase();
 
                                 if(componentsHolder.getRepositories().containsKey(repoFieldKey)){
