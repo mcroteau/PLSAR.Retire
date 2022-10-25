@@ -44,7 +44,7 @@ public class RouteNegotiator {
             String routeUriPath = networkRequest.getUriPath();
             String routeVerb = networkRequest.getVerb();
 
-            if(routeUriPath.contains("/assets/")) {
+            if(routeUriPath.contains("/resources/")) {
                 String assetsPath = Paths.get("src", "main", "webapp").toString();
                 String filePath = assetsPath.concat(routeUriPath);
                 File staticResourcefile = new File(filePath);

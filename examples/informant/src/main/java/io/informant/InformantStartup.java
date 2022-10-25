@@ -28,19 +28,19 @@ public class InformantStartup implements ServerListener {
         PaperRepo paperRepo = new PaperRepo(dao);
         UserRepo userRepo = new UserRepo(dao);
 
-        Path audiPath = Paths.get("web-ux", "resources", "media", "audi.jpg");
+        Path audiPath = Paths.get("src", "main", "webapp", "resources", "media", "audi.jpg");
         String audiUri = audiPath.toAbsolutePath().toString();
         StringBuilder audi = new StringBuilder();
         audi.append(Informant.getBasePrefix("audi.jpg"));
         audi.append(Informant.getEncoded(audiUri));
 
-        Path royksoppPath = Paths.get("web-ux", "resources", "media", "royksopp.jpg");
+        Path royksoppPath = Paths.get("src", "main", "webapp", "resources", "media", "royksopp.jpg");
         String royksoppUri = royksoppPath.toAbsolutePath().toString();
         StringBuilder royksopp = new StringBuilder();
         royksopp.append(Informant.getBasePrefix("royksopp.jpg"));
         royksopp.append(Informant.getEncoded(royksoppUri));
 
-        Path saabPath = Paths.get("web-ux", "resources", "media", "saab.jpg");
+        Path saabPath = Paths.get("src", "main", "webapp", "resources", "media", "saab.jpg");
         String saabUri = saabPath.toAbsolutePath().toString();
         StringBuilder saab = new StringBuilder();
         saab.append(Informant.getBasePrefix("saab.jpg"));

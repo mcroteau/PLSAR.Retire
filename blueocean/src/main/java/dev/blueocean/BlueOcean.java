@@ -85,9 +85,12 @@ public class BlueOcean {
     List<RouteNegotiator> getRouteNegotiators(Integer TOTAL_NUMBER_EXECUTORS, ServerResources serverResources, AnnotationComponent routeRegistration) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         List<RouteNegotiator> routeNegotiators = new ArrayList();
         for(Integer activeIndex = 0; activeIndex < TOTAL_NUMBER_EXECUTORS; activeIndex++){//todo:set guid
-            Method startupMethod = routeRegistration.getKlass().getMethod("register");
 
-            RouteAttributes routeAttributes = (RouteAttributes) startupMethod.invoke(serverResources.getInstance(routeRegistration.getKlass()));
+            RouteAttributes routeAttributes = new RouteAttributes();
+            if(routeRegistration != null) {
+                Method startupMethod = routeRegistration.getKlass().getMethod("register");
+                routeAttributes = (RouteAttributes) startupMethod.invoke(serverResources.getInstance(routeRegistration.getKlass()));
+            }
 
             RouteEndpointsResolver routeEndpointsResolver = new RouteEndpointsResolver(serverResources);
             RouteEndpointHolder routeEndpointHolder = routeEndpointsResolver.resolve();

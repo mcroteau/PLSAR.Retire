@@ -9,7 +9,6 @@ import dev.blueocean.model.*;
 import dev.blueocean.security.SecurityManager;
 import io.informant.model.*;
 import io.informant.model.response.GenericResponse;
-import io.informant.model.response.ProgressResponse;
 import io.informant.model.response.SheetsResponse;
 import io.informant.model.response.SecurityResponse;
 import io.informant.repo.PaperRepo;
@@ -35,16 +34,10 @@ public class PaperController {
     @Bind
     ControllerHelper controllerHelper;
 
-    Map<String, ProgressResponse> progressResponses;
-
-    public PaperController(){
-        progressResponses = new HashMap();
-    }
-
     @Get("/")
     public String index(NetworkRequest req, SecurityManager securityManager){
         if(!securityManager.isAuthenticated(req)){
-            return "[redirect]/signin";
+            return "redirect:/signin";
         }
         return "index.jsp";
     }
@@ -283,17 +276,5 @@ public class PaperController {
 
         return "redirect:/sheets/feature/" + storedPaper;
     }
-
-
-    @JsonOutput
-    @Get("/video/{guid}")
-    public String getProgress(@Component String guid){
-        if(progressResponses.containsKey(guid)){
-            ProgressResponse progressResponse = progressResponses.get(guid);
-            return gson.toJson(progressResponse);
-        }
-        return gson.toJson(new ProgressResponse("0", 0L));
-    }
-
 
 }

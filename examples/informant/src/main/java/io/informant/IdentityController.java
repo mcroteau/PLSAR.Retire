@@ -17,6 +17,30 @@ public class IdentityController {
     @Bind
     UserRepo userRepo;
 
+    @Get("/signin")
+    public String signin(){
+        return "/signin.jsp";
+    }
+
+    @Get("/signup")
+    public String signup(){
+        return "/signup.jsp";
+    }
+
+    @Get("/signout")
+    public String signout(NetworkRequest req, NetworkResponse resp, SecurityManager security){
+        security.signout(req, resp);
+        return "redirect:/";
+    }
+
+    public boolean signin(String credential, String password, NetworkRequest req, NetworkResponse resp, SecurityManager securityManager){
+        User user = userRepo.getPhone(credential);
+        if(user == null) user = userRepo.getEmail(credential);
+        if(user == null) {
+            return false;
+        }
+        return securityManager.signin(credential, password, req, resp);
+    }
     @Post("/authenticate")
     public String authenticate(Cache cache,
                                NetworkRequest req,
@@ -35,32 +59,6 @@ public class IdentityController {
         req.getSession(true).set("userId", authdUser.getId());
         req.getSession(true).set("photo", authdUser.getPhoto());
 
-        return "[redirect]/";
+        return "redirect:/";
     }
-
-    @Get("/signin")
-    public String signin(){
-        return "/signin.jsp";
-    }
-
-    @Get("/signup")
-    public String signup(){
-        return "/signup.jsp";
-    }
-
-    @Get("/signout")
-    public String signout(NetworkRequest req, NetworkResponse resp, SecurityManager security){
-        security.signout(req, resp);
-        return "[redirect]/";
-    }
-
-    public boolean signin(String credential, String password, NetworkRequest req, NetworkResponse resp, SecurityManager securityManager){
-        User user = userRepo.getPhone(credential);
-        if(user == null) user = userRepo.getEmail(credential);
-        if(user == null) {
-            return false;
-        }
-        return securityManager.signin(credential, password, req, resp);
-    }
-
 }
