@@ -243,14 +243,14 @@ html,body{
 .col-3 {
     width: 150px;
 }
-.thankyoujava2scom {
+.left-middle-column {
     text-align:center;
     padding: 40px 60px 130px 159px;
     width: calc(60% - 211px);
     background: transparent;
     overflow:auto;
 }
-.thankyoujava2scom-right{
+.middle-column{
     padding:0px;
     position:relative;
     width: calc(35%);
@@ -259,7 +259,7 @@ html,body{
     text-align: center;
     border-left:dashed 1px #d9dde3;
 }
-.falco{
+.right-column{
     width: calc(15%);
     background: #f3f5f8;
     background: transparent;

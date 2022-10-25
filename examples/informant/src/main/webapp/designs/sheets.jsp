@@ -1,11 +1,7 @@
 <html>
 <head>
-    <title>social elite*</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ractive/1.4.0/ractive.min.js" integrity="sha512-PZFuxjUwWqMaq5255WJAk2qsa+4uEGdwWgn9qa10j+RBsRF0XqDRMs7nTB6HH9GPTeWXi+YV+z/a2jtnnXpZjA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <title>${}</title>
     <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
-    <script src="/assets/action/signals.js"></script>
-    <script src="/assets/action/crossroads.js"></script>
-    <script src="/assets/action/hasher.js"></script>
     <link href="/assets/app.css" rel="stylesheet"/>
 </head>
 <body>
@@ -14,63 +10,19 @@
     <img src="${photo}" id="profile-img" class="profile-img-background"/>
 </a>
 
-<style>
-    #meta{
-        right: 0px;
-        bottom: 47%;
-        transform: rotate(90deg);
-    }
-</style>
-
 <div class="row">
 
     <a href="#lorem/ipsum" id="amadeus-action" class="crossroads-href" style="background:#0b76ef;background:transparent;padding:45px 30px 20px 30px;text-align:center;vertical-align:middle;height:67px;width:67px;position:fixed;top:0px;left:0px;">
-        <span class="jkl crossroads-href" style="color:#fff;font-size:49px;">
-<%--            &#10010;--%>
-            &gimel;&deg;
-<%--            &Delta;--%>
-<%--            &Sigma;--%>
+        <span class="jkl crossroads-href" style="font-size:49px;transform: rotate(90deg);">
+            Dispatch
         </span>
     </a>
-
-    <div class="thankyoujava2scom">
+    <div class="left-middle-column">
         <div id="template-render">
             <blueocean:content/>
         </div>
     </div>
-    <div class="thankyoujava2scom-right">
-
-        <div id="material-status">
-            <p id="material-message"></p>
-            <div id="video-progress">
-                <div id="progress-wrapper">
-                    <span id="progress-percentage"></span>
-                </div>
-            </div>
-        </div>
-
-        <style>
-            #progress-wrapper{
-                height:25px;
-                text-align:left;
-                background:#fff;
-                border-radius: 12px;
-            }
-            #progress-percentage{
-                width:30%;
-                height:25px;
-                display:inline-block;
-                background:#0b76ef;
-                border-radius: 12px;
-            }
-            #material-status{
-                bottom:170px;
-                margin:auto;
-                z-index: 4;
-                width:calc(100% - 20px);
-                position:absolute;
-            }
-        </style>
+    <div class="middle-column">
 
         <div id="material-edit-wrapper">
 
@@ -105,7 +57,6 @@
 
     <div class="falco"></div>
 </div>
-
 
 <style>
     video{

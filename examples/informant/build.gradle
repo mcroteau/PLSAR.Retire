@@ -3,10 +3,10 @@ plugins {
 }
 
 application{
-    mainClass.set("io.amadeus.Main")
+    mainClass.set("io.informant.Informant")
 }
 
-group 'foo'
+group 'io.informant'
 version '1.0'
 
 repositories {

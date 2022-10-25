@@ -1,7 +1,5 @@
 package io.informant.model.response;
 
-import io.informant.assets.ProgressTracker;
-
 public class ProgressResponse {
     String status;
     Long progressBytes;

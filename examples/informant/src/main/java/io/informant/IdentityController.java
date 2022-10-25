@@ -22,8 +22,8 @@ public class IdentityController {
                                NetworkRequest req,
                                NetworkResponse resp,
                                SecurityManager securityManager){
-        String phone = Main.getPhone(req.getValue("credential"));
-        String email = Main.getEmail(req.getValue("credential"));
+        String phone = Informant.getPhone(req.getValue("credential"));
+        String email = Informant.getEmail(req.getValue("credential"));
         String password = req.getValue("password");
 
         if(!securityManager.signin(phone, password, req, resp) || !securityManager.signin(email, password, req, resp)){

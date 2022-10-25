@@ -1,10 +1,7 @@
 package io.informant;
+
 import io.informant.model.User;
 import io.informant.model.UserFollow;
-import io.kakai.Kakai;
-import io.kakai.annotate.Application;
-import io.kakai.resources.Environments;
-import io.kakai.security.negotiator.AuthNegotiator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
@@ -12,10 +9,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-@Application(Environments.DEVELOPMENT)
-public class Main {
+public class Informant {
+
     public static void main(String[] args){
-        new Kakai(8080).addNegotiator(new AuthNegotiator()).start();
+
     }
 
     public static Long getDate(int days){
