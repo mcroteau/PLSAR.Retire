@@ -16,7 +16,7 @@ public class IdentityController {
 
 
     public IdentityController(){
-        informant = new Informant();
+        this.informant = new Informant();
     }
 
     Informant informant;
@@ -40,15 +40,6 @@ public class IdentityController {
         return "redirect:/";
     }
 
-    public boolean signin(String credential, String password, NetworkRequest req, NetworkResponse resp, SecurityManager securityManager){
-        User user = userRepo.getPhone(credential);
-        if(user == null) user = userRepo.getEmail(credential);
-        if(user == null) {
-            return false;
-        }
-        return securityManager.signin(credential, password, req, resp);
-    }
-
     @Post("/authenticate")
     public String authenticate(Cache cache,
                                NetworkRequest req,
@@ -70,4 +61,14 @@ public class IdentityController {
 
         return "redirect:/";
     }
+
+    public boolean signin(String credential, String password, NetworkRequest req, NetworkResponse resp, SecurityManager securityManager){
+        User user = userRepo.getPhone(credential);
+        if(user == null) user = userRepo.getEmail(credential);
+        if(user == null) {
+            return false;
+        }
+        return securityManager.signin(credential, password, req, resp);
+    }
+
 }

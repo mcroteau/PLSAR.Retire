@@ -2,7 +2,7 @@
 <head>
     <title>${}</title>
     <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
-    <link href="/assets/app.css" rel="stylesheet"/>
+    <link href="/resources/app.css" rel="stylesheet"/>
 </head>
 <body>
 
@@ -19,7 +19,7 @@
     </a>
     <div class="left-middle-column">
         <div id="template-render">
-            <blueocean:content/>
+            <ocean:content/>
         </div>
     </div>
     <div class="middle-column">

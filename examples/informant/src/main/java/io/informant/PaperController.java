@@ -43,7 +43,7 @@ public class PaperController {
         if(!securityManager.isAuthenticated(req)){
             return "redirect:/signin";
         }
-        return "index.jsp";
+        return "redirect:/sheets/0";
     }
 
     @Design("/designs/sheets.jsp")
