@@ -7,7 +7,7 @@
 <body>
 
 <a href="#users/${userId}">
-    <img src="${photo}" id="profile-img" class="profile-img-background"/>
+    <img src="${userPhoto}" id="profile-img" class="profile-img-background"/>
 </a>
 
 <div class="row">

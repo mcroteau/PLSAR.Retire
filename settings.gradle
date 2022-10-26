@@ -1,6 +1,4 @@
 rootProject.name = "BlueOcean"
 include "blueocean"
-include "examples:kilo"
-include "examples:sigma"
 include "examples:informant"
 

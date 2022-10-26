@@ -57,7 +57,7 @@ public class IdentityController {
         if(authUser == null) authUser = userRepo.getPhone(credential);
 
         req.getSession(true).set("userId", authUser.getId());
-        req.getSession(true).set("photo", authUser.getPhoto());
+        req.getSession(true).set("userPhoto", authUser.getPhoto());
 
         return "redirect:/";
     }

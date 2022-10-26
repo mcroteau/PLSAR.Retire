@@ -4,9 +4,7 @@ import dev.blueocean.extras.Actor;
 import dev.blueocean.extras.Person;
 import dev.blueocean.extras.Pet;
 import dev.blueocean.extras.Todo;
-import io.kakai.model.web.HttpResponse;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import dev.blueocean.model.Cache;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.ArrayList;
@@ -15,24 +13,9 @@ import java.util.List;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class BaseTest {
 
-    Kakai kakai;
-    Boolean dispatchedEvent;
+    public Cache create() {
 
-    @BeforeEach
-    public void setup() throws Exception {
-        kakai = new Kakai(8080)
-                        .createDevelopmentDatabase()
-                        .start();
-    }
-
-    @AfterEach
-    public void shutdown(){
-        kakai.stop();
-    }
-
-    public HttpResponse create() {
-
-        HttpResponse resp = new HttpResponse();
+        Cache cache = new Cache();
 
         List<Todo> todos = new ArrayList<>();
 
@@ -62,19 +45,19 @@ abstract class BaseTest {
         Actor burgandy = getBlankPet();
         Actor iceman = getNilPet();
 
-        resp.set("not", null);
-        resp.set("blank", "");
-        resp.set("message", "Strain.");
-        resp.set("nil", "");
-        resp.set("tom", topgun);
-        resp.set("brad", blackjoe);
-        resp.set("will", burgandy);
-        resp.set("val", iceman);
-        resp.set("todos", todos);
-        resp.set("true", true);
-        resp.set("condition", true);
+        cache.set("not", null);
+        cache.set("blank", "");
+        cache.set("message", "Strain.");
+        cache.set("nil", "");
+        cache.set("tom", topgun);
+        cache.set("brad", blackjoe);
+        cache.set("will", burgandy);
+        cache.set("val", iceman);
+        cache.set("todos", todos);
+        cache.set("true", true);
+        cache.set("condition", true);
 
-        return resp;
+        return cache;
     }
 
     Actor getIt(){
@@ -120,7 +103,7 @@ abstract class BaseTest {
 
         Actor wife = new Actor();
         wife.setId(5);
-        wife.setName("Viveca");
+        wife.setName("Mrs. Will");
         wife.setPet(pet);
 
         Actor actor = new Actor();

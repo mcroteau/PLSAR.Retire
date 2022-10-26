@@ -6,7 +6,6 @@
 
     <p id="main-message" class="message" style="display: none"></p>
 
-    ${papers.size()}
     <ocean:if spec="${papers.size() > 0}">
 
         <ocean:foreach items="${papers}" var="paper">
@@ -20,8 +19,8 @@
                 </div>
                 <a href="/paper/${paper.id}">
                     <div class="paper-photos">
-                        <ocean:foreach items="${paper.photos}" var="photo">
-                            <img src="${photo}" class="paper-photo"/>
+                        <ocean:foreach items="${paper.photos}" var="paperphoto">
+                            <img src="${paperphoto}" class="paper-photo"/>
                         </ocean:foreach>
                     </div>
                 </a>

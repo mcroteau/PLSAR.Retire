@@ -673,7 +673,7 @@ public class ExperienceManager {
                 }
 
                 String subjectValue = String.valueOf(activeSubjectObject);
-                if(!passesSpec(subjectValue, predicateValue, conditionalElement))return false;
+                if(passesSpec(subjectValue, predicateValue, conditionalElement))return true;
 
             } else if (predicateValue.equals("") &&
                     conditionalElement.equals("")) {
@@ -1013,7 +1013,7 @@ public class ExperienceManager {
         return false;
     }
 
-    String getObjectValueForLineComponent(String objectField, Object object) throws IllegalAccessException, NoSuchFieldException {
+    String getObjectValueForLineComponent(String objectField, Object object) throws IllegalAccessException, NoSuchFieldException, NoSuchMethodException {
 
         if(objectField.contains(".")){
             String[] objectFields = objectField.split("\\.");
@@ -1026,10 +1026,22 @@ public class ExperienceManager {
             if(activeObject == null)return "";
             return String.valueOf(activeObject);
         }else {
-            Object objectValue = getObjectValue(objectField, object);
-            if (objectValue == null) return null;
-            return String.valueOf(objectValue);
+            if(hasDeclaredField(objectField, object)) {
+                Object objectValue = getObjectValue(objectField, object);
+                if (objectValue == null) return null;
+                return String.valueOf(objectValue);
+            }else{
+                return String.valueOf(object);
+            }
         }
+    }
+
+    boolean hasDeclaredField(String objectField, Object object) {
+        Field[] declaredFields = object.getClass().getDeclaredFields();
+        for(Field declaredField: declaredFields){
+            if(declaredField.getName().equals(objectField))return true;
+        }
+        return false;
     }
 
     Object getObjectValue(String objectField, Object object) throws NoSuchFieldException, IllegalAccessException {
