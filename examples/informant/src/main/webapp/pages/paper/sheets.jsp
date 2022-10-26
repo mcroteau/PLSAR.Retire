@@ -6,22 +6,23 @@
 
     <p id="main-message" class="message" style="display: none"></p>
 
+    ${papers.size()}
     <ocean:if spec="${papers.size() > 0}">
 
-        <ocean:each items="papers" var="paper">
+        <ocean:foreach items="${papers}" var="paper">
             <div class="paper-wrapper" id="sheet-${paper.id}">
                 <div class="identity-wrapper">
-                    <a href="#users/{{paper.userId}}" class="profile-action">
-                        <img src="{{paper.photo}}" class="paper-profile-img profile-img-background"/>
+                    <a href="/users/${paper.userId}" class="profile-action">
+                        <img src="${paper.photo}" class="paper-profile-img profile-img-background"/>
                         <span class="paper-user">${paper.name}</span>
                     </a>
                     <br class="clear"/>
                 </div>
                 <a href="/paper/${paper.id}">
                     <div class="paper-photos">
-                        <ocean:each items="paper.photos" var="photo">
+                        <ocean:foreach items="${paper.photos}" var="photo">
                             <img src="${photo}" class="paper-photo"/>
-                        </ocean:each>
+                        </ocean:foreach>
                     </div>
                 </a>
 
@@ -46,7 +47,7 @@
                     <br class="clear"/>
                 </div>
             </div>
-        </ocean:each>
+        </ocean:foreach>
 
     </ocean:if>
 

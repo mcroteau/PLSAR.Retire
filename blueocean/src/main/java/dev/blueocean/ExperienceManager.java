@@ -17,8 +17,8 @@ public class ExperienceManager {
     final String DOT      = "\\.";
     final String NEWLINE  = "\n";
     final String LOCATOR  = "\\$\\{[a-zA-Z+\\.+\\(\\a-zA-Z+)]*\\}";
-    final String FOREACH  = "<ocean:each";
-    final String ENDEACH  = "</ocean:each>";
+    final String FOREACH  = "<ocean:foreach";
+    final String ENDEACH  = "</ocean:foreach>";
     final String IFSPEC   = "<ocean:if";
     final String ENDIF    = "</ocean:if>";
     final String SETVAR   = "<ocean:set";
@@ -731,7 +731,7 @@ public class ExperienceManager {
         return "";
     }
 
-    IterableResult getIterableResultNested(String entry, Object mojo) throws NoSuchFieldException, IllegalAccessException {
+    IterableResult getIterableResultNested(String entry, Object activeSubjectObject) throws NoSuchFieldException, IllegalAccessException {
         int startEach = entry.indexOf(this.FOREACH);
 
         int startIterate = entry.indexOf("items=", startEach + 1);
@@ -742,16 +742,20 @@ public class ExperienceManager {
 
         int startField = iterablePadded.indexOf(".");
         int endField = iterablePadded.indexOf("}", startField);
-        String field = iterablePadded.substring(startField + 1, endField);
+        String activeSubjectFieldElement = iterablePadded.substring(startField + 1, endField);
 
         int startItem = entry.indexOf("var=", endIterate);
         int endItem = entry.indexOf("\"", startItem + 5);//var="
         String activeField = entry.substring(startItem + 5, endItem);
 
-        List<Object> mojos = (ArrayList) getIterableValueRecursive(0, field, mojo);
+        String[] activeSubjectFieldElements = activeSubjectFieldElement.split(DOT);
+        for(String activeFieldElement : activeSubjectFieldElements){
+            activeSubjectObject = getObjectValue(activeFieldElement, activeSubjectObject);
+        }
+
         IterableResult iterableResult = new IterableResult();
         iterableResult.setField(activeField);
-        iterableResult.setMojos(mojos);
+        iterableResult.setMojos((List) activeSubjectObject);
         return iterableResult;
     }
 
@@ -794,16 +798,20 @@ public class ExperienceManager {
         return new ArrayList<>();
     }
 
-    private List<Object> getIterableRecursive(String expression, Object objBase) throws NoSuchFieldException, IllegalAccessException {
+    private List<Object> getIterableRecursive(String expression, Object activeSubjectObject) throws NoSuchFieldException, IllegalAccessException {
         List<Object> objs = new ArrayList<>();
         int startField = expression.indexOf(".");
         int endField = expression.indexOf("}");
 
-        String field = expression.substring(startField + 1, endField);
-        Object obj = getValueRecursive(0, field, objBase);
+        String activeSubjectFielElement = expression.substring(startField + 1, endField);
 
-        if(obj != null){
-            return (ArrayList) obj;
+        String[] activeSubjectFieldElements = activeSubjectFielElement.split(DOT);
+        for(String activeFieldElement : activeSubjectFieldElements){
+            activeSubjectObject = getObjectValue(activeFieldElement, activeSubjectObject);
+        }
+
+        if(activeSubjectObject != null){
+            return (ArrayList) activeSubjectObject;
         }
         return objs;
     }

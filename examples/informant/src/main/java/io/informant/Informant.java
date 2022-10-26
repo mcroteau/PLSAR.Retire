@@ -31,8 +31,8 @@ public class Informant {
         schemaConfig.setEnvironment(Environments.DEVELOPMENT);
 
         BlueOcean blueOcean = new BlueOcean(1234);
-        blueOcean.setNumberOfPartitions(70);
-        blueOcean.setNumberOfRequestExecutors(100);
+        blueOcean.setNumberOfPartitions(7);
+        blueOcean.setNumberOfRequestExecutors(10);
 
         blueOcean.setPersistenceConfig(persistenceConfig);
         blueOcean.setSchemaConfig(schemaConfig);

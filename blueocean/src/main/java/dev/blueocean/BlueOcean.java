@@ -309,9 +309,9 @@ public class BlueOcean {
                     clientOutput.write(routeResponse.getResponseCode().getBytes());
                     clientOutput.write(BREAK.getBytes());
 
-                    clientOutput.write("Content-Length:".getBytes());
-                    clientOutput.write(routeResponse.getResponseBytes().length);
-                    clientOutput.write(BREAK.getBytes());
+                    Integer bytesLength = routeResponse.getResponseBytes().length;
+                    byte[] contentLengthBytes = ("Content-Length:" + bytesLength + BREAK).getBytes();
+                    clientOutput.write(contentLengthBytes);
 
                     clientOutput.write("Content-Type:".getBytes());
                     clientOutput.write(routeResponse.getContentType().getBytes());

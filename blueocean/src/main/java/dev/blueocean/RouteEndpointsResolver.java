@@ -124,7 +124,7 @@ public class RouteEndpointsResolver {
         for(Type parameterAttribute : parameterAttributes){
             RouteAttribute routeAttribute = new RouteAttribute();
             routeAttribute.setTypeKlass(parameterAttribute.getTypeName());
-            if(!parameterAttribute.getTypeName().startsWith("net.plsar")){
+            if(!parameterAttribute.getTypeName().startsWith("dev.blueocean")){
                 routeEndpoint.setRegex(true);
                 routeAttribute.setRouteVariable(true);
             }else{

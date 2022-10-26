@@ -22,7 +22,7 @@ public class InformantStartup implements ServerListener {
 
         PersistenceConfig persistenceConfig = new PersistenceConfig();
         persistenceConfig.setDriver(Drivers.H2);
-        persistenceConfig.setUrl("jdbc:h2:~/devDb");
+        persistenceConfig.setUrl("jdbc:h2:~/BLUE_OCEAN_DB");
         persistenceConfig.setUser("sa");
         persistenceConfig.setPassword("");
 

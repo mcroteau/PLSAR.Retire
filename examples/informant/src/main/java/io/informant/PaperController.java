@@ -59,7 +59,8 @@ public class PaperController {
         long endTime = informant.getDate(0);
 
         String query = req.getValue("q");
-        SheetsResponse sheetsResponse = new SheetsResponse(0L, new ArrayList());
+        List<Paper> papers = new ArrayList<>();
+
         if(query != null &&
                 !query.equals("")){
             if(query.contains("music:")){
@@ -73,28 +74,20 @@ public class PaperController {
                 if(usersQueryParts.length > 1) {
                     String usersQueryBlah = usersQueryParts[1];
                     String usersQuery = usersQueryBlah.trim();
-                    Long papersCount = paperRepo.getCountQuery("u.name", usersQuery, startTime, endTime);
-                    List<Paper> papers = controllerHelper.getPapersQuery("u.name", usersQuery, startTime, endTime, offset);
-                    sheetsResponse = new SheetsResponse(papersCount, papers);
+                    papers = controllerHelper.getPapersQuery("u.name", usersQuery, startTime, endTime, offset);
                 }else{
                     return "redirect:/sheets/0";
                 }
             }else if(query.contains("activity:")){
-                Long papersCount = paperRepo.getCountQuery("p.content", query, startTime, endTime);
-                List<Paper> papers = controllerHelper.getPapersQuery("p.content", query, startTime, endTime, offset);
-                sheetsResponse = new SheetsResponse(papersCount, papers);
+                papers = controllerHelper.getPapersQuery("p.content", query, startTime, endTime, offset);
             }else{
-                Long papersCount = paperRepo.getCountQuery("p.content", query, startTime, endTime);
-                List<Paper> papers = controllerHelper.getPapersQuery("p.content", query, startTime, endTime, offset);
-                sheetsResponse = new SheetsResponse(papersCount, papers);
+                papers = controllerHelper.getPapersQuery("p.content", query, startTime, endTime, offset);
             }
         }else{
-            Long papersCount = paperRepo.getCount(startTime, endTime);
-            List<Paper> papers = controllerHelper.getPapers(startTime, endTime, offset, authUser);
-            sheetsResponse = new SheetsResponse(papersCount, papers);
+            papers = controllerHelper.getPapers(startTime, endTime, offset, authUser);
         }
 
-        cache.set("sheetsResponse", sheetsResponse);
+        cache.set("papers", papers);
         return "/pages/paper/sheets.jsp";
     }
 

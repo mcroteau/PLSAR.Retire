@@ -251,7 +251,6 @@ public class RouteNegotiator {
                 return new RouteResponse(completePageRendered.getBytes(), "200 OK", "text/html");
             }
 
-
         }catch (IllegalAccessException ex) {
             errorMessage = "<p style=\"border:solid 1px #ff0000; color:#ff0000;\">" + ex.getMessage() + "</p>";
             ex.printStackTrace();
