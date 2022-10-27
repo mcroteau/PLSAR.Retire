@@ -1,5 +1,6 @@
 package dev.blueocean;
 
+import dev.blueocean.environments.Environments;
 import dev.blueocean.model.*;
 import dev.blueocean.resources.*;
 import dev.blueocean.security.SecurityManager;
@@ -35,6 +36,7 @@ public class BlueOcean {
     Class<?> securityAccessClass;
     List<Class<?>> viewRenderers;
 
+    Environment environment;
 
     public BlueOcean(int port){
         this.port = port;
@@ -136,6 +138,10 @@ public class BlueOcean {
 
     public void setViewConfig(ViewConfig viewConfig) {
         this.viewConfig = viewConfig;
+    }
+
+    public void setEnvironment(String environment) {
+        this.environment = new Environment(environment);
     }
 
     public static class PartitionedExecutor implements Runnable{
@@ -329,7 +335,7 @@ public class BlueOcean {
                 if(redirectLocation == null || redirectLocation.equals("")){
                     redirectRegistry.getRegistry().remove(routeDirectorGuid);
 
-                    clientOutput.write(requestVersion.getBytes());
+                    clientOutput.write("HTTP/1.1".getBytes());
                     clientOutput.write(routeResponse.getResponseCode().getBytes());
                     clientOutput.write(BREAK.getBytes());
 

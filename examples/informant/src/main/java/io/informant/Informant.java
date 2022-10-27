@@ -1,11 +1,9 @@
 package io.informant;
 
-import dev.blueocean.BlueOcean;
-import dev.blueocean.PersistenceConfig;
-import dev.blueocean.SchemaConfig;
-import dev.blueocean.ViewConfig;
+import dev.blueocean.*;
 import dev.blueocean.drivers.Drivers;
 import dev.blueocean.environments.Environments;
+import dev.blueocean.renderers.Renderers;
 import dev.blueocean.security.renderer.AuthenticatedRenderer;
 import dev.blueocean.security.renderer.GuestRenderer;
 import dev.blueocean.security.renderer.UserRenderer;
@@ -14,7 +12,6 @@ import io.informant.model.UserFollow;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -42,7 +39,6 @@ public class Informant {
         ViewConfig viewConfig = new ViewConfig();
         viewConfig.setResourcesPath("resources");
         viewConfig.setViewExtension(".jsp");
-
         blueOcean.setViewConfig(viewConfig);
 
         blueOcean.addViewRenderer(AuthenticatedRenderer.class);
@@ -50,6 +46,7 @@ public class Informant {
         blueOcean.addViewRenderer(UserRenderer.class);
 
         blueOcean.setSecurityAccess(AuthSecurityAccess.class);
+        blueOcean.setPageRender(Renderers.FLY);
         blueOcean.start();
     }
 
