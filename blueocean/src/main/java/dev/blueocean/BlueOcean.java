@@ -324,7 +324,7 @@ public class BlueOcean {
                 if(redirectLocation == null || redirectLocation.equals("")){
                     redirectRegistry.getRegistry().remove(routeDirectorGuid);
 
-                    clientOutput.write("HTTP/1.1".getBytes());
+                    clientOutput.write("HTTP/1.1 ".getBytes());
                     clientOutput.write(routeResponse.getResponseCode().getBytes());
                     clientOutput.write(BREAK.getBytes());
 
