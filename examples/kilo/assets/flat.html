@@ -1,0 +1,109 @@
+<html>
+<head>
+    <title>{{page.title}}</title>
+    <link rel="stylesheet" href="/benefit/css/app.css"/>
+</head>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+
+    html,body { height:100%; }
+
+    .pushit{clear:both}
+
+    #top-wrapper{
+        height:50px;
+        border-bottom:solid 1px #e4e8e9;
+    }
+    .left-content{width: 201px;}
+    .right-content{left:201px; right:0px; position:absolute;}
+    #top-content-wrapper a{color:#000; text-decoration: none;display:inline-block;margin:12px 10px;}
+    #logo{height:50px;width:201px;color:#fff;font-weight:900;display:block;margin:5px 20px;text-decoration: none;font-size:21px}
+    .business-name{color:#fff;}
+    #business-phone{font-size: 19px;font-weight: 900;text-transform: uppercase;}
+    #kart-href{
+        margin:4px 0px !important;
+        float:right;
+        display: inline-block;
+        cursor:pointer;
+        text-transform:uppercase;
+        color:#fff !important;
+        font-size:13px;
+        padding:14px 18px;
+        line-height: 1.0em;
+        background-color:#FEF57A;
+        background-color: #3979E4;
+        background-color: #FF817A;
+        text-decoration:none;
+        border-radius: 21px;
+        -moz-border-radius: 21px;
+        -webkit-border-radius: 21px;
+        outline:none !important;
+        -webkit-appearance: none;
+        -moz-appearance:none;
+    }
+    #categories-wrapper{
+        top:50px;
+        bottom:0px;
+        left:0px;
+        float:none;
+        width:201px;
+        position:absolute;
+        border-right:solid 1px #e4e8e9;
+    }
+
+    h3.categories{font-weight:900;margin:17px 0px 0px 23px;}
+
+    ul:menu ul{}
+    ul#menu li{list-style: none;}
+    ul#menu li a{font-size:17px;padding:9px 25px 9px 22px;list-style: none; color:#000;text-decoration: none;display:block;margin:3px}
+    ul#menu li a:hover{background:#000;color:#fff}
+    ul#menu li:hover > ul{display:block !important; margin-left:100px;}
+
+    #search-wrapper{border-bottom:solid 1px #e4e8e9;height:70px;width:100%;}
+    #search-wrapper input[type="text"]{border-radius:0px !important;background:#fff;color:#fff;border:none;height: 100%;font-size: 49px !important;width:200%;}
+    #search-wrapper input[type="text"]:focus{background-color: #000;color:#fff;outline: none;}
+    #search-wrapper input[type="text"]::placeholder{font-size:23px; color:#C9DCDC}
+    #site-wrapper{position: absolute;top:51px;left:202px;bottom:0px;}
+
+    #logo-wrapper{float:left;background:#3979E4;height:50px;width:201px;}
+    #top-content-wrapper{border-left:solid 1px #e4e8e9;float:left; }
+    #site-content{padding:30px 70px;}
+
+</style>
+<body>
+<div id="top-wrapper">
+    <div id="logo-wrapper" class="left-content">
+        <a href="/{{business.uri}}/asset/home" id="logo">{{business.name}}</a>
+    </div>
+    <div id="top-content-wrapper" class="right-content primary">
+        <div id="top-menu-wrapper">
+            <a href="/{{business.uri}}/asset/home">Home</a>
+            <a href="/{{business.uri}}/asset/contact">Contact</a>
+            {{signin.signout.href}}
+            {{signup.href}}
+            {{activity.href}}
+            <span id="business-phone">{{business.phone}}</span>
+            <a href="/{{business.uri}}/cart" id="kart-href">Kart</a>
+            <br class="clear"/>
+        </div>
+    </div>
+    <br class="pushit"/>
+</div>
+<div id="site-outer-wrapper" style="display:table">
+    <div id="categories-wrapper" class="left-content">
+        <h3 class="categories">categories</h3>
+        {{menu.vertical.expandable}}
+    </div>
+    <div id="site-wrapper" class="right-content">
+        <div id="search-wrapper">
+            {{search.box}}
+        </div>
+        <br class="clear"/>
+        <div id="site-content">
+            {{site.content}}
+        </div>
+    </div>
+    <br class="clear"/>
+</div>
+</body>
+</html>

@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,7 +30,7 @@ public class RouteNegotiator {
     RouteAttributes routeAttributes;
     ComponentsHolder componentsHolder;
 
-    public RouteResponse negotiate(Cache cache, NetworkRequest networkRequest, NetworkResponse networkResponse, SecurityManager securityManager, List<Class<?>> viewRenderers){
+    public RouteResponse negotiate(String resourcesDirectory, Cache cache, NetworkRequest networkRequest, NetworkResponse networkResponse, SecurityManager securityManager, List<Class<?>> viewRenderers, ConcurrentMap<String, byte[]> viewBytesMap){
 
         String completePageRendered = "";
         String errorMessage = "";
@@ -44,7 +45,7 @@ public class RouteNegotiator {
             String routeUriPath = networkRequest.getUriPath();
             String routeVerb = networkRequest.getVerb();
 
-            if(routeUriPath.contains("/resources/")) {
+            if(routeUriPath.startsWith("/" + resourcesDirectory + "/")) {
                 String assetsPath = Paths.get("src", "main", "webapp").toString();
                 String filePath = assetsPath.concat(routeUriPath);
                 File staticResourcefile = new File(filePath);
@@ -185,37 +186,18 @@ public class RouteNegotiator {
                 methodResponse = methodResponse.replaceFirst("/", "");
             }
 
-            String htmlPath = webPath.toFile().getAbsolutePath().concat(File.separator + methodResponse);
-            File viewFile = new File(htmlPath);
-            ByteArrayOutputStream unebaos = new ByteArrayOutputStream();
-
-
-            InputStream pageInput = new FileInputStream(viewFile);
-            byte[] bytes = new byte[1024 * 13];
-            int unelength;
-            while ((unelength = pageInput.read(bytes)) != -1) {
-                unebaos.write(bytes, 0, unelength);
-            }
-            completePageRendered = unebaos.toString(StandardCharsets.UTF_8.name());//todo? ugly
+            ByteArrayOutputStream unebaos = serverResources.getViewFileCopy(methodResponse, viewBytesMap);
+            completePageRendered = unebaos.toString(StandardCharsets.UTF_8.name());
 
             if(routeMethod.isAnnotationPresent(Design.class)){
                 Design annotation = routeMethod.getAnnotation(Design.class);
                 design = annotation.value();
+                design = design.replaceFirst("\\/", "");
             }
 
             if(design != null) {
-                Path designPath = Paths.get("src", "main", "webapp");
-                String designFilePath = designPath + design;
-                InputStream designInput = new FileInputStream(designFilePath);
-
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                String designContent;
-                bytes = new byte[1024 * 3];
-                int length;
-                while ((length = designInput.read(bytes)) != -1) {
-                    baos.write(bytes, 0, length);
-                }
-                designContent = baos.toString(StandardCharsets.UTF_8.name());
+                ByteArrayOutputStream baos = serverResources.getViewFileCopy(design, viewBytesMap);
+                String designContent = baos.toString(StandardCharsets.UTF_8.name());
 
                 if(designContent == null){
                     return new RouteResponse("design not found.".getBytes(), "200 OK", "text/html");

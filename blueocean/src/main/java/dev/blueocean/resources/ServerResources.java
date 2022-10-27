@@ -1,14 +1,19 @@
 package dev.blueocean.resources;
 
+import dev.blueocean.BlueOceanException;
 import dev.blueocean.RouteEndpoint;
+import dev.blueocean.ViewConfig;
 
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ServerResources {
 
@@ -70,152 +75,90 @@ public class ServerResources {
         return Files.probeContentType(filePath);
     }
 
-//    public RouteEndpoint getRouteEndpoint(String routeVerb, String routeUri, RouteEndpointHolder routeEndpointHolder){
-//        String[] routeBreaks = routeUri.split("/");
-//        if(routeUri.equals("")){
-//            routeUri = "/";
-//            String routeKey = routeVerb.toLowerCase() + routeUri.toLowerCase();
-//            return routeEndpointHolder.getRouteEndpoints().get(routeKey);
-//        }
-//
-//        if(routeBreaks.length > 1 && routeUri.endsWith("/")){
-//            int endIndex = routeUri.indexOf("/", routeUri.length() - 1);
-//            routeUri = routeUri.substring(0, endIndex);
-//        }
-//
-//        if(routeEndpointHolder.getRouteEndpoints().containsKey(routeUri)){
-//            return routeEndpointHolder.getRouteEndpoints().get(routeUri);
-//        }
-//
-//        for (Map.Entry<String, RouteEndpoint> routeEntry : routeEndpointHolder.getRouteEndpoints().entrySet()) {
-//            RouteEndpoint routeEndpoint = routeEntry.getValue();
-//            Matcher routeEndpointMatcher = Pattern.compile(routeEndpoint.getRegexRoutePath()).matcher(routeUri);
-//            if(routeEndpointMatcher.matches() &&
-//                            routeBreaksMatchUp(routeUri, routeEndpoint) &&
-//                            routeVariablesMatchUp(routeUri, routeEndpoint) &&
-//                            routeVerb.equals(routeEndpoint.getRouteVerb().toLowerCase())){
-//                return routeEndpoint;
-//            }
-//        }
-//        return null;
-//    }
-
-    protected boolean routeBreaksMatchUp(String routeUri, RouteEndpoint routeEndpoint){
-        String[] uriBits = routeUri.split("/");
-        String[] mappingBits = routeEndpoint.getRoutePath().split("/");
-        return uriBits.length == mappingBits.length;
-    }
-
-//    protected boolean routeVariablesMatchUp(String routeUri, RouteEndpoint routeEndpoint){
-//        List<String> bits = Arrays.asList(routeUri.split("/"));
-//
-//        UrlBitFeatures urlBitFeatures = routeEndpoint.getUrlBitFeatures();
-//        List<UrlBit> urlBits = urlBitFeatures.getUrlBits();
-//
-//        Class[] typeParameters = routeEndpoint.getRouteMethod().getParameterTypes();
-//        List<String> parameterTypes = getParameterTypes(typeParameters);
-//
-//        int idx = 0;
-//        for(int q = 0; q < urlBits.size(); q++){
-//            UrlBit urlBit = urlBits.get(q);
-//            if(urlBit.isVariable()){
-//
-//                try {
-//                    String methodType = parameterTypes.get(idx);
-//                    String bit = bits.get(q);
-//                    if (!bit.equals("")) {
-//                        if (methodType.equals("java.lang.Boolean")) {
-//                            Boolean.valueOf(bit);
-//                        }
-//                        if (methodType.equals("java.lang.Integer")) {
-//                            Integer.parseInt(bit);
-//                        }
-//                        if(methodType.equals("java.lang.Long")){
-//                            Long.parseLong(bit);
-//                        }
-//                    }
-//                    idx++;
-//
-//                }catch(Exception ex){
-//                    return false;
-//                }
-//            }
-//        }
-//        return true;
-//    }
-
-//    public List<String> getParameterTypes(Class[] clsParamaters){
-//        List<String> parameterTypes = new ArrayList<>();
-//        for(Class<?> klass : clsParamaters){
-//            String type = klass.getTypeName();
-//            if(!type.contains("NetworkRequest") &&
-//                    !type.contains("NetworkResponse") &&
-//                    !type.contains("SecurityManager") &&
-//                    !type.contains("Cache")){
-//                parameterTypes.add(type);
-//            }
-//        }
-//        return parameterTypes;
-//    }
-
-//    public Object[] getRouteParameters(String requestUri, RouteEndpoint routeEndpoint, Cache cache, NetworkRequest networkRequest, NetworkResponse networkResponse, SecurityManager securityManager){
-//
-//        List<VariablePosition> endpointValues = getRouteVariablePositions(requestUri, routeEndpoint);
-//        List<Object> params = new ArrayList<>();
-//        List<String> typeNames = routeEndpoint.getTypeNames();
-//        int currentIndex = 0;//todo:
-//        for(int activeIndex = 0; activeIndex <  typeNames.size(); activeIndex++){
-//            String type = typeNames.get(activeIndex);
-//            if(type.equals("dev.blueocean.security.SecurityManager")){
-//                params.add(securityManager);
-//            }
-//            if(type.equals("dev.blueocean.model.NetworkRequest")){
-//                params.add(networkRequest);
-//            }
-//            if(type.equals("dev.blueocean.model.NetworkResponse")){
-//                params.add(networkResponse);
-//            }
-//            if(type.equals("dev.blueocean.model.Cache")){
-//                params.add(cache);
-//            }
-//            if(type.equals("java.lang.Integer")){
-//                params.add(Integer.valueOf(endpointValues.get(currentIndex).getValue()));
-//                currentIndex++;
-//            }
-//            if(type.equals("java.lang.Long")){
-//                params.add(Long.valueOf(endpointValues.get(currentIndex).getValue()));
-//                currentIndex++;
-//            }
-//            if(type.equals("java.math.BigDecimal")){
-//                params.add(new BigDecimal(endpointValues.get(currentIndex).getValue()));
-//                currentIndex++;
-//            }
-//            if(type.equals("java.lang.String")){
-//                params.add(endpointValues.get(currentIndex).getValue());
-//                currentIndex++;
-//            }
-//        }
-//
-//        return params.toArray();
-//    }
-//
-//    protected List<VariablePosition> getRouteVariablePositions(String uri, RouteEndpoint routeEndpoint){
-//        List<String> pathParts = Arrays.asList(uri.split("/"));
-//        List<String> regexParts = Arrays.asList(routeEndpoint.getRegexRoutePath().split("/"));
-//        List<VariablePosition> httpValues = new ArrayList<>();
-//
-//        for(int activeIndex = 0; activeIndex < regexParts.size(); activeIndex++){
-//            String regex = regexParts.get(activeIndex);
-//            if(regex.contains("A-Za-z0-9")){
-//                httpValues.add(new VariablePosition(activeIndex, pathParts.get(activeIndex)));
-//            }
-//        }
-//        return httpValues;
-//    }
-
     public String getRedirect(String uri){
         String[] redirectBits = uri.split(":");
         if(redirectBits.length > 1)return redirectBits[1];
         return null;
+    }
+
+    public ByteArrayOutputStream getViewFileCopy(String viewKey, ConcurrentMap<String, byte[]> viewBytesMap) {
+        if(viewBytesMap.containsKey(viewKey)){
+            byte[] fileBytes = viewBytesMap.get(viewKey);
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(fileBytes);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] bytes = new byte[1024];
+            int bytesRead;
+            try {
+                while ((bytesRead = inputStream.read(bytes, 0, bytes.length)) != -1) {
+                    outputStream.write(bytes, 0, bytesRead);
+                }
+                inputStream.close();
+                outputStream.flush();
+                outputStream.close();
+            } catch (IOException ex) {
+            }
+            return outputStream;
+        }
+        return null;
+    }
+
+    public ConcurrentMap<String, byte[]> getViewBytesMap(ViewConfig viewConfig) throws BlueOceanException, FileNotFoundException {
+        ConcurrentMap<String, byte[]> viewFilesBytesMap = new ConcurrentHashMap<>();
+
+        Path viewsPath = viewConfig.getViewsPath();
+        File viewsDirectory = new File(viewsPath.toString());
+        if(!viewsDirectory.isDirectory()){
+            throw new BlueOceanException(viewConfig.getViewsPath() + " is not a directory");
+        }
+
+        File[] viewFiles = viewsDirectory.listFiles();
+        ConcurrentMap<String, byte[]> viewFilesMap = getFileBytesMap(viewFiles, viewConfig);
+
+        Path resourcesPath = viewConfig.getResourcesPath();
+        File resourcesDirectory = new File(resourcesPath.toString());
+        if(!resourcesDirectory.isDirectory()){
+            throw new BlueOceanException(viewConfig.getResourcesPath() + " is not a directory");
+        }
+
+        File[] resourceFiles = resourcesDirectory.listFiles();
+        ConcurrentMap<String, byte[]> resourceFilesMap = getFileBytesMap(resourceFiles, viewConfig);
+
+
+        viewFilesBytesMap.putAll(viewFilesMap);
+        viewFilesBytesMap.putAll(resourceFilesMap);
+
+        return viewFilesBytesMap;
+    }
+
+    ConcurrentMap<String, byte[]> getFileBytesMap(File[] viewFiles, ViewConfig viewConfig) throws FileNotFoundException {
+        ConcurrentMap<String, byte[]> viewFilesBytesMap = new ConcurrentHashMap<>();
+        for (File viewFile : viewFiles) {
+
+            if(viewFile.isDirectory()){
+                getFileBytesMap(viewFile.listFiles(), viewConfig);
+            }
+
+            if(!viewFile.getName().endsWith(viewConfig.getViewExtension()))continue;
+            InputStream fileInputStream = new FileInputStream(viewFile);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] bytes = new byte[1024];
+            int bytesRead;
+            try {
+                while ((bytesRead = fileInputStream.read(bytes, 0, bytes.length)) != -1) {
+                    outputStream.write(bytes, 0, bytesRead);
+                }
+
+                fileInputStream.close();
+                outputStream.flush();
+                outputStream.close();
+
+                byte[] viewFileBytes = outputStream.toByteArray();
+                String viewKey = viewFile.toString().replace("src/main/webapp/", "");
+                viewFilesBytesMap.put(viewKey, viewFileBytes);
+
+            } catch (IOException ex) {
+            }
+        }
+        return viewFilesBytesMap;
     }
 }

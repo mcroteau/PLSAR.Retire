@@ -4,16 +4,16 @@ import dev.blueocean.model.*;
 import dev.blueocean.resources.*;
 import dev.blueocean.security.SecurityManager;
 import dev.blueocean.security.SecurityAccess;
+import org.h2.tools.Server;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -26,6 +26,8 @@ public class BlueOcean {
     static Logger Log = Logger.getLogger(BlueOcean.class.getName());
 
     Integer port;
+
+    ViewConfig viewConfig;
     SchemaConfig schemaConfig;
     Integer numberOfPartitions = 2;
     Integer numberOfRequestExecutors = 4;
@@ -33,8 +35,10 @@ public class BlueOcean {
     Class<?> securityAccessClass;
     List<Class<?>> viewRenderers;
 
+
     public BlueOcean(int port){
         this.port = port;
+        this.viewConfig = new ViewConfig();
         this.viewRenderers = new ArrayList<>();
     }
 
@@ -52,6 +56,9 @@ public class BlueOcean {
             AnnotationComponent routeRegistration = componentsHolder.getRouteRegistration();
             AnnotationComponent serverStartup = componentsHolder.getServerStartup();
 
+            String resourcesDirectory = viewConfig.getResourcesDirectory();
+            ConcurrentMap<String, byte[]> viewBytesMap = serverResources.getViewBytesMap(viewConfig);
+
             Log.info("Running startup routine, please wait...");
             Method startupMethod = serverStartup.getKlass().getMethod("startup");
             startupMethod.invoke(serverResources.getInstance(serverStartup.getKlass()));
@@ -65,11 +72,11 @@ public class BlueOcean {
             ServerSocket serverSocket = new ServerSocket(port);
             serverSocket.setPerformancePreferences(0, 1, 2);
             ExecutorService executors = Executors.newFixedThreadPool(numberOfPartitions);
-            executors.execute(new PartitionedExecutor(numberOfRequestExecutors, serverSocket, redirectRegistry, routeDirectorRegistry, viewRenderers));
+            executors.execute(new PartitionedExecutor(numberOfRequestExecutors, resourcesDirectory, viewBytesMap, serverSocket, redirectRegistry, routeDirectorRegistry, viewRenderers));
 
             Log.info("Ready!");
 
-        }catch(IOException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex){
+        }catch(IOException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException | BlueOceanException ex){
             ex.printStackTrace();
         }
     }
@@ -127,34 +134,47 @@ public class BlueOcean {
     }
 
 
+    public void setViewConfig(ViewConfig viewConfig) {
+        this.viewConfig = viewConfig;
+    }
+
     public static class PartitionedExecutor implements Runnable{
         String guid;
+        String resourcesDirectory;
         Integer numberOfExecutors;
         ServerSocket serverSocket;
         ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry;
         RedirectRegistry redirectRegistry;
         List<Class<?>> viewRenderers;
         ConcurrentMap<String, String> sessionRouteRegistry;
+        ConcurrentMap<String, byte[]> viewBytesMap;
 
-        public PartitionedExecutor(Integer numberOfExecutors, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry, List<Class<?>> viewRenderers) {
+        public PartitionedExecutor(Integer numberOfExecutors, String resourcesDirectory, ConcurrentMap<String, byte[]> viewBytesMap, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry, List<Class<?>> viewRenderers) {
             Random random = new Random();
+            this.viewBytesMap = viewBytesMap;
             this.numberOfExecutors = numberOfExecutors;
             this.serverSocket = serverSocket;
             this.redirectRegistry = redirectRegistry;;
             this.routeDirectorRegistry = routeDirectorRegistry;
             this.viewRenderers = viewRenderers;
             this.guid = String.valueOf(random.nextFloat());
+            this.resourcesDirectory = resourcesDirectory;
             this.sessionRouteRegistry = new ConcurrentHashMap<>();
         }
 
         @Override
         public void run() {
             ExecutorService executors = Executors.newFixedThreadPool(numberOfExecutors);
-            executors.execute(new HttpRequestIngester(executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
-        }
+            executors.execute(new NetworkRequestIngester(resourcesDirectory, viewBytesMap, executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
+         }
+
+
+
+
+
     }
 
-    public static class HttpRequestIngester implements Runnable {
+    public static class NetworkRequestIngester implements Runnable {
 
         final String IGNORE_CHROME = "/favicon.ico";
         final String BREAK = "\r\n";
@@ -165,6 +185,7 @@ public class BlueOcean {
         final Integer REQUEST_PATH = 1;
         final Integer REQUEST_VERSION = 2;
 
+        String resourcesDirectory;
         Socket socketClient;
         ExecutorService executors;
         ServerSocket serverSocket;
@@ -172,8 +193,11 @@ public class BlueOcean {
         ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry;
         RedirectRegistry redirectRegistry;
         List<Class<?>> viewRenderers;
+        ConcurrentMap<String, byte[]> viewBytesMap;
 
-        public HttpRequestIngester(ExecutorService executors, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, String> sessionRouteRegistry, ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry, List<Class<?>> viewRenderers){
+        public NetworkRequestIngester(String resourcesDirectory, ConcurrentMap<String, byte[]> viewBytesMap, ExecutorService executors, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, String> sessionRouteRegistry, ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry, List<Class<?>> viewRenderers){
+            this.resourcesDirectory = resourcesDirectory;
+            this.viewBytesMap = viewBytesMap;
             this.executors = executors;
             this.serverSocket = serverSocket;
             this.redirectRegistry = redirectRegistry;
@@ -198,7 +222,7 @@ public class BlueOcean {
                     requestInputStream.close();
                     clientOutput.flush();
                     clientOutput.close();
-                    executors.execute(new HttpRequestIngester(executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
+                    executors.execute(new NetworkRequestIngester(resourcesDirectory, viewBytesMap, executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
                     return;
                 }
 
@@ -228,7 +252,7 @@ public class BlueOcean {
                     requestInputStream.close();
                     clientOutput.flush();
                     clientOutput.close();
-                    executors.execute(new HttpRequestIngester(executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
+                    executors.execute(new NetworkRequestIngester(resourcesDirectory, viewBytesMap, executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
                     return;
                 }
 
@@ -283,7 +307,7 @@ public class BlueOcean {
                 RouteAttributes routeAttributes = routeNegotiator.getRouteAttributes();
                 networkRequest.setRouteAttributes(routeAttributes);
                 SecurityManager securityManager = routeAttributes.getSecurityManager();
-                RouteResponse routeResponse = routeNegotiator.negotiate(cache, networkRequest, networkResponse, securityManager, viewRenderers);
+                RouteResponse routeResponse = routeNegotiator.negotiate(resourcesDirectory, cache, networkRequest, networkResponse, securityManager, viewRenderers, viewBytesMap);
 
                 sessionGuid = networkRequest.getSession(true).getGuid();
                 if(!routeNegotiator.getRouteAttributes().getSessions().containsKey(sessionGuid)){
@@ -341,7 +365,7 @@ public class BlueOcean {
                 clientOutput.close();
                 socketClient.close();
 
-                executors.execute(new HttpRequestIngester(executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
+                executors.execute(new NetworkRequestIngester(resourcesDirectory, viewBytesMap, executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
 
             }catch(IOException ex){
                 ex.printStackTrace();
