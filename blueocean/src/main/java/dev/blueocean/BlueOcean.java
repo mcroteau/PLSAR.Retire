@@ -1,11 +1,10 @@
 package dev.blueocean;
 
-import dev.blueocean.environments.Environments;
 import dev.blueocean.model.*;
+import dev.blueocean.renderers.Renderers;
 import dev.blueocean.resources.*;
 import dev.blueocean.security.SecurityManager;
 import dev.blueocean.security.SecurityAccess;
-import org.h2.tools.Server;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -13,8 +12,6 @@ import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -27,6 +24,7 @@ public class BlueOcean {
     static Logger Log = Logger.getLogger(BlueOcean.class.getName());
 
     Integer port;
+    String RENDERER;
 
     ViewConfig viewConfig;
     SchemaConfig schemaConfig;
@@ -36,10 +34,10 @@ public class BlueOcean {
     Class<?> securityAccessClass;
     List<Class<?>> viewRenderers;
 
-    Environment environment;
 
     public BlueOcean(int port){
         this.port = port;
+        this.RENDERER = Renderers.PAGE_CACHE;
         this.viewConfig = new ViewConfig();
         this.viewRenderers = new ArrayList<>();
     }
@@ -74,7 +72,7 @@ public class BlueOcean {
             ServerSocket serverSocket = new ServerSocket(port);
             serverSocket.setPerformancePreferences(0, 1, 2);
             ExecutorService executors = Executors.newFixedThreadPool(numberOfPartitions);
-            executors.execute(new PartitionedExecutor(numberOfRequestExecutors, resourcesDirectory, viewBytesMap, serverSocket, redirectRegistry, routeDirectorRegistry, viewRenderers));
+            executors.execute(new PartitionedExecutor(RENDERER, numberOfRequestExecutors, resourcesDirectory, viewBytesMap, serverSocket, redirectRegistry, routeDirectorRegistry, viewRenderers));
 
             Log.info("Ready!");
 
@@ -135,17 +133,9 @@ public class BlueOcean {
         return routeNegotiators;
     }
 
-
-    public void setViewConfig(ViewConfig viewConfig) {
-        this.viewConfig = viewConfig;
-    }
-
-    public void setEnvironment(String environment) {
-        this.environment = new Environment(environment);
-    }
-
     public static class PartitionedExecutor implements Runnable{
         String guid;
+        String RENDERER;
         String resourcesDirectory;
         Integer numberOfExecutors;
         ServerSocket serverSocket;
@@ -155,8 +145,9 @@ public class BlueOcean {
         ConcurrentMap<String, String> sessionRouteRegistry;
         ConcurrentMap<String, byte[]> viewBytesMap;
 
-        public PartitionedExecutor(Integer numberOfExecutors, String resourcesDirectory, ConcurrentMap<String, byte[]> viewBytesMap, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry, List<Class<?>> viewRenderers) {
+        public PartitionedExecutor(String RENDERER, Integer numberOfExecutors, String resourcesDirectory, ConcurrentMap<String, byte[]> viewBytesMap, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry, List<Class<?>> viewRenderers) {
             Random random = new Random();
+            this.RENDERER = RENDERER;
             this.viewBytesMap = viewBytesMap;
             this.numberOfExecutors = numberOfExecutors;
             this.serverSocket = serverSocket;
@@ -171,13 +162,8 @@ public class BlueOcean {
         @Override
         public void run() {
             ExecutorService executors = Executors.newFixedThreadPool(numberOfExecutors);
-            executors.execute(new NetworkRequestIngester(resourcesDirectory, viewBytesMap, executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
+            executors.execute(new NetworkRequestIngester(RENDERER, resourcesDirectory, viewBytesMap, executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
          }
-
-
-
-
-
     }
 
     public static class NetworkRequestIngester implements Runnable {
@@ -191,6 +177,8 @@ public class BlueOcean {
         final Integer REQUEST_PATH = 1;
         final Integer REQUEST_VERSION = 2;
 
+        String RENDERER;
+
         String resourcesDirectory;
         Socket socketClient;
         ExecutorService executors;
@@ -201,7 +189,8 @@ public class BlueOcean {
         List<Class<?>> viewRenderers;
         ConcurrentMap<String, byte[]> viewBytesMap;
 
-        public NetworkRequestIngester(String resourcesDirectory, ConcurrentMap<String, byte[]> viewBytesMap, ExecutorService executors, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, String> sessionRouteRegistry, ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry, List<Class<?>> viewRenderers){
+        public NetworkRequestIngester(String RENDERER, String resourcesDirectory, ConcurrentMap<String, byte[]> viewBytesMap, ExecutorService executors, ServerSocket serverSocket, RedirectRegistry redirectRegistry, ConcurrentMap<String, String> sessionRouteRegistry, ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry, List<Class<?>> viewRenderers){
+            this.RENDERER = RENDERER;
             this.resourcesDirectory = resourcesDirectory;
             this.viewBytesMap = viewBytesMap;
             this.executors = executors;
@@ -219,7 +208,7 @@ public class BlueOcean {
                 ServerResources serverResources = new ServerResources();
 
                 socketClient = serverSocket.accept();
-                Thread.sleep(139);
+                Thread.sleep(19);
                 InputStream requestInputStream = socketClient.getInputStream();
 
                 OutputStream clientOutput = socketClient.getOutputStream();
@@ -228,7 +217,7 @@ public class BlueOcean {
                     requestInputStream.close();
                     clientOutput.flush();
                     clientOutput.close();
-                    executors.execute(new NetworkRequestIngester(resourcesDirectory, viewBytesMap, executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
+                    executors.execute(new NetworkRequestIngester(RENDERER, resourcesDirectory, viewBytesMap, executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
                     return;
                 }
 
@@ -258,7 +247,7 @@ public class BlueOcean {
                     requestInputStream.close();
                     clientOutput.flush();
                     clientOutput.close();
-                    executors.execute(new NetworkRequestIngester(resourcesDirectory, viewBytesMap, executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
+                    executors.execute(new NetworkRequestIngester(RENDERER, resourcesDirectory, viewBytesMap, executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
                     return;
                 }
 
@@ -313,7 +302,7 @@ public class BlueOcean {
                 RouteAttributes routeAttributes = routeNegotiator.getRouteAttributes();
                 networkRequest.setRouteAttributes(routeAttributes);
                 SecurityManager securityManager = routeAttributes.getSecurityManager();
-                RouteResponse routeResponse = routeNegotiator.negotiate(resourcesDirectory, cache, networkRequest, networkResponse, securityManager, viewRenderers, viewBytesMap);
+                RouteResponse routeResponse = routeNegotiator.negotiate(RENDERER, resourcesDirectory, cache, networkRequest, networkResponse, securityManager, viewRenderers, viewBytesMap);
 
                 sessionGuid = networkRequest.getSession(true).getGuid();
                 if(!routeNegotiator.getRouteAttributes().getSessions().containsKey(sessionGuid)){
@@ -371,7 +360,7 @@ public class BlueOcean {
                 clientOutput.close();
                 socketClient.close();
 
-                executors.execute(new NetworkRequestIngester(resourcesDirectory, viewBytesMap, executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
+                executors.execute(new NetworkRequestIngester(RENDERER, resourcesDirectory, viewBytesMap, executors, serverSocket, redirectRegistry, sessionRouteRegistry, routeDirectorRegistry, viewRenderers));
 
             }catch(IOException ex){
                 ex.printStackTrace();
@@ -407,6 +396,15 @@ public class BlueOcean {
 
     }
 
+
+    public void setRenderer(String renderer) {
+        this.RENDERER = renderer;
+    }
+
+    public void setViewConfig(ViewConfig viewConfig) {
+        this.viewConfig = viewConfig;
+    }
+
     public void setSecurityAccess(Class<?> securityAccess) {
         this.securityAccessClass = securityAccess;
     }
@@ -414,7 +412,6 @@ public class BlueOcean {
     public void setSchemaConfig(SchemaConfig schemaConfig) {
         this.schemaConfig = schemaConfig;
     }
-
 
     public void setNumberOfPartitions(int numberOfPartitions){
         this.numberOfPartitions = numberOfPartitions;

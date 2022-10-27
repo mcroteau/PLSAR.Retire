@@ -1,7 +1,10 @@
 package io.informant;
 
+import com.google.gson.Gson;
 import dev.blueocean.annotations.Bind;
 import dev.blueocean.annotations.Controller;
+import dev.blueocean.annotations.JsonOutput;
+import dev.blueocean.annotations.Text;
 import dev.blueocean.annotations.http.Get;
 import dev.blueocean.annotations.http.Post;
 import dev.blueocean.model.Cache;
@@ -11,9 +14,10 @@ import dev.blueocean.security.SecurityManager;
 import io.informant.model.User;
 import io.informant.repo.UserRepo;
 
+import java.util.Arrays;
+
 @Controller
 public class IdentityController {
-
 
     public IdentityController(){
         this.informant = new Informant();
@@ -21,8 +25,17 @@ public class IdentityController {
 
     Informant informant;
 
+    Gson gson = new Gson();
+
     @Bind
     UserRepo userRepo;
+
+    @JsonOutput
+    @Get("/q")
+    public String q(){
+        String[] array = new String[]{"a, b, c"};
+        return gson.toJson(Arrays.asList(array));
+    }
 
     @Get("/signin")
     public String signin(){

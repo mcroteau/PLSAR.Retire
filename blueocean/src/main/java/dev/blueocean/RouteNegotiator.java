@@ -1,12 +1,12 @@
 package dev.blueocean;
 
-import dev.blueocean.annotations.Design;
-import dev.blueocean.annotations.Bind;
-import dev.blueocean.annotations.Meta;
+import dev.blueocean.annotations.*;
+import dev.blueocean.environments.Environments;
 import dev.blueocean.model.Cache;
 import dev.blueocean.model.NetworkRequest;
 import dev.blueocean.model.NetworkResponse;
 import dev.blueocean.model.RouteAttribute;
+import dev.blueocean.renderers.Renderers;
 import dev.blueocean.resources.ComponentsHolder;
 import dev.blueocean.resources.MimeResolver;
 import dev.blueocean.security.SecurityManager;
@@ -30,7 +30,7 @@ public class RouteNegotiator {
     RouteAttributes routeAttributes;
     ComponentsHolder componentsHolder;
 
-    public RouteResponse negotiate(String resourcesDirectory, Cache cache, NetworkRequest networkRequest, NetworkResponse networkResponse, SecurityManager securityManager, List<Class<?>> viewRenderers, ConcurrentMap<String, byte[]> viewBytesMap){
+    public RouteResponse negotiate(String RENDERER, String resourcesDirectory, Cache cache, NetworkRequest networkRequest, NetworkResponse networkResponse, SecurityManager securityManager, List<Class<?>> viewRenderers, ConcurrentMap<String, byte[]> viewBytesMap){
 
         String completePageRendered = "";
         String errorMessage = "";
@@ -46,12 +46,43 @@ public class RouteNegotiator {
             String routeVerb = networkRequest.getVerb();
 
             if(routeUriPath.startsWith("/" + resourcesDirectory + "/")) {
+
                 MimeResolver mimeGetter = new MimeResolver(routeUriPath);
-                ByteArrayOutputStream outputStream = serverResources.getViewFileCopy(routeUriPath, viewBytesMap);
-                if(outputStream == null){
-                    return new RouteResponse("404".getBytes(), "404", "text/html");
+
+                if (RENDERER.equals(Renderers.PAGE_CACHE)) {
+
+                    ByteArrayOutputStream outputStream = serverResources.getViewFileCopy(routeUriPath, viewBytesMap);
+                    if (outputStream == null) {
+                        return new RouteResponse("404".getBytes(), "404", "text/html");
+                    }
+                    return new RouteResponse(outputStream.toByteArray(), "200 OK", mimeGetter.resolve());
+
+                }else{
+
+                    String assetsPath = Paths.get("src", "main", "webapp").toString();
+                    String filePath = assetsPath.concat(routeUriPath);
+                    File staticResourcefile = new File(filePath);
+                    InputStream fileInputStream = new FileInputStream(staticResourcefile);
+
+                    if (fileInputStream != null && routeVerb.equals("get")) {
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                        byte[] bytes = new byte[(int) staticResourcefile.length()];
+                        int bytesRead;
+                        try {
+                            while ((bytesRead = fileInputStream.read(bytes, 0, bytes.length)) != -1) {
+                                outputStream.write(bytes, 0, bytesRead);
+                            }
+                            fileInputStream.close();
+                            outputStream.flush();
+                            outputStream.close();
+
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        return new RouteResponse(outputStream.toByteArray(), "200 OK", mimeGetter.resolve());
+                    }
                 }
-                return new RouteResponse(outputStream.toByteArray(), "200 OK", mimeGetter.resolve());
+
             }
 
             RouteEndpoint routeEndpoint = null;
@@ -163,21 +194,77 @@ public class RouteNegotiator {
                 return new RouteResponse("307".getBytes(), "307", "text/html");
             }
 
-            ByteArrayOutputStream unebaos = serverResources.getViewFileCopy(methodResponse, viewBytesMap);
-            if(unebaos == null){
-                return new RouteResponse("404".getBytes(), "404", "text/html");
-            }
-            completePageRendered = unebaos.toString(StandardCharsets.UTF_8.name());
 
-            String designFile = null;
+            if(routeMethod.isAnnotationPresent(JsonOutput.class)){
+                return new RouteResponse(methodResponse.getBytes(), "200 OK", "application/json");
+            }
+
+            if(routeMethod.isAnnotationPresent(Text.class)){
+                return new RouteResponse(methodResponse.getBytes(), "200 OK", "text/html");
+            }
+
+            if(RENDERER.equals(Renderers.PAGE_CACHE)) {
+
+                ByteArrayOutputStream unebaos = serverResources.getViewFileCopy(methodResponse, viewBytesMap);
+                if(unebaos == null){
+                    return new RouteResponse("404".getBytes(), "404", "text/html");
+                }
+                completePageRendered = unebaos.toString(StandardCharsets.UTF_8.name());
+
+            }else{
+
+                Path webPath = Paths.get("src", "main", "webapp");
+                if (methodResponse.startsWith("/")) {
+                    methodResponse = methodResponse.replaceFirst("/", "");
+                }
+
+                String htmlPath = webPath.toFile().getAbsolutePath().concat(File.separator + methodResponse);
+                File viewFile = new File(htmlPath);
+                ByteArrayOutputStream unebaos = new ByteArrayOutputStream();
+
+
+                InputStream pageInput = new FileInputStream(viewFile);
+                byte[] bytes = new byte[(int) viewFile.length()];
+                int pageBytesLength;
+                while ((pageBytesLength = pageInput.read(bytes)) != -1) {
+                    unebaos.write(bytes, 0, pageBytesLength);
+                }
+                completePageRendered = unebaos.toString(StandardCharsets.UTF_8.name());//todo? ugly
+            }
+
+
+
+
+
+            String designUri = null;
             if(routeMethod.isAnnotationPresent(Design.class)){
                 Design annotation = routeMethod.getAnnotation(Design.class);
-                designFile = annotation.value();
+                designUri = annotation.value();
             }
 
-            if(designFile != null) {
-                ByteArrayOutputStream baos = serverResources.getViewFileCopy(designFile, viewBytesMap);
-                String designContent = baos.toString(StandardCharsets.UTF_8.name());
+            if(designUri != null) {
+                String designContent;
+                if(RENDERER.equals(Renderers.PAGE_CACHE)) {
+
+                    ByteArrayOutputStream baos = serverResources.getViewFileCopy(designUri, viewBytesMap);
+                    designContent = baos.toString(StandardCharsets.UTF_8.name());
+
+                }else{
+
+                    Path designPath = Paths.get("src", "main", "webapp", designUri);
+                    File designFile = new File(designPath.toString());
+                    InputStream designInput = new FileInputStream(designFile);
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+                    byte[] bytes = new byte[(int) designFile.length()];
+                    int length;
+                    while ((length = designInput.read(bytes)) != -1) {
+                        baos.write(bytes, 0, length);
+                    }
+                    designContent = baos.toString(StandardCharsets.UTF_8.name());
+
+                }
 
                 if(designContent == null){
                     return new RouteResponse("design not found.".getBytes(), "200 OK", "text/html");

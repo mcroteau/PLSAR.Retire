@@ -46,7 +46,7 @@ public class Informant {
         blueOcean.addViewRenderer(UserRenderer.class);
 
         blueOcean.setSecurityAccess(AuthSecurityAccess.class);
-        blueOcean.setPageRender(Renderers.FLY);
+        blueOcean.setRenderer(Renderers.PAGE_RELOAD);
         blueOcean.start();
     }
 
