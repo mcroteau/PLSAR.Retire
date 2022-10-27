@@ -5,6 +5,7 @@ import dev.blueocean.renderers.Renderers;
 import dev.blueocean.resources.*;
 import dev.blueocean.security.SecurityManager;
 import dev.blueocean.security.SecurityAccess;
+import lu.ewelohd.jconsoleimage.core.ConsoleImage;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -12,6 +13,8 @@ import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -75,11 +78,12 @@ public class BlueOcean {
             executors.execute(new PartitionedExecutor(RENDERER, numberOfRequestExecutors, resourcesDirectory, viewBytesMap, serverSocket, redirectRegistry, routeDirectorRegistry, viewRenderers));
 
             Log.info("Ready!");
-
+            
         }catch(IOException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException | BlueOceanException ex){
             ex.printStackTrace();
         }
     }
+
 
     ConcurrentMap<String, RouteNegotiator> registerRouteDirectors(List<RouteNegotiator> routeNegotiators) {
         ConcurrentMap<String, RouteNegotiator> routeDirectorRegistry = new ConcurrentHashMap<>(0, 3, 63010);

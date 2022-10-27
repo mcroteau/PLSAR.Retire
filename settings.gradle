@@ -1,4 +1,5 @@
 rootProject.name = "BlueOcean"
 include "blueocean"
+include "examples:ratatatat"
 include "examples:informant"
 

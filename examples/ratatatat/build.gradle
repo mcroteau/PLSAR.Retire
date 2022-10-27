@@ -1,0 +1,20 @@
+plugins {
+    id 'application'
+}
+
+application{
+    mainClass.set("Main")
+}
+
+group 'dev.blueocean'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.loadtest4j:loadtest4j:0.19.0'
+    implementation 'org.loadtest4j.drivers:loadtest4j-gatling:0.10.0'
+}
+
