@@ -86,7 +86,7 @@ public class ServerResources {
             byte[] fileBytes = viewBytesMap.get(viewKey);
             ByteArrayInputStream inputStream = new ByteArrayInputStream(fileBytes);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            byte[] bytes = new byte[1024];
+            byte[] bytes = new byte[fileBytes.length];
             int bytesRead;
             try {
                 while ((bytesRead = inputStream.read(bytes, 0, bytes.length)) != -1) {
@@ -96,6 +96,7 @@ public class ServerResources {
                 outputStream.flush();
                 outputStream.close();
             } catch (IOException ex) {
+                ex.printStackTrace();
             }
             return outputStream;
         }
@@ -105,40 +106,36 @@ public class ServerResources {
     public ConcurrentMap<String, byte[]> getViewBytesMap(ViewConfig viewConfig) throws BlueOceanException, FileNotFoundException {
         ConcurrentMap<String, byte[]> viewFilesBytesMap = new ConcurrentHashMap<>();
 
-        Path viewsPath = viewConfig.getViewsPath();
+        Path viewsPath = Paths.get("src", "main", "webapp", viewConfig.getViewsPath());
         File viewsDirectory = new File(viewsPath.toString());
         if(!viewsDirectory.isDirectory()){
             throw new BlueOceanException(viewConfig.getViewsPath() + " is not a directory");
         }
 
         File[] viewFiles = viewsDirectory.listFiles();
-        ConcurrentMap<String, byte[]> viewFilesMap = getFileBytesMap(viewFiles, viewConfig);
+        getFileBytesMap(viewFiles, viewFilesBytesMap);
 
-        Path resourcesPath = viewConfig.getResourcesPath();
+        Path resourcesPath = Paths.get("src", "main", "webapp", viewConfig.getViewsPath(), viewConfig.getResourcesPath());
         File resourcesDirectory = new File(resourcesPath.toString());
         if(!resourcesDirectory.isDirectory()){
             throw new BlueOceanException(viewConfig.getResourcesPath() + " is not a directory");
         }
 
         File[] resourceFiles = resourcesDirectory.listFiles();
-        ConcurrentMap<String, byte[]> resourceFilesMap = getFileBytesMap(resourceFiles, viewConfig);
-
-
-        viewFilesBytesMap.putAll(viewFilesMap);
-        viewFilesBytesMap.putAll(resourceFilesMap);
+        getFileBytesMap(resourceFiles, viewFilesBytesMap);
 
         return viewFilesBytesMap;
     }
 
-    ConcurrentMap<String, byte[]> getFileBytesMap(File[] viewFiles, ViewConfig viewConfig) throws FileNotFoundException {
-        ConcurrentMap<String, byte[]> viewFilesBytesMap = new ConcurrentHashMap<>();
+    ConcurrentMap<String, byte[]> getFileBytesMap(File[] viewFiles, ConcurrentMap<String, byte[]> viewFilesBytesMap) throws FileNotFoundException {
         for (File viewFile : viewFiles) {
 
             if(viewFile.isDirectory()){
-                getFileBytesMap(viewFile.listFiles(), viewConfig);
+                File[] directoryFiles = viewFile.listFiles();
+                getFileBytesMap(directoryFiles, viewFilesBytesMap);
+                continue;
             }
 
-            if(!viewFile.getName().endsWith(viewConfig.getViewExtension()))continue;
             InputStream fileInputStream = new FileInputStream(viewFile);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             byte[] bytes = new byte[1024];
@@ -153,10 +150,11 @@ public class ServerResources {
                 outputStream.close();
 
                 byte[] viewFileBytes = outputStream.toByteArray();
-                String viewKey = viewFile.toString().replace("src/main/webapp/", "");
+                String viewKey = viewFile.toString().replace("src" + File.separator + "main" + File.separator + "webapp", "");
                 viewFilesBytesMap.put(viewKey, viewFileBytes);
 
             } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
         return viewFilesBytesMap;

@@ -56,7 +56,7 @@ public class BlueOcean {
             AnnotationComponent routeRegistration = componentsHolder.getRouteRegistration();
             AnnotationComponent serverStartup = componentsHolder.getServerStartup();
 
-            String resourcesDirectory = viewConfig.getResourcesDirectory();
+            String resourcesDirectory = viewConfig.getResourcesPath();
             ConcurrentMap<String, byte[]> viewBytesMap = serverResources.getViewBytesMap(viewConfig);
 
             Log.info("Running startup routine, please wait...");

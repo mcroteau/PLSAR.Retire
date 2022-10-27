@@ -46,30 +46,12 @@ public class RouteNegotiator {
             String routeVerb = networkRequest.getVerb();
 
             if(routeUriPath.startsWith("/" + resourcesDirectory + "/")) {
-                String assetsPath = Paths.get("src", "main", "webapp").toString();
-                String filePath = assetsPath.concat(routeUriPath);
-                File staticResourcefile = new File(filePath);
-                InputStream fileInputStream = new FileInputStream(staticResourcefile);
-
-                if (fileInputStream != null && routeVerb.equals("get")) {
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                    byte[] bytes = new byte[(int) staticResourcefile.length()];
-                    MimeResolver mimeGetter = new MimeResolver(filePath);
-                    int bytesRead;
-                    try {
-                        while ((bytesRead = fileInputStream.read(bytes, 0, bytes.length)) != -1) {
-                            outputStream.write(bytes, 0, bytesRead);
-                        }
-
-                        fileInputStream.close();
-                        outputStream.flush();
-                        outputStream.close();
-
-                    } catch (IOException ex) {
-                        //todo:broken pipe issue on second request and subsequent requests on audio.src.
-                    }
-                    return new RouteResponse(outputStream.toByteArray(), "200 OK", mimeGetter.resolve());
+                MimeResolver mimeGetter = new MimeResolver(routeUriPath);
+                ByteArrayOutputStream outputStream = serverResources.getViewFileCopy(routeUriPath, viewBytesMap);
+                if(outputStream == null){
+                    return new RouteResponse("404".getBytes(), "404", "text/html");
                 }
+                return new RouteResponse(outputStream.toByteArray(), "200 OK", mimeGetter.resolve());
             }
 
             RouteEndpoint routeEndpoint = null;
@@ -111,7 +93,7 @@ public class RouteNegotiator {
             List<Object> routeMethodAttributes = getRouteMethodAttributes(routeUriPath, cache, networkRequest, networkResponse, securityManager, routeEndpoint);
             Method routeMethod = routeEndpoint.getRouteMethod();
 
-            String design = null, title = null, keywords = null, description = null;
+            String title = null, keywords = null, description = null;
             if(routeMethod.isAnnotationPresent(Meta.class)){
                 Meta metaAnnotation = routeMethod.getAnnotation(Meta.class);
                 title = metaAnnotation.title();
@@ -181,22 +163,20 @@ public class RouteNegotiator {
                 return new RouteResponse("307".getBytes(), "307", "text/html");
             }
 
-            Path webPath = Paths.get("src", "main", "webapp");
-            if(methodResponse.startsWith("/")){
-                methodResponse = methodResponse.replaceFirst("/", "");
-            }
-
             ByteArrayOutputStream unebaos = serverResources.getViewFileCopy(methodResponse, viewBytesMap);
+            if(unebaos == null){
+                return new RouteResponse("404".getBytes(), "404", "text/html");
+            }
             completePageRendered = unebaos.toString(StandardCharsets.UTF_8.name());
 
+            String designFile = null;
             if(routeMethod.isAnnotationPresent(Design.class)){
                 Design annotation = routeMethod.getAnnotation(Design.class);
-                design = annotation.value();
-                design = design.replaceFirst("\\/", "");
+                designFile = annotation.value();
             }
 
-            if(design != null) {
-                ByteArrayOutputStream baos = serverResources.getViewFileCopy(design, viewBytesMap);
+            if(designFile != null) {
+                ByteArrayOutputStream baos = serverResources.getViewFileCopy(designFile, viewBytesMap);
                 String designContent = baos.toString(StandardCharsets.UTF_8.name());
 
                 if(designContent == null){
@@ -249,9 +229,6 @@ public class RouteNegotiator {
             errorMessage = "<p style=\"border:solid 1px #ff0000; color:#ff0000;\">" + ex.getMessage() + "</p>";
             ex.printStackTrace();
         } catch (UnsupportedEncodingException ex) {
-            errorMessage = "<p style=\"border:solid 1px #ff0000; color:#ff0000;\">" + ex.getMessage() + "</p>";
-            ex.printStackTrace();
-        } catch (FileNotFoundException ex) {
             errorMessage = "<p style=\"border:solid 1px #ff0000; color:#ff0000;\">" + ex.getMessage() + "</p>";
             ex.printStackTrace();
         } catch (IOException ex) {

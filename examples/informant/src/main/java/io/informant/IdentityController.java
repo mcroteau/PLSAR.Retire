@@ -26,12 +26,12 @@ public class IdentityController {
 
     @Get("/signin")
     public String signin(){
-        return "signin.jsp";
+        return "/signin.jsp";
     }
 
     @Get("/signup")
     public String signup(){
-        return "signup.jsp";
+        return "/signup.jsp";
     }
 
     @Get("/signout")

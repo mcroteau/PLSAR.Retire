@@ -40,8 +40,7 @@ public class Informant {
         blueOcean.setSchemaConfig(schemaConfig);
 
         ViewConfig viewConfig = new ViewConfig();
-        viewConfig.setViewsPath(Paths.get("src", "main", "webapp"));
-        viewConfig.setResourcesPath(Paths.get("src", "main", "webapp", "resources"));
+        viewConfig.setResourcesPath("resources");
         viewConfig.setViewExtension(".jsp");
 
         blueOcean.setViewConfig(viewConfig);

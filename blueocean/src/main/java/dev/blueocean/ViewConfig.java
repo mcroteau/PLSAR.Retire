@@ -1,34 +1,34 @@
 package dev.blueocean;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class ViewConfig {
 
 
     public ViewConfig(){
+        this.viewsPath = "";
+        this.resourcesPath = "resources";
         this.viewExtension = ".jsp";
-        this.resourcesPath = Paths.get("src", "main", "webapp", "resources");
-        this.viewsPath = Paths.get("src", "main", "webapp");
     }
 
-    Path viewsPath;
-    Path resourcesPath;
+    String viewsPath;
+    String resourcesPath;
     String viewExtension;
 
-    public Path getViewsPath() {
+
+    public String getViewsPath() {
         return viewsPath;
     }
 
-    public void setViewsPath(Path viewsPath) {
+
+    public void setViewsPath(String viewsPath) {
         this.viewsPath = viewsPath;
     }
 
-    public Path getResourcesPath() {
+    public String getResourcesPath() {
         return resourcesPath;
     }
 
-    public void setResourcesPath(Path resourcesPath) {
+    public void setResourcesPath(String resourcesPath) {
         this.resourcesPath = resourcesPath;
     }
 
