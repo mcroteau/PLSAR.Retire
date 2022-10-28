@@ -1,12 +1,11 @@
 package dev.blueocean;
 
 import dev.blueocean.annotations.*;
-import dev.blueocean.environments.Environments;
 import dev.blueocean.model.Cache;
 import dev.blueocean.model.NetworkRequest;
 import dev.blueocean.model.NetworkResponse;
 import dev.blueocean.model.RouteAttribute;
-import dev.blueocean.renderers.Renderers;
+import dev.blueocean.schemes.RenderingScheme;
 import dev.blueocean.resources.ComponentsHolder;
 import dev.blueocean.resources.MimeResolver;
 import dev.blueocean.security.SecurityManager;
@@ -49,7 +48,7 @@ public class RouteNegotiator {
 
                 MimeResolver mimeGetter = new MimeResolver(routeUriPath);
 
-                if (RENDERER.equals(Renderers.PAGE_CACHE)) {
+                if (RENDERER.equals(RenderingScheme.PAGE_CACHE)) {
 
                     ByteArrayOutputStream outputStream = serverResources.getViewFileCopy(routeUriPath, viewBytesMap);
                     if (outputStream == null) {
@@ -203,7 +202,7 @@ public class RouteNegotiator {
                 return new RouteResponse(methodResponse.getBytes(), "200 OK", "text/html");
             }
 
-            if(RENDERER.equals(Renderers.PAGE_CACHE)) {
+            if(RENDERER.equals(RenderingScheme.PAGE_CACHE)) {
 
                 ByteArrayOutputStream unebaos = serverResources.getViewFileCopy(methodResponse, viewBytesMap);
                 if(unebaos == null){
@@ -244,7 +243,7 @@ public class RouteNegotiator {
 
             if(designUri != null) {
                 String designContent;
-                if(RENDERER.equals(Renderers.PAGE_CACHE)) {
+                if(RENDERER.equals(RenderingScheme.PAGE_CACHE)) {
 
                     ByteArrayOutputStream baos = serverResources.getViewFileCopy(designUri, viewBytesMap);
                     designContent = baos.toString(StandardCharsets.UTF_8.name());

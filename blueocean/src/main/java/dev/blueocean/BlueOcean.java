@@ -1,11 +1,10 @@
 package dev.blueocean;
 
 import dev.blueocean.model.*;
-import dev.blueocean.renderers.Renderers;
+import dev.blueocean.schemes.RenderingScheme;
 import dev.blueocean.resources.*;
 import dev.blueocean.security.SecurityManager;
 import dev.blueocean.security.SecurityAccess;
-import lu.ewelohd.jconsoleimage.core.ConsoleImage;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -13,8 +12,6 @@ import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -27,7 +24,7 @@ public class BlueOcean {
     static Logger Log = Logger.getLogger(BlueOcean.class.getName());
 
     Integer port;
-    String RENDERER;
+    String RENDERING_SCHEME;
 
     ViewConfig viewConfig;
     SchemaConfig schemaConfig;
@@ -40,9 +37,9 @@ public class BlueOcean {
 
     public BlueOcean(int port){
         this.port = port;
-        this.RENDERER = Renderers.PAGE_CACHE;
         this.viewConfig = new ViewConfig();
         this.viewRenderers = new ArrayList<>();
+        this.RENDERING_SCHEME = RenderingScheme.CACHE_REQUESTS;
     }
 
     public void start(){
@@ -75,10 +72,10 @@ public class BlueOcean {
             ServerSocket serverSocket = new ServerSocket(port);
             serverSocket.setPerformancePreferences(0, 1, 2);
             ExecutorService executors = Executors.newFixedThreadPool(numberOfPartitions);
-            executors.execute(new PartitionedExecutor(RENDERER, numberOfRequestExecutors, resourcesDirectory, viewBytesMap, serverSocket, redirectRegistry, routeDirectorRegistry, viewRenderers));
+            executors.execute(new PartitionedExecutor(RENDERING_SCHEME, numberOfRequestExecutors, resourcesDirectory, viewBytesMap, serverSocket, redirectRegistry, routeDirectorRegistry, viewRenderers));
 
             Log.info("Ready!");
-            
+
         }catch(IOException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException | BlueOceanException ex){
             ex.printStackTrace();
         }
@@ -136,6 +133,7 @@ public class BlueOcean {
         }
         return routeNegotiators;
     }
+
 
     public static class PartitionedExecutor implements Runnable{
         String guid;
@@ -401,8 +399,8 @@ public class BlueOcean {
     }
 
 
-    public void setRenderer(String renderer) {
-        this.RENDERER = renderer;
+    public void setPageRenderingScheme(String RENDERING_SCHEME) {
+        this.RENDERING_SCHEME = RENDERING_SCHEME;
     }
 
     public void setViewConfig(ViewConfig viewConfig) {

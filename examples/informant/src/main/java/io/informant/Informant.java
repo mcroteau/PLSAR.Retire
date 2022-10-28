@@ -3,7 +3,7 @@ package io.informant;
 import dev.blueocean.*;
 import dev.blueocean.drivers.Drivers;
 import dev.blueocean.environments.Environments;
-import dev.blueocean.renderers.Renderers;
+import dev.blueocean.schemes.RenderingScheme;
 import dev.blueocean.security.renderer.AuthenticatedRenderer;
 import dev.blueocean.security.renderer.GuestRenderer;
 import dev.blueocean.security.renderer.UserRenderer;
@@ -46,7 +46,7 @@ public class Informant {
         blueOcean.addViewRenderer(UserRenderer.class);
 
         blueOcean.setSecurityAccess(AuthSecurityAccess.class);
-        blueOcean.setRenderer(Renderers.PAGE_CACHE);
+        blueOcean.setPageRenderingScheme(RenderingScheme.PAGE_CACHE);
         blueOcean.start();
     }
 
