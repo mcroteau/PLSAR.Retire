@@ -3,7 +3,7 @@ package dev.blueocean.model;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Cache {
+public class PageCache {
     Map<String, Object> cache;
 
     public void set(String key, Object value){
@@ -21,7 +21,7 @@ public class Cache {
     public void setCache(Map<String, Object> cache) {
         this.cache = cache;
     }
-    public Cache(){
+    public PageCache(){
         this.cache = new HashMap<>();
     }
 }

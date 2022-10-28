@@ -4,7 +4,7 @@ import dev.blueocean.extras.Actor;
 import dev.blueocean.extras.Person;
 import dev.blueocean.extras.Pet;
 import dev.blueocean.extras.Todo;
-import dev.blueocean.model.Cache;
+import dev.blueocean.model.PageCache;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.ArrayList;
@@ -13,9 +13,9 @@ import java.util.List;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class BaseTest {
 
-    public Cache create() {
+    public PageCache create() {
 
-        Cache cache = new Cache();
+        PageCache pageCache = new PageCache();
 
         List<Todo> todos = new ArrayList<>();
 
@@ -45,19 +45,19 @@ abstract class BaseTest {
         Actor burgandy = getBlankPet();
         Actor iceman = getNilPet();
 
-        cache.set("not", null);
-        cache.set("blank", "");
-        cache.set("message", "Strain.");
-        cache.set("nil", "");
-        cache.set("tom", topgun);
-        cache.set("brad", blackjoe);
-        cache.set("will", burgandy);
-        cache.set("val", iceman);
-        cache.set("todos", todos);
-        cache.set("true", true);
-        cache.set("condition", true);
+        pageCache.set("not", null);
+        pageCache.set("blank", "");
+        pageCache.set("message", "Strain.");
+        pageCache.set("nil", "");
+        pageCache.set("tom", topgun);
+        pageCache.set("brad", blackjoe);
+        pageCache.set("will", burgandy);
+        pageCache.set("val", iceman);
+        pageCache.set("todos", todos);
+        pageCache.set("true", true);
+        pageCache.set("condition", true);
 
-        return cache;
+        return pageCache;
     }
 
     Actor getIt(){

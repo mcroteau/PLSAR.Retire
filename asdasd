@@ -29,14 +29,14 @@ public class ExperienceManager {
     final String HTML_COMMENT = "<!--";
 
     //todo: please.
-    public String execute(String pageElement, Cache cache, NetworkRequest req, List<Class<?>> viewRenderers) throws BlueOceanException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
+    public String execute(String pageElement, Cache pageCache, NetworkRequest req, List<Class<?>> viewRenderers) throws BlueOceanException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
         List<String> elementEntries = Arrays.asList(pageElement.split("\n"));
         List<String> viewRendererElementEntries = getInterpretedRenderers(req, elementEntries, viewRenderers);
 
         List<DataPartial> dataPartials = getConvertedDataPartials(viewRendererElementEntries);
-        List<DataPartial> dataPartialsInflated = getInflatedPartials(dataPartials, cache);
+        List<DataPartial> dataPartialsInflated = getInflatedPartials(dataPartials, pageCache);
 
-        List<DataPartial> dataPartialsComplete = getCompletedPartials(dataPartialsInflated, cache);
+        List<DataPartial> dataPartialsComplete = getCompletedPartials(dataPartialsInflated, pageCache);
         List<DataPartial> dataPartialsCompleteReady = getNilElementEntryPartials(dataPartialsComplete);
 
         StringBuilder pageElementsComplete = getElementsCompleted(dataPartialsCompleteReady);

@@ -29,14 +29,14 @@ public class ExperienceManager {
     final String HTML_COMMENT = "<!--";
 
     //todo: please.
-    public String execute(String pageElement, Cache cache, NetworkRequest req, List<Class<?>> viewRenderers) throws BlueOceanException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
+    public String execute(String pageElement, PageCache pageCache, NetworkRequest req, List<Class<?>> viewRenderers) throws BlueOceanException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
         List<String> elementEntries = Arrays.asList(pageElement.split("\n"));
         List<String> viewRendererElementEntries = getInterpretedRenderers(req, elementEntries, viewRenderers);
 
         List<DataPartial> dataPartials = getConvertedDataPartials(viewRendererElementEntries);
-        List<DataPartial> dataPartialsInflated = getInflatedPartials(dataPartials, cache);
+        List<DataPartial> dataPartialsInflated = getInflatedPartials(dataPartials, pageCache);
 
-        List<DataPartial> dataPartialsComplete = getCompletedPartials(dataPartialsInflated, cache);
+        List<DataPartial> dataPartialsComplete = getCompletedPartials(dataPartialsInflated, pageCache);
         List<DataPartial> dataPartialsCompleteReady = getNilElementEntryPartials(dataPartialsComplete);
 
         StringBuilder pageElementsComplete = getElementsCompleted(dataPartialsCompleteReady);
@@ -74,7 +74,7 @@ public class ExperienceManager {
         return builder;
     }
 
-    void setResponseVariable(String baseEntry, Cache resp) {
+    void setResponseVariable(String baseEntry, PageCache resp) {
         int startVariableIdx = baseEntry.indexOf("var=");
         int endVariableIdx = baseEntry.indexOf("\"", startVariableIdx + 5);
         String variableEntry = baseEntry.substring(startVariableIdx + 5, endVariableIdx);
@@ -156,7 +156,7 @@ public class ExperienceManager {
         return elementEntries;
     }
 
-    List<DataPartial> getCompletedPartials(List<DataPartial> dataPartialsPre, Cache resp) throws InvocationTargetException, NoSuchMethodException, BlueOceanException, NoSuchFieldException, IllegalAccessException {
+    List<DataPartial> getCompletedPartials(List<DataPartial> dataPartialsPre, PageCache resp) throws InvocationTargetException, NoSuchMethodException, BlueOceanException, NoSuchFieldException, IllegalAccessException {
 
         List<DataPartial> dataPartials = new ArrayList<>();
         for(DataPartial dataPartial : dataPartialsPre) {
@@ -237,7 +237,7 @@ public class ExperienceManager {
         return dataPartials;
     }
 
-    String getCompleteLineElementObject(String activeField, Object object, String entryBase, Cache resp) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    String getCompleteLineElementObject(String activeField, Object object, String entryBase, PageCache resp) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         List<LineComponent> lineComponents = getPageLineComponents(entryBase);
         List<LineComponent> iteratedLineComponents = new ArrayList<>();
         for(LineComponent lineComponent : lineComponents){
@@ -259,7 +259,7 @@ public class ExperienceManager {
         return entryBaseComplete;
     }
 
-    String getCompleteInflatedDataPartial(DataPartial dataPartial, Cache resp) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    String getCompleteInflatedDataPartial(DataPartial dataPartial, PageCache resp) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         String entryBase = dataPartial.getEntry();
         List<LineComponent> lineComponents = getPageLineComponents(entryBase);
         List<LineComponent> iteratedLineComponents = new ArrayList<>();
@@ -287,7 +287,7 @@ public class ExperienceManager {
         return entryBaseComplete;
     }
 
-    String getCompleteLineElementResponse(String entryBase, List<LineComponent> lineComponents, Cache resp) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    String getCompleteLineElementResponse(String entryBase, List<LineComponent> lineComponents, PageCache resp) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         for(LineComponent lineComponent: lineComponents){
             String activeObjectField = lineComponent.getActiveField();
             String objectField = lineComponent.getObjectField();
@@ -305,7 +305,7 @@ public class ExperienceManager {
     }
 
 
-    List<DataPartial> getInflatedPartials(List<DataPartial> dataPartials, Cache resp) throws NoSuchFieldException, IllegalAccessException, BlueOceanException {
+    List<DataPartial> getInflatedPartials(List<DataPartial> dataPartials, PageCache resp) throws NoSuchFieldException, IllegalAccessException, BlueOceanException {
 
         List<DataPartial> dataPartialsPre = new ArrayList<>();
         for(int tao = 0; tao < dataPartials.size(); tao++) {
@@ -524,7 +524,7 @@ public class ExperienceManager {
     }
 
 
-    boolean passesIterableSpec(DataPartial specPartial, Object activeObject, Cache resp) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    boolean passesIterableSpec(DataPartial specPartial, Object activeObject, PageCache resp) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 
         String specElementEntry = specPartial.getEntry();
         int startExpression = specElementEntry.indexOf(OPENSPEC);
@@ -595,7 +595,7 @@ public class ExperienceManager {
         return passesSpecification;
     }
 
-    boolean passesSpec(DataPartial specPartial, Cache resp) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    boolean passesSpec(DataPartial specPartial, PageCache resp) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         String specElementEntry = specPartial.getEntry();
         int startExpression = specElementEntry.indexOf(OPENSPEC);
         int endExpression = specElementEntry.indexOf(ENDSPEC);
@@ -759,7 +759,7 @@ public class ExperienceManager {
         return iterableResult;
     }
 
-    private IterableResult getIterableResult(String entry, Cache httpResponse) throws NoSuchFieldException, IllegalAccessException {
+    private IterableResult getIterableResult(String entry, PageCache httpResponse) throws NoSuchFieldException, IllegalAccessException {
 
         int startEach = entry.indexOf(this.FOREACH);
 
@@ -786,7 +786,7 @@ public class ExperienceManager {
         return iterableResult;
     }
 
-    private List<Object> getIterableInitial(String expression, Cache httpResponse) throws NoSuchFieldException, IllegalAccessException {
+    private List<Object> getIterableInitial(String expression, PageCache httpResponse) throws NoSuchFieldException, IllegalAccessException {
         int startField = expression.indexOf("${");
         int endField = expression.indexOf(".", startField);
         String key = expression.substring(startField + 2, endField);
@@ -898,7 +898,7 @@ public class ExperienceManager {
         return lineComponents;
     }
 
-    String getResponseValueLineComponent(String activeField, String objectField, Cache resp) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    String getResponseValueLineComponent(String activeField, String objectField, PageCache resp) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 
         if(objectField.contains(".")){
 
@@ -956,7 +956,7 @@ public class ExperienceManager {
         return null;
     }
 
-    boolean passesSpec(Object object, DataPartial specPartial, DataPartial dataPartial, Cache resp) throws NoSuchMethodException, BlueOceanException, IllegalAccessException, NoSuchFieldException, InvocationTargetException {
+    boolean passesSpec(Object object, DataPartial specPartial, DataPartial dataPartial, PageCache resp) throws NoSuchMethodException, BlueOceanException, IllegalAccessException, NoSuchFieldException, InvocationTargetException {
         if(dataPartial.isWithinIterable() && passesIterableSpec(specPartial, object, resp)){
             return true;
         }
@@ -966,7 +966,7 @@ public class ExperienceManager {
         return false;
     }
 
-    Object getObjectMethodValue(Cache resp, Object respValue, String objectField) throws InvocationTargetException, IllegalAccessException {
+    Object getObjectMethodValue(PageCache resp, Object respValue, String objectField) throws InvocationTargetException, IllegalAccessException {
         Method activeMethod = getObjectMethod(respValue, objectField);
         String[] parameters = getMethodParameters(objectField);
         List<Object> values = new ArrayList<>();

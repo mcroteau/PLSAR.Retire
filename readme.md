@@ -6,3 +6,4 @@ data access layers and security built in.
 static is held to a minimum. there are no single instances. 
 each request has its own thread.. decoupled as possible.
 
+25% spring 15% gitbook 40% jetbrains 15% H2

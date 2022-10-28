@@ -1,6 +1,6 @@
 package dev.blueocean;
 
-import dev.blueocean.model.Cache;
+import dev.blueocean.model.PageCache;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -14,7 +14,7 @@ public class SpecTest extends BaseTest {
 
     @Test
     public void a() throws BlueOceanException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
-        Cache cache = this.create();
+        PageCache pageCache = this.create();
         ExperienceManager exp = new ExperienceManager();
         StringBuilder sb = new StringBuilder();
         sb.append("<ocean:foreach items=\"${todos}\" var=\"tdo\">\n");
@@ -25,13 +25,13 @@ public class SpecTest extends BaseTest {
         sb.append("         *jermaine.\n");
         sb.append("     </ocean:if>\n");
         sb.append("</ocean:foreach>\n");
-        String result = exp.execute(sb.toString(), cache, null, new ArrayList<>()).replaceAll("([^\\S\\r\\n])+|(?:\\r?\\n)+", "");
+        String result = exp.execute(sb.toString(), pageCache, null, new ArrayList<>()).replaceAll("([^\\S\\r\\n])+|(?:\\r?\\n)+", "");
         assertEquals("*ned.*jermaine.", result);
     }
 
     @Test
     public void b() throws BlueOceanException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
-        Cache resp = this.create();
+        PageCache resp = this.create();
         ExperienceManager exp = new ExperienceManager();
         StringBuilder sb = new StringBuilder();
         sb.append("<ocean:if spec=\"${message != ''}\">\n");
@@ -43,19 +43,19 @@ public class SpecTest extends BaseTest {
 
     @Test
     public void c() throws BlueOceanException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
-        Cache cache = this.create();
+        PageCache pageCache = this.create();
         StringBuilder sb = new StringBuilder();
         ExperienceManager exp = new ExperienceManager();
         sb.append("<ocean:if spec=\"${blank != ''}\">\n");
         sb.append("Nothing.\n");
         sb.append("</ocean:if>\n");
-        String result = exp.execute(sb.toString(), cache, null,new ArrayList<>()).trim();
+        String result = exp.execute(sb.toString(), pageCache, null,new ArrayList<>()).trim();
         assertEquals("", result);
     }
 
     @Test
     public void d() throws BlueOceanException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
-        Cache cache = this.create();
+        PageCache pageCache = this.create();
         StringBuilder sb = new StringBuilder();
         ExperienceManager exp = new ExperienceManager();
         sb.append("<ocean:if spec=\"${tom.name == 'Tom'}\">\n");
@@ -67,13 +67,13 @@ public class SpecTest extends BaseTest {
         sb.append("<ocean:if spec=\"${tom.wife.pet.name == 'Diego'}\">\n");
         sb.append("Diego.\n");
         sb.append("</ocean:if>\n");
-        String result = exp.execute(sb.toString(), cache, null, new ArrayList<>()).replaceAll("([^\\S\\r\\n])+|(?:\\r?\\n)+", "");
+        String result = exp.execute(sb.toString(), pageCache, null, new ArrayList<>()).replaceAll("([^\\S\\r\\n])+|(?:\\r?\\n)+", "");
         assertEquals("Tom.Penelope.Diego.", result);
     }
 
     @Test
     public void e() throws BlueOceanException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
-        Cache cache = this.create();
+        PageCache pageCache = this.create();
         StringBuilder sb = new StringBuilder();
         ExperienceManager exp = new ExperienceManager();
         sb.append("<ocean:if spec=\"${not == null}\">\n");
@@ -82,13 +82,13 @@ public class SpecTest extends BaseTest {
         sb.append("<ocean:if spec=\"${not != null}\">\n");
         sb.append("!not.\n");
         sb.append("</ocean:if>\n");
-        String result = exp.execute(sb.toString(), cache, null,new ArrayList<>()).replaceAll("([^\\S\\r\\n])+|(?:\\r?\\n)+", "");
+        String result = exp.execute(sb.toString(), pageCache, null,new ArrayList<>()).replaceAll("([^\\S\\r\\n])+|(?:\\r?\\n)+", "");
         assertEquals("not.", result);
     }
 
     @Test
     public void f() throws BlueOceanException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
-        Cache cache = this.create();
+        PageCache pageCache = this.create();
         StringBuilder sb = new StringBuilder();
         ExperienceManager exp = new ExperienceManager();
         sb.append("<ocean:if spec=\"${todos.size() > 0}\">\n");
@@ -106,7 +106,7 @@ public class SpecTest extends BaseTest {
         sb.append("<ocean:if spec=\"${todos.size() == 0}\">\n");
         sb.append("     everyonealright.\n");
         sb.append("</ocean:if>\n");
-        String result = exp.execute(sb.toString(), cache, null, new ArrayList<>()).replaceAll("([^\\S\\r\\n])+|(?:\\r?\\n)+", "");
+        String result = exp.execute(sb.toString(), pageCache, null, new ArrayList<>()).replaceAll("([^\\S\\r\\n])+|(?:\\r?\\n)+", "");
         assertEquals("::0->Apache*0,0->Apache*1,0->Apache*2,:selected:1->Apache*0,1->Apache*1,1->Apache*2,::2->Apache*0,2->Apache*1,2->Apache*2,", result);
     }
 

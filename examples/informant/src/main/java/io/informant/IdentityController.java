@@ -4,10 +4,9 @@ import com.google.gson.Gson;
 import dev.blueocean.annotations.Bind;
 import dev.blueocean.annotations.Controller;
 import dev.blueocean.annotations.JsonOutput;
-import dev.blueocean.annotations.Text;
 import dev.blueocean.annotations.http.Get;
 import dev.blueocean.annotations.http.Post;
-import dev.blueocean.model.Cache;
+import dev.blueocean.model.PageCache;
 import dev.blueocean.model.NetworkRequest;
 import dev.blueocean.model.NetworkResponse;
 import dev.blueocean.security.SecurityManager;
@@ -54,7 +53,7 @@ public class IdentityController {
     }
 
     @Post("/authenticate")
-    public String authenticate(Cache cache,
+    public String authenticate(PageCache pageCache,
                                NetworkRequest req,
                                NetworkResponse resp,
                                SecurityManager securityManager){
@@ -62,7 +61,7 @@ public class IdentityController {
         String password = req.getValue("password");
 
         if(!securityManager.signin(credential, password, req, resp)){
-            cache.set("message", "Wrong phone or email and password");
+            pageCache.set("message", "Wrong phone or email and password");
             return "redirect:/signin";
         }
 

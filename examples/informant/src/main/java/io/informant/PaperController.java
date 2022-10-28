@@ -1,6 +1,5 @@
 package io.informant;
 
-import com.google.gson.Gson;
 import dev.blueocean.annotations.*;
 import dev.blueocean.annotations.Component;
 import dev.blueocean.annotations.http.Get;
@@ -8,9 +7,6 @@ import dev.blueocean.annotations.http.Post;
 import dev.blueocean.model.*;
 import dev.blueocean.security.SecurityManager;
 import io.informant.model.*;
-import io.informant.model.response.GenericResponse;
-import io.informant.model.response.SheetsResponse;
-import io.informant.model.response.SecurityResponse;
 import io.informant.repo.PaperRepo;
 import io.informant.repo.UserRepo;
 import org.ocpsoft.prettytime.PrettyTime;
@@ -48,7 +44,7 @@ public class PaperController {
 
     @Design("/designs/sheets.jsp")
     @Get("/sheets/{offset}")
-    public String activity(Cache cache, NetworkRequest req, SecurityManager securityManager, @Component Integer offset) throws ParseException {
+    public String activity(PageCache pageCache, NetworkRequest req, SecurityManager securityManager, @Component Integer offset) throws ParseException {
         if(!securityManager.isAuthenticated(req)){
             return "redirect:/signin";
         }
@@ -87,7 +83,7 @@ public class PaperController {
             papers = controllerHelper.getPapers(startTime, endTime, offset, authUser);
         }
 
-        cache.set("papers", papers);
+        pageCache.set("papers", papers);
         return "/pages/paper/sheets.jsp";
     }
 
@@ -169,7 +165,7 @@ public class PaperController {
 
     @Design("/designs/sheets.jsp")
     @Get("/sheets/feature/{id}")
-    public String paper(Cache cache, NetworkRequest req, SecurityManager securityManager, @Component Long id) throws ParseException {
+    public String paper(PageCache pageCache, NetworkRequest req, SecurityManager securityManager, @Component Long id) throws ParseException {
         if(!securityManager.isAuthenticated(req)){
             return "redirect:/signin";
         }
@@ -196,21 +192,21 @@ public class PaperController {
             storedPaper.setDeletable(true);
         }
 
-        cache.set("storedPaper", storedPaper);
+        pageCache.set("storedPaper", storedPaper);
         return "/pages/paper/feature.jsp";
     }
 
     @Post("/sheets/delete/{id}")
-    public String delete(Cache cache, NetworkRequest req, SecurityManager securityManager, @Component Long id){
+    public String delete(PageCache pageCache, NetworkRequest req, SecurityManager securityManager, @Component Long id){
         if(!securityManager.isAuthenticated(req)){
             //building a tool from a tool for a bunch of good people.
-            cache.set("message", "authentication required.");
+            pageCache.set("message", "authentication required.");
             return "redirect:/sheets/feature/" + id;
         }
 
         String permission = "sheets:maintenance:" + id;
         if(!securityManager.hasPermission(permission, req)){
-            cache.set("message", "permission required.");
+            pageCache.set("message", "permission required.");
             return "redirect:/sheets/feature/" + id;
         }
 
@@ -220,14 +216,14 @@ public class PaperController {
         if(storedPaper != null) {
             paperRepo.delete(id);
         }
-        cache.set("message", "successfully deleted.");
+        pageCache.set("message", "successfully deleted.");
         return "redirect:/sheets/0";
     }
 
     @Post("/heart/{id}")
-    public String heart(Cache cache, NetworkRequest req, SecurityManager securityManager, @Component Long id) throws ParseException {
+    public String heart(PageCache pageCache, NetworkRequest req, SecurityManager securityManager, @Component Long id) throws ParseException {
         if(!securityManager.isAuthenticated(req)){
-            cache.set("message", "authentication required.");
+            pageCache.set("message", "authentication required.");
             return "redirect:/sheets/feature/" + id;
         }
 
@@ -235,7 +231,7 @@ public class PaperController {
         Paper storedPaper = paperRepo.get(id);
 
         if(storedPaper == null){
-            cache.set("message", "paper with id " + id + " un-discoverable");
+            pageCache.set("message", "paper with id " + id + " un-discoverable");
             return "redirect:/sheets/feature/" + id;
         }
 

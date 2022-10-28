@@ -287,24 +287,24 @@ public class BlueOcean {
                 if(activeNetworkSession == null) activeNetworkSession = new NetworkSession(time, sessionGuid);
                 networkRequest.setSession(activeNetworkSession);
 
-                Cache cache = new Cache();
+                PageCache pageCache = new PageCache();
                 routeDirectorGuid = routeNegotiator.getGuid();
                 if(redirectRegistry.getRegistry().containsKey(routeDirectorGuid) &&
                         redirectRegistry.getRegistry().get(routeDirectorGuid).containsKey(HTTPREQUEST)) {
                     NetworkRequest storedNetworkRequest = (NetworkRequest) redirectRegistry.getRegistry().get(routeDirectorGuid).get(HTTPREQUEST);
                     networkResponse = (NetworkResponse) redirectRegistry.getRegistry().get(routeDirectorGuid).get(HTTPRESPONSE);
-                    cache = (Cache) redirectRegistry.getRegistry().get(routeDirectorGuid).get(CACHE);
+                    pageCache = (PageCache) redirectRegistry.getRegistry().get(routeDirectorGuid).get(CACHE);
                     activeNetworkSession = storedNetworkRequest.getSession(true);
                     networkRequest.setSession(activeNetworkSession);
                     networkRequest.setVerb("get");
                 }
 
-                setSessionAttributesCache(cache, activeNetworkSession);
+                setSessionAttributesCache(pageCache, activeNetworkSession);
 
                 RouteAttributes routeAttributes = routeNegotiator.getRouteAttributes();
                 networkRequest.setRouteAttributes(routeAttributes);
                 SecurityManager securityManager = routeAttributes.getSecurityManager();
-                RouteResponse routeResponse = routeNegotiator.negotiate(RENDERER, resourcesDirectory, cache, networkRequest, networkResponse, securityManager, viewRenderers, viewBytesMap);
+                RouteResponse routeResponse = routeNegotiator.negotiate(RENDERER, resourcesDirectory, pageCache, networkRequest, networkResponse, securityManager, viewRenderers, viewBytesMap);
 
                 sessionGuid = networkRequest.getSession(true).getGuid();
                 if(!routeNegotiator.getRouteAttributes().getSessions().containsKey(sessionGuid)){
@@ -347,7 +347,7 @@ public class BlueOcean {
                     Map<String, Object> redirectAttributes = new HashMap<>();
                     redirectAttributes.put(BlueOcean.HTTPREQUEST, networkRequest);
                     redirectAttributes.put(BlueOcean.HTTPRESPONSE, networkResponse);
-                    redirectAttributes.put(BlueOcean.CACHE, cache);
+                    redirectAttributes.put(BlueOcean.CACHE, pageCache);
                     redirectRegistry.getRegistry().put(routeDirectorGuid, redirectAttributes);
                     StringBuilder response = new StringBuilder();
                     response.append("HTTP/1.1 307\r\n");
@@ -371,9 +371,9 @@ public class BlueOcean {
             }
         }
 
-        void setSessionAttributesCache(Cache cache, NetworkSession networkSession) {
+        void setSessionAttributesCache(PageCache pageCache, NetworkSession networkSession) {
             for(Map.Entry<String, Object> sessionEntry : networkSession.getAttributes().entrySet()){
-                cache.set(sessionEntry.getKey(), sessionEntry.getValue());
+                pageCache.set(sessionEntry.getKey(), sessionEntry.getValue());
             }
         }
 

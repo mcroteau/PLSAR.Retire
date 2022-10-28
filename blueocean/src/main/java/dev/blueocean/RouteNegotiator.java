@@ -1,7 +1,7 @@
 package dev.blueocean;
 
 import dev.blueocean.annotations.*;
-import dev.blueocean.model.Cache;
+import dev.blueocean.model.PageCache;
 import dev.blueocean.model.NetworkRequest;
 import dev.blueocean.model.NetworkResponse;
 import dev.blueocean.model.RouteAttribute;
@@ -29,7 +29,7 @@ public class RouteNegotiator {
     RouteAttributes routeAttributes;
     ComponentsHolder componentsHolder;
 
-    public RouteResponse negotiate(String RENDERER, String resourcesDirectory, Cache cache, NetworkRequest networkRequest, NetworkResponse networkResponse, SecurityManager securityManager, List<Class<?>> viewRenderers, ConcurrentMap<String, byte[]> viewBytesMap){
+    public RouteResponse negotiate(String RENDERER, String resourcesDirectory, PageCache pageCache, NetworkRequest networkRequest, NetworkResponse networkResponse, SecurityManager securityManager, List<Class<?>> viewRenderers, ConcurrentMap<String, byte[]> viewBytesMap){
 
         String completePageRendered = "";
         String errorMessage = "";
@@ -48,7 +48,7 @@ public class RouteNegotiator {
 
                 MimeResolver mimeGetter = new MimeResolver(routeUriPath);
 
-                if (RENDERER.equals(RenderingScheme.PAGE_CACHE)) {
+                if (RENDERER.equals(RenderingScheme.CACHE_REQUESTS)) {
 
                     ByteArrayOutputStream outputStream = serverResources.getViewFileCopy(routeUriPath, viewBytesMap);
                     if (outputStream == null) {
@@ -120,7 +120,7 @@ public class RouteNegotiator {
                 return new RouteResponse("404".getBytes(), "404", "text/html");
             }
 
-            List<Object> routeMethodAttributes = getRouteMethodAttributes(routeUriPath, cache, networkRequest, networkResponse, securityManager, routeEndpoint);
+            List<Object> routeMethodAttributes = getRouteMethodAttributes(routeUriPath, pageCache, networkRequest, networkResponse, securityManager, routeEndpoint);
             Method routeMethod = routeEndpoint.getRouteMethod();
 
             String title = null, keywords = null, description = null;
@@ -202,7 +202,7 @@ public class RouteNegotiator {
                 return new RouteResponse(methodResponse.getBytes(), "200 OK", "text/html");
             }
 
-            if(RENDERER.equals(RenderingScheme.PAGE_CACHE)) {
+            if(RENDERER.equals(RenderingScheme.CACHE_REQUESTS)) {
 
                 ByteArrayOutputStream unebaos = serverResources.getViewFileCopy(methodResponse, viewBytesMap);
                 if(unebaos == null){
@@ -243,7 +243,7 @@ public class RouteNegotiator {
 
             if(designUri != null) {
                 String designContent;
-                if(RENDERER.equals(RenderingScheme.PAGE_CACHE)) {
+                if(RENDERER.equals(RenderingScheme.CACHE_REQUESTS)) {
 
                     ByteArrayOutputStream baos = serverResources.getViewFileCopy(designUri, viewBytesMap);
                     designContent = baos.toString(StandardCharsets.UTF_8.name());
@@ -291,11 +291,11 @@ public class RouteNegotiator {
                     completePageRendered = completePageRendered.replace("${description}", description);
                 }
 
-                completePageRendered = experienceManager.execute(completePageRendered, cache, networkRequest, viewRenderers);
+                completePageRendered = experienceManager.execute(completePageRendered, pageCache, networkRequest, viewRenderers);
                 return new RouteResponse(completePageRendered.getBytes(), "200 OK", "text/html");
 
             }else{
-                completePageRendered = experienceManager.execute(completePageRendered, cache, networkRequest, viewRenderers);
+                completePageRendered = experienceManager.execute(completePageRendered, pageCache, networkRequest, viewRenderers);
                 return new RouteResponse(completePageRendered.getBytes(), "200 OK", "text/html");
             }
 
@@ -329,7 +329,7 @@ public class RouteNegotiator {
     }
 
 
-    List<Object> getRouteMethodAttributes(String routeUriPath, Cache cache, NetworkRequest networkRequest, NetworkResponse networkResponse, SecurityManager securityManager, RouteEndpoint routeEndpoint) {
+    List<Object> getRouteMethodAttributes(String routeUriPath, PageCache pageCache, NetworkRequest networkRequest, NetworkResponse networkResponse, SecurityManager securityManager, RouteEndpoint routeEndpoint) {
         List<Object> routeMethodAttributes = new ArrayList<>();
         Type[] methodAttributes = routeEndpoint.getRouteMethod().getParameterTypes();
         String routeUriPathClean = routeUriPath.replaceFirst("/", "");
@@ -348,8 +348,8 @@ public class RouteNegotiator {
             if(methodAttribute.getTypeName().equals("dev.blueocean.model.NetworkResponse")){
                 routeMethodAttributes.add(networkResponse);
             }
-            if(methodAttribute.getTypeName().equals("dev.blueocean.model.Cache")){
-                routeMethodAttributes.add(cache);
+            if(methodAttribute.getTypeName().equals("dev.blueocean.model.PageCache")){
+                routeMethodAttributes.add(pageCache);
             }
             if(methodAttribute.getTypeName().equals("java.lang.Integer")){
                 routeMethodAttributes.add(Integer.valueOf(routePathUriAttributes[PATH_VARIABLE_INDEX]));
