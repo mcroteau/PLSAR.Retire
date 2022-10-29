@@ -17,7 +17,7 @@ public class SpecTest extends BaseTest {
         PageCache pageCache = this.create();
         ExperienceManager exp = new ExperienceManager();
         StringBuilder sb = new StringBuilder();
-        sb.append("<plsar:forEach items=\"${todos}\" var=\"tdo\">\n");
+        sb.append("<plsar:foreach items=\"${todos}\" var=\"tdo\">\n");
         sb.append("     <plsar:if spec=\"${tdo.title == 'Exercise *0'}\">\n");
         sb.append("         *ned.\n");
         sb.append("     </plsar:if>\n");

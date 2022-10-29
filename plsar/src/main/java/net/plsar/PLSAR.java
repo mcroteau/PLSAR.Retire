@@ -1,5 +1,6 @@
 package net.plsar;
 
+import lu.ewelohd.jconsoleimage.core.ConsoleImage;
 import net.plsar.model.*;
 import net.plsar.schemes.RenderingScheme;
 import net.plsar.resources.*;
