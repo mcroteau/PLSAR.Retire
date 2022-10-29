@@ -11,6 +11,7 @@ import net.plsar.security.SecurityManager;
 import io.informant.model.User;
 import io.informant.repo.UserRepo;
 
+
 @Controller
 public class UserController {
 

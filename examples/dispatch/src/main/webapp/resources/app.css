@@ -101,9 +101,10 @@ a{text-decoration: none;color:#000;}
     -webkit-appearance: none;
     -moz-appearance:none;
 }
-.future{background:#000}
-.rain{background: #830DCA;border:solid 1px #830DCA;background:#fe9643;border:solid 1px #fe9643}
-.button:hover{box-shadow: 0px 4px 7px rgba(0,0,0,0.1)}
+.future{background:#000; border:solid 1px #000}
+.grey{background:#c4cad5; border:solid 1px #c4cad5}
+.purple{background:#fe9643;border:solid 1px #fe9643}
+.button:hover{box-shadow: 0px 4px 7px rgba(0,0,0,0.3)}
 
 
 #music-selection li{list-style:none;font-size:19px;font-weight: 300;margin:7px 0px;cursor:hand;}
@@ -168,6 +169,16 @@ a{text-decoration: none;color:#000;}
     display:inline-block;
     fill: #fff;
 }
+
+.heart-icon-svg{
+    width:25px;height:25px;
+    margin-top:3px;
+    margin-left:10px;
+    display:inline-block;
+    fill: #fff;
+}
+
+
 .share-icon-svg:active,
 .heart-icon-svg:active{
     margin-top:4px;
@@ -235,4 +246,165 @@ html,body{
     margin:0px;
     height:100%;
     min-height: 100% !important;
+}
+
+
+
+
+
+
+
+
+
+
+.button,
+input[type="button"].button,
+input[type="reset"].button,
+input[type="submit"].button{
+    cursor:pointer;
+    text-transform:uppercase;
+    color:#fff;
+    font-size:13px;
+    padding:14px 18px;
+    line-height: 1.0em;
+    display:inline-block;
+    background:#3979E4;
+    border:solid 1px #3979E4;
+    text-decoration:none;
+    border-radius: 24px;
+    -moz-border-radius: 24px;
+    -webkit-border-radius: 24px;
+    font-family:Roboto !important;
+    outline:none !important;
+    -webkit-appearance: none;
+    -moz-appearance:none;
+}
+
+.gigantic{
+    font-size:15px !important;
+    padding:16px 20px !important;
+}
+
+.button:active{
+    -webkit-transition: 3s;
+    -moz-transition: 3s;
+    -ms-transition: 3s;
+    -o-transition: 3s;
+    transition: 3s;
+    -webkit-box-shadow: 0px 1px 7px 0px rgba(179,179,179,0.43);
+    -moz-box-shadow: 0px 1px 7px 0px rgba(179,179,179,0.43);
+    box-shadow: 0px 1px 7px 0px rgba(179,179,179,0.43);
+}
+
+.button:hover{
+    color:#fff;
+    -webkit-box-shadow: 0px 3px 5px 0px rgba(179,179,179,0.43) !important;
+    -moz-box-shadow: 0px 3px 5px 0px rgba(179,179,179,0.43) !important;
+    box-shadow: 0px 3px 5px 0px rgba(179,179,179,0.43) !important;
+}
+
+
+.button.small,
+input[type="button"].button.small,
+input[type="reset"].button.small,
+input[type="submit"].button.small{
+    font-size:11px;
+    padding:15px 23px;
+}
+
+.remove,
+.button.remove,
+input[type="button"].remove,
+input[type="reset"].remove,
+input[type="submit"].remove{
+    color:#fff;
+    background: #FF817A;
+    border: solid 1px #FF817A;
+}
+
+.yellow,
+.button.yellow,
+input[type="button"].button.yellow,
+input[type="reset"].button.yellow,
+input[type="submit"].button.yellow{
+    color:#000;
+    background:#FEF57A;
+    border:solid 1px #FEF57A;
+}
+
+
+.button.sky,
+input[type="button"].button.sky,
+input[type="reset"].button.sky,
+input[type="submit"].button.sky,
+input[type="button"].sky{
+    color:#000;
+    background:#F3F3F7;
+    border:solid 1px #F3F3F7;
+}
+
+
+.button.light,
+input[type="button"].button.light,
+input[type="reset"].button.light,
+input[type="submit"].button.light,
+input[type="button"].button.light{
+    color:#000;
+    background:#fff;
+    border:solid 1px #FFFFFF;
+}
+
+
+.modern,
+.button.modern,
+input[type="button"].button.modern,
+input[type="reset"].button.modern,
+input[type="submit"].button.modern{
+    background:#000;
+    border:solid 1px #000;
+}
+
+.retro,
+.button.retro,
+input[type="button"].button.retro,
+input[type="reset"].button.retro,
+input[type="submit"].button.retro{
+    color:#fff;
+    background:#3979E4;
+    border:solid 1px #3979E4;
+}
+
+.button.orange,
+input[type="button"].button.orange,
+input[type="reset"].button.orange,
+input[type="submit"].button.orange{
+    color:#000;
+    background:#FEF57A;
+    border:solid 1px #FEF57A;
+}
+
+.green,
+.button.green,
+input[type="button"].button.green,
+input[type="reset"].button.green,
+input[type="submit"].button.green{
+    color:#fff;
+    background:#0E9855;
+    border:solid 1px #0E9855;
+}
+
+.notify{
+    font-size:17px;
+    margin-bottom:23px;
+    padding:10px 20px;
+    border:solid 1px #617078;
+    background:#fff;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+}
+
+.tiny{
+    font-size:11px;
+    font-family:Roboto !important;
 }
