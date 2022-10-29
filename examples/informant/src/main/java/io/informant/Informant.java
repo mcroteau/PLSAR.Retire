@@ -50,7 +50,7 @@ public class Informant {
         plsar.addViewRenderer(UserRenderer.class);
 
         plsar.setSecurityAccess(AuthSecurityAccess.class);
-        plsar.setPageRenderingScheme(RenderingScheme.CACHE_REQUESTS);
+        plsar.setPageRenderingScheme(RenderingScheme.RELOAD_EACH_REQUEST);
         plsar.start();
     }
 

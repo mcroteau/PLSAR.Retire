@@ -1,14 +1,44 @@
-<div id="sheets-wrapper">
+<style>
+    body{background:#fff;}
+    #left,#middle,#right,#end{float:left;height:100%;}
+    #left{
+        text-align:center;
+        width: calc(40%);
+        overflow:auto;
+    }
+    #middle{
+        text-align: left;
+        padding:0px 40px;
+        width: calc(20% - 40px);
+        text-align: center;
+        border-left:dashed 1px #d9dde3;
+    }
+    #right{
+        width: calc(15%);
+        border-right:solid 1px #68718d;
+    }
+    #end {
+        width: calc(0%);
+        border-right: solid 1px #68718d;
+        clear: right;
+    }
 
-    <div id="query-lover-wrapper">
-        <input type="text" name="q" placeholder="users: activity:" id="query-lover"/>
-    </div>
+</style>
 
-    <p id="main-message" class="message" style="display: none"></p>
+<div id="left">
+    <form action="/sheets/save" enctype="multipart/form-data" method="post">
+        <textarea name="paper-editor"></textarea>
+    </form>
+</div>
 
-    <ocean:if spec="${papers.size() > 0}">
+<style>
 
-        <ocean:foreach items="${papers}" var="paper">
+</style>
+
+<div id="middle">
+    <plsar:if spec="${papers.size() > 0}">
+
+        <plsar:foreach items="${papers}" var="paper">
             <div class="paper-wrapper" id="sheet-${paper.id}">
                 <div class="identity-wrapper">
                     <a href="/users/${paper.userId}" class="profile-action">
@@ -19,9 +49,9 @@
                 </div>
                 <a href="/paper/${paper.id}">
                     <div class="paper-photos">
-                        <ocean:foreach items="${paper.photos}" var="paperphoto">
+                        <plsar:foreach items="${paper.photos}" var="paperphoto">
                             <img src="${paperphoto}" class="paper-photo"/>
-                        </ocean:foreach>
+                        </plsar:foreach>
                     </div>
                 </a>
 
@@ -31,24 +61,20 @@
 
                 <div class="paper-action-wrapper">
                     <span class="pretty-time">${paper.timeAgo}</span>
-
-                    <svg class="heart-icon-svg activity-action activity" on-click="['activate', paper]">
-                        <path id="heart" class="s0" d="m13.1 23.7q-0.3 0.3-0.6 0.3-0.3 0-0.6-0.3l-8-9q-0.1-0.1-0.3-0.4-0.3-0.2-0.7-1-0.5-0.7-0.9-1.4-0.4-0.8-0.7-1.8-0.3-1.1-0.3-2.1 0-3.3 1.6-5.1 1.7-1.9 4.5-1.9 0.8 0 1.7 0.3 0.8 0.3 1.5 0.9 0.7 0.5 1.2 1 0.5 0.5 1 1 0.5-0.5 1-1 0.5-0.5 1.2-1 0.7-0.6 1.5-0.9 0.9-0.3 1.7-0.3 2.8 0 4.5 1.9 1.6 1.8 1.6 5.1 0 3.3-2.9 6.7l-8 9z"/>
-                    </svg>
-                    <span class="activity-count">${paper.likesCount}</span>
-
-                    <a href="#!/patron/{{paper.id}}">
-                        <svg class="share-icon-svg activity-action activity">
-                            <path id="share" class="s0" d="m15.6 15.8q1.3-1.2 3-1.2 1.8 0 3.1 1.3 1.3 1.2 1.3 3 0 1.9-1.3 3.1-1.3 1.3-3.1 1.3-1.8 0-3.1-1.3-1.3-1.2-1.3-3.1 0-0.1 0-0.4l-4.9-2.5q-1.2 1.2-2.9 1.2-1.8 0-3.1-1.3-1.3-1.3-1.3-3.1 0-1.8 1.3-3.1 1.3-1.2 3.1-1.2 1.7 0 2.9 1.1l4.9-2.4q0-0.3 0-0.5 0-1.8 1.3-3.1 1.3-1.2 3.1-1.2 1.8 0 3.1 1.2 1.3 1.3 1.3 3.1 0 1.8-1.3 3.1-1.3 1.3-3.1 1.3-1.7 0-3-1.2l-4.9 2.5q0 0.3 0 0.4 0 0.2 0 0.5l4.9 2.5z"/>
-                        </svg>
-                    </a>
-                    <span class="activity-count">${paper.sharesCount}</span>
+                    <a href="/patron/${paper.id}" class="future button">Share : ${paper.sharesCount}</a>
                     <br class="clear"/>
                 </div>
             </div>
-        </ocean:foreach>
+        </plsar:foreach>
 
-    </ocean:if>
+    </plsar:if>
+
+</div>
+
+<div id="right">
+
+</div>
+<div id="end"></div>
 
 </div>
 

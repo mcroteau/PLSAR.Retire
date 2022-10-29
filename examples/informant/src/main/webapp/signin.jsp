@@ -1,7 +1,7 @@
 
-<kakai:if spec="${message != ''}">
+<plsar:if spec="${message != ''}">
     ${message}
-</kakai:if>
+</plsar:if>
 
 <h1>Signin</h1>
 <form action="/authenticate" method="post">

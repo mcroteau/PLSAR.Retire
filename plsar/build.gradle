@@ -93,7 +93,13 @@ publishing {
             artifact(javadocJar)
             pom {
                 name.set("PLSAR")
-                description.set("")
+                description.set("PLSAR is an Open Source Server + Framework Environment \n" +
+                        "for small to large scale requirements. There are no static \n" +
+                        "references, no file reads, access to static fields per request. \n" +
+                        "Everything is either cached and or instantiated on the fly. \n" +
+                        "PLSAR runs via one command so there are no .war files to deploy, \n" +
+                        "no additional plugins to install it is a simple yet sophisticated \n" +
+                        "alternative to container deployment environments.")
                 url.set("http://plsar.net")
                 licenses {
                     license {
