@@ -40,6 +40,7 @@ public class Informant {
         plsar.setSchemaConfig(schemaConfig);
 
         ViewConfig viewConfig = new ViewConfig();
+        viewConfig.setViewsPath("");
         viewConfig.setResourcesPath("resources");
         viewConfig.setViewExtension(".jsp");
         plsar.setViewConfig(viewConfig);
