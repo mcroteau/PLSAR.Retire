@@ -1,15 +1,15 @@
 package io.informant;
 
 import com.google.gson.Gson;
-import dev.blueocean.annotations.Bind;
-import dev.blueocean.annotations.Controller;
-import dev.blueocean.annotations.JsonOutput;
-import dev.blueocean.annotations.http.Get;
-import dev.blueocean.annotations.http.Post;
-import dev.blueocean.model.PageCache;
-import dev.blueocean.model.NetworkRequest;
-import dev.blueocean.model.NetworkResponse;
-import dev.blueocean.security.SecurityManager;
+import net.plsar.annotations.Bind;
+import net.plsar.annotations.Controller;
+import net.plsar.annotations.JsonOutput;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.PageCache;
+import net.plsar.model.NetworkRequest;
+import net.plsar.model.NetworkResponse;
+import net.plsar.security.SecurityManager;
 import io.informant.model.User;
 import io.informant.repo.UserRepo;
 

@@ -1,6 +1,6 @@
 package giga.service;
 
-import dev.blueocean.annotations.Service;
+import net.plsar.annotations.Service;
 
 @Service
 public class MailService {

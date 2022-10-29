@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':blueocean')
+    implementation project(':plsar')
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'org.ocpsoft.prettytime:prettytime:5.0.3.Final'
     implementation 'commons-validator:commons-validator:1.7'

@@ -5,15 +5,15 @@ import giga.model.*;
 import giga.repo.*;
 import giga.service.*;
 import dev.blueocean.RouteAttributes;
-import dev.blueocean.annotations.Component;
-import dev.blueocean.annotations.Controller;
-import dev.blueocean.annotations.Bind;
-import dev.blueocean.annotations.http.Get;
-import dev.blueocean.annotations.http.Post;
-import dev.blueocean.model.Cache;
-import dev.blueocean.model.NetworkRequest;
-import dev.blueocean.model.NetworkResponse;
-import dev.blueocean.security.SecurityManager;
+import net.plsar.annotations.Component;
+import net.plsar.annotations.Controller;
+import net.plsar.annotations.Bind;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.Cache;
+import net.plsar.model.NetworkRequest;
+import net.plsar.model.NetworkResponse;
+import net.plsar.security.SecurityManager;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -103,7 +103,7 @@ public class UserRouter {
 		return "/pages/business/activity.jsp";
 	}
 
-	@dev.blueocean.annotations.Design("/designs/auth.jsp")
+	@net.plsar.annotations.Design("/designs/auth.jsp")
 	@Get("/users/edit/{businessId}/{id}")
 	public String getEdit(Cache cache,
 						  NetworkRequest req,
@@ -123,7 +123,7 @@ public class UserRouter {
 		return userService.update(id, businessId, cache, req, security);
 	}
 
-	@dev.blueocean.annotations.Design("/pages/guest.jsp")
+	@net.plsar.annotations.Design("/pages/guest.jsp")
 	@Get("/users/reset")
 	public String reset(){
 		return "/pages/user/reset.jsp";

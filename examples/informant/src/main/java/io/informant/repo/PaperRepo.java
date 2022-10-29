@@ -1,7 +1,7 @@
 package io.informant.repo;
 
-import dev.blueocean.Dao;
-import dev.blueocean.annotations.Repository;
+import net.plsar.Dao;
+import net.plsar.annotations.Repository;
 import io.informant.Informant;
 import io.informant.model.Heart;
 import io.informant.model.Paper;

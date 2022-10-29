@@ -1,12 +1,15 @@
 package io.informant;
 
-import dev.blueocean.*;
-import dev.blueocean.drivers.Drivers;
-import dev.blueocean.environments.Environments;
-import dev.blueocean.schemes.RenderingScheme;
-import dev.blueocean.security.renderer.AuthenticatedRenderer;
-import dev.blueocean.security.renderer.GuestRenderer;
-import dev.blueocean.security.renderer.UserRenderer;
+import net.plsar.PLSAR;
+import net.plsar.PersistenceConfig;
+import net.plsar.SchemaConfig;
+import net.plsar.ViewConfig;
+import net.plsar.drivers.Drivers;
+import net.plsar.environments.Environments;
+import net.plsar.schemes.RenderingScheme;
+import net.plsar.security.renderer.AuthenticatedRenderer;
+import net.plsar.security.renderer.GuestRenderer;
+import net.plsar.security.renderer.UserRenderer;
 import io.informant.model.User;
 import io.informant.model.UserFollow;
 import org.apache.commons.lang3.StringUtils;
@@ -21,7 +24,7 @@ public class Informant {
     public static void main(String[] args){
         PersistenceConfig persistenceConfig = new PersistenceConfig();
         persistenceConfig.setDriver(Drivers.H2);
-        persistenceConfig.setUrl("jdbc:h2:~/BLUE_OCEAN_DB");
+        persistenceConfig.setUrl("jdbc:h2:~/PLSAR_DB");
         persistenceConfig.setUser("sa");
         persistenceConfig.setPassword("");
 
@@ -29,25 +32,25 @@ public class Informant {
         schemaConfig.setSchema("schema.sql");
         schemaConfig.setEnvironment(Environments.DEVELOPMENT);
 
-        BlueOcean blueOcean = new BlueOcean(1234);
-        blueOcean.setNumberOfPartitions(7);
-        blueOcean.setNumberOfRequestExecutors(10);
+        PLSAR plsar = new PLSAR(1234);
+        plsar.setNumberOfPartitions(7);
+        plsar.setNumberOfRequestExecutors(10);
 
-        blueOcean.setPersistenceConfig(persistenceConfig);
-        blueOcean.setSchemaConfig(schemaConfig);
+        plsar.setPersistenceConfig(persistenceConfig);
+        plsar.setSchemaConfig(schemaConfig);
 
         ViewConfig viewConfig = new ViewConfig();
         viewConfig.setResourcesPath("resources");
         viewConfig.setViewExtension(".jsp");
-        blueOcean.setViewConfig(viewConfig);
+        plsar.setViewConfig(viewConfig);
 
-        blueOcean.addViewRenderer(AuthenticatedRenderer.class);
-        blueOcean.addViewRenderer(GuestRenderer.class);
-        blueOcean.addViewRenderer(UserRenderer.class);
+        plsar.addViewRenderer(AuthenticatedRenderer.class);
+        plsar.addViewRenderer(GuestRenderer.class);
+        plsar.addViewRenderer(UserRenderer.class);
 
-        blueOcean.setSecurityAccess(AuthSecurityAccess.class);
-        blueOcean.setPageRenderingScheme(RenderingScheme.CACHE_REQUESTS);
-        blueOcean.start();
+        plsar.setSecurityAccess(AuthSecurityAccess.class);
+        plsar.setPageRenderingScheme(RenderingScheme.CACHE_REQUESTS);
+        plsar.start();
     }
 
     public Long getDate(int days){

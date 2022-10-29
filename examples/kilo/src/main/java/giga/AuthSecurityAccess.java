@@ -4,7 +4,7 @@ import giga.model.User;
 import giga.model.UserPermission;
 import giga.model.UserRole;
 import dev.blueocean.Dao;
-import dev.blueocean.security.SecurityAccess;
+import net.plsar.security.SecurityAccess;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

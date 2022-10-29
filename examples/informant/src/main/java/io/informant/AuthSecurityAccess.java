@@ -1,7 +1,7 @@
 package io.informant;
 
-import dev.blueocean.Dao;
-import dev.blueocean.security.SecurityAccess;
+import net.plsar.Dao;
+import net.plsar.security.SecurityAccess;
 import io.informant.model.Permission;
 import io.informant.model.User;
 

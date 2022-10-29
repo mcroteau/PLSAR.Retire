@@ -5,11 +5,11 @@ import giga.model.Business;
 import dev.blueocean.BlueOcean;
 import dev.blueocean.PersistenceConfig;
 import dev.blueocean.SchemaConfig;
-import dev.blueocean.drivers.Drivers;
-import dev.blueocean.environments.Environments;
-import dev.blueocean.security.renderer.AuthenticatedRenderer;
-import dev.blueocean.security.renderer.GuestRenderer;
-import dev.blueocean.security.renderer.UserRenderer;
+import net.plsar.drivers.Drivers;
+import net.plsar.environments.Environments;
+import net.plsar.security.renderer.AuthenticatedRenderer;
+import net.plsar.security.renderer.GuestRenderer;
+import net.plsar.security.renderer.UserRenderer;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

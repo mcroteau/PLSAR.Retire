@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':blueocean')
+    implementation project(':plsar')
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.stripe:stripe-java:20.43.0'
     implementation 'com.easypost:easypost-api-client:4.0.4'

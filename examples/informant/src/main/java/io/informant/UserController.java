@@ -1,13 +1,13 @@
 package io.informant;
 
-import dev.blueocean.annotations.Bind;
-import dev.blueocean.annotations.Component;
-import dev.blueocean.annotations.Controller;
-import dev.blueocean.annotations.Design;
-import dev.blueocean.annotations.http.Get;
-import dev.blueocean.model.PageCache;
-import dev.blueocean.model.NetworkRequest;
-import dev.blueocean.security.SecurityManager;
+import net.plsar.annotations.Bind;
+import net.plsar.annotations.Component;
+import net.plsar.annotations.Controller;
+import net.plsar.annotations.Design;
+import net.plsar.annotations.http.Get;
+import net.plsar.model.PageCache;
+import net.plsar.model.NetworkRequest;
+import net.plsar.security.SecurityManager;
 import io.informant.model.User;
 import io.informant.repo.UserRepo;
 

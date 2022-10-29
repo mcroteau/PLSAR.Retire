@@ -5,13 +5,13 @@ import giga.model.User;
 import giga.model.UserBusiness;
 import giga.repo.BusinessRepo;
 import giga.repo.UserRepo;
-import dev.blueocean.annotations.Design;
-import dev.blueocean.annotations.Controller;
-import dev.blueocean.annotations.Bind;
-import dev.blueocean.annotations.http.Get;
-import dev.blueocean.model.Cache;
-import dev.blueocean.model.NetworkRequest;
-import dev.blueocean.security.SecurityManager;
+import net.plsar.annotations.Design;
+import net.plsar.annotations.Controller;
+import net.plsar.annotations.Bind;
+import net.plsar.annotations.http.Get;
+import net.plsar.model.Cache;
+import net.plsar.model.NetworkRequest;
+import net.plsar.security.SecurityManager;
 
 import java.util.List;
 

@@ -3,7 +3,7 @@ package giga.repo;
 import giga.model.Category;
 import giga.model.ItemCategory;
 import dev.blueocean.Dao;
-import dev.blueocean.annotations.Repository;
+import net.plsar.annotations.Repository;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,0 @@
-package dev.blueocean.schemes;
-
-public class RenderingScheme {
-    public static final String CACHE_REQUESTS      = "cache";
-    public static final String RELOAD_EACH_REQUEST = "reload";
-}

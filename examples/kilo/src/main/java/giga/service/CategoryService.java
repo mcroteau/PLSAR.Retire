@@ -3,11 +3,11 @@ package giga.service;
 import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
-import dev.blueocean.annotations.Bind;
-import dev.blueocean.annotations.Service;
-import dev.blueocean.model.Cache;
-import dev.blueocean.model.NetworkRequest;
-import dev.blueocean.security.SecurityManager;
+import net.plsar.annotations.Bind;
+import net.plsar.annotations.Service;
+import net.plsar.model.Cache;
+import net.plsar.model.NetworkRequest;
+import net.plsar.security.SecurityManager;
 
 import java.util.ArrayList;
 import java.util.List;

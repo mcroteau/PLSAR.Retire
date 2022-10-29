@@ -1,11 +1,11 @@
 package io.informant;
 
-import dev.blueocean.annotations.*;
-import dev.blueocean.annotations.Component;
-import dev.blueocean.annotations.http.Get;
-import dev.blueocean.annotations.http.Post;
-import dev.blueocean.model.*;
-import dev.blueocean.security.SecurityManager;
+import net.plsar.annotations.*;
+import net.plsar.annotations.Component;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.*;
+import net.plsar.security.SecurityManager;
 import io.informant.model.*;
 import io.informant.repo.PaperRepo;
 import io.informant.repo.UserRepo;

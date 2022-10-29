@@ -1,7 +1,7 @@
 package io.informant.repo;
 
-import dev.blueocean.Dao;
-import dev.blueocean.annotations.Repository;
+import net.plsar.Dao;
+import net.plsar.annotations.Repository;
 import io.informant.model.Permission;
 import io.informant.model.UserFollow;
 import io.informant.model.User;

@@ -1,9 +1,9 @@
 package io.informant;
 
-import dev.blueocean.annotations.Bind;
-import dev.blueocean.annotations.Service;
-import dev.blueocean.model.NetworkRequest;
-import dev.blueocean.security.SecurityManager;
+import net.plsar.annotations.Bind;
+import net.plsar.annotations.Service;
+import net.plsar.model.NetworkRequest;
+import net.plsar.security.SecurityManager;
 import io.informant.model.Paper;
 import io.informant.model.User;
 import io.informant.model.UserFollow;

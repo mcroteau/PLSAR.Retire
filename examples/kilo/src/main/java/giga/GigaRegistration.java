@@ -1,8 +1,8 @@
 package giga;
 
 import dev.blueocean.RouteAttributes;
-import dev.blueocean.annotations.RouteRegistration;
-import dev.blueocean.implement.RouteRegister;
+import net.plsar.annotations.RouteRegistration;
+import net.plsar.implement.RouteRegister;
 
 @RouteRegistration
 public class GigaRegistration implements RouteRegister {

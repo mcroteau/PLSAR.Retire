@@ -1,10 +1,10 @@
 package io.informant;
 
-import dev.blueocean.Dao;
-import dev.blueocean.PersistenceConfig;
-import dev.blueocean.annotations.ServerStartup;
-import dev.blueocean.drivers.Drivers;
-import dev.blueocean.implement.ServerListener;
+import net.plsar.Dao;
+import net.plsar.PersistenceConfig;
+import net.plsar.annotations.ServerStartup;
+import net.plsar.drivers.Drivers;
+import net.plsar.implement.ServerListener;
 import io.informant.model.Paper;
 import io.informant.repo.PaperRepo;
 import io.informant.repo.UserRepo;

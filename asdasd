@@ -1,6 +1,6 @@
-package dev.blueocean;
+package dev.plsar;
 
-import dev.blueocean.model.*;
+import net.plsar.model.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

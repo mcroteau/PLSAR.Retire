@@ -1,8 +1,8 @@
 package giga;
 
 import giga.service.StartupService;
-import dev.blueocean.annotations.ServerStartup;
-import dev.blueocean.implement.ServerListener;
+import net.plsar.annotations.ServerStartup;
+import net.plsar.implement.ServerListener;
 
 @ServerStartup
 public class GigaStartup implements ServerListener {

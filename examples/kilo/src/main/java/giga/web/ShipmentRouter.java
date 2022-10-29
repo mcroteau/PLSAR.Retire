@@ -1,14 +1,14 @@
 package giga.web;
 
 import giga.service.ShipmentService;
-import dev.blueocean.annotations.Component;
-import dev.blueocean.annotations.Controller;
-import dev.blueocean.annotations.Bind;
-import dev.blueocean.annotations.http.Get;
-import dev.blueocean.annotations.http.Post;
-import dev.blueocean.model.Cache;
-import dev.blueocean.model.NetworkRequest;
-import dev.blueocean.security.SecurityManager;
+import net.plsar.annotations.Component;
+import net.plsar.annotations.Controller;
+import net.plsar.annotations.Bind;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.Cache;
+import net.plsar.model.NetworkRequest;
+import net.plsar.security.SecurityManager;
 
 @Controller
 public class ShipmentRouter {

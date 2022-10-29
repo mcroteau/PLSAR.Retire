@@ -5,8 +5,8 @@ import giga.model.*;
 import giga.repo.*;
 import dev.blueocean.Dao;
 import dev.blueocean.PersistenceConfig;
-import dev.blueocean.drivers.Drivers;
-import dev.blueocean.security.SecurityManager;
+import net.plsar.drivers.Drivers;
+import net.plsar.security.SecurityManager;
 
 import java.math.BigDecimal;
 import java.math.MathContext;

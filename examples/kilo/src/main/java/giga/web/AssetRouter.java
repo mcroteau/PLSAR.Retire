@@ -1,13 +1,13 @@
 package giga.web;
 
 import giga.service.AssetService;
-import dev.blueocean.annotations.*;
-import dev.blueocean.annotations.http.Get;
-import dev.blueocean.annotations.http.Post;
-import dev.blueocean.model.Cache;
-import dev.blueocean.model.NetworkRequest;
-import dev.blueocean.model.NetworkResponse;
-import dev.blueocean.security.SecurityManager;
+import net.plsar.annotations.*;
+import net.plsar.annotations.http.Get;
+import net.plsar.annotations.http.Post;
+import net.plsar.model.Cache;
+import net.plsar.model.NetworkRequest;
+import net.plsar.model.NetworkResponse;
+import net.plsar.security.SecurityManager;
 
 @Controller
 public class AssetRouter {

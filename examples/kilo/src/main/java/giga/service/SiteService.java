@@ -4,8 +4,8 @@ import giga.model.*;
 import giga.repo.CategoryRepo;
 import giga.repo.DesignRepo;
 import giga.repo.UserRepo;
-import dev.blueocean.model.NetworkRequest;
-import dev.blueocean.security.SecurityManager;
+import net.plsar.model.NetworkRequest;
+import net.plsar.security.SecurityManager;
 
 import java.math.BigDecimal;
 import java.math.MathContext;

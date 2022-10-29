@@ -1,5 +1,5 @@
-rootProject.name = "BlueOcean"
-include "blueocean"
-include "examples:ratatatat"
+rootProject.name = "PLSAR"
+include "plsar"
+include "examples:beta"
 include "examples:informant"
 

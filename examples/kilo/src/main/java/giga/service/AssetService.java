@@ -4,10 +4,10 @@ import giga.Giga;
 import giga.model.*;
 import giga.repo.*;
 import dev.blueocean.RouteAttributes;
-import dev.blueocean.annotations.Bind;
-import dev.blueocean.annotations.Service;
-import dev.blueocean.model.*;
-import dev.blueocean.security.SecurityManager;
+import net.plsar.annotations.Bind;
+import net.plsar.annotations.Service;
+import net.plsar.model.*;
+import net.plsar.security.SecurityManager;
 
 import java.io.*;
 import java.net.HttpURLConnection;

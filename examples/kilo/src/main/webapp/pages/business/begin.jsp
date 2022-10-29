@@ -7,9 +7,9 @@
 <div class="section-wrapper" style="z-index: 0">
     <div class="section" style="left:calc(50% - 345px); position:absolute; top:200px;">
 
-        <ocean:if spec="${message != ''}">
+        <plsar:if spec="${message != ''}">
             <p class="notify">${message}</p>
-        </ocean:if>
+        </plsar:if>
 
         <h1>Congratulations Affiliate!</h1>
         <p>Congratulations on starting a new business! We are here to help! Update your

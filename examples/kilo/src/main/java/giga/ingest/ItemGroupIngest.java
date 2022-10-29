@@ -5,9 +5,9 @@ import giga.model.*;
 import giga.repo.*;
 import giga.service.SeaService;
 import dev.blueocean.RouteAttributes;
-import dev.blueocean.model.FileComponent;
-import dev.blueocean.model.NetworkRequest;
-import dev.blueocean.model.RequestComponent;
+import net.plsar.model.FileComponent;
+import net.plsar.model.NetworkRequest;
+import net.plsar.model.RequestComponent;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

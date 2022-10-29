@@ -3,7 +3,7 @@ package giga.repo;
 import giga.model.DataImport;
 import giga.model.MediaImport;
 import dev.blueocean.Dao;
-import dev.blueocean.annotations.Repository;
+import net.plsar.annotations.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
