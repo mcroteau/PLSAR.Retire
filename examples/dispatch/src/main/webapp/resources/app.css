@@ -355,11 +355,11 @@ input[type="button"].button.light{
 }
 
 
-.modern,
-.button.modern,
-input[type="button"].button.modern,
-input[type="reset"].button.modern,
-input[type="submit"].button.modern{
+.future,
+.button.future,
+input[type="button"].button.future,
+input[type="reset"].button.future,
+input[type="submit"].button.future{
     background:#000;
     border:solid 1px #000;
 }

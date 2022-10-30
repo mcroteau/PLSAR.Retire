@@ -41,8 +41,6 @@ public class UserRepo {
     public User get(long id) {
         String sql = "select * from users where id = [+]";
         User user = (User) dao.get(sql, new Object[] { id }, User.class);
-
-        if(user == null) user = new User();
         return user;
     }
 
@@ -137,19 +135,39 @@ public class UserRepo {
         return permissions;
     }
 
+    public UserFollow getFollow(Long userId, Long followingId) {
+        String sql = "select * from user_follows where id = [+]";
+        UserFollow userFollow = (UserFollow) dao.get(sql, new Object[] { userId, followingId }, UserFollow.class);
+        return userFollow;
+    }
+
     public List<UserFollow> getFollows(Long id) {
         String sql = "select * from user_follows where user_id = [+]";
         List<UserFollow> userFollows = (ArrayList) dao.getList(sql, new Object[]{ id }, UserFollow.class);
         return userFollows;
     }
 
-    public Boolean saveFollow(UserFollow userFollow){
+    public void follow(UserFollow userFollow){
         String sql = "insert into user_follows (user_id, following_id) values ([+],[+])";
         dao.save(sql, new Object[] {
                 userFollow.getUserId(),
                 userFollow.getFollowingId()
         });
-        return true;
     }
 
+    public void unfollow(UserFollow userFollow) {
+        String sql = "delete from user_follows where user_id = [+] and folling_id = [+]";
+        dao.update(sql, new Object[] { userFollow.getUserId(), userFollow.getFollowingId() });
+    }
+
+    public Permission getPermission(Long userId, String permission) {
+        String sql = "select * from users where user_id = [+] and permission = '[+]'";
+        Permission userPermission = (Permission) dao.get(sql, new Object[] { userId, permission }, Permission.class);
+        return userPermission;
+    }
+
+    public void removePermission(Long id) {
+        String sql = "delete from user_permissions where id = [+]";
+        dao.update(sql, new Object[] { id });
+    }
 }

@@ -2,8 +2,17 @@ package io.informant.model;
 
 public class Permission {
 
+    long id;
     long userId;
     String permission;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public long getUserId() {
         return userId;

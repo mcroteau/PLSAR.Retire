@@ -51,7 +51,7 @@ public class PaperController {
 
         User authUser = controllerHelper.getUser(req, securityManager);
 
-        long startTime = informant.getDate(4);
+        long startTime = informant.getDate(7);
         long endTime = informant.getDate(0);
 
         String query = req.getValue("q");

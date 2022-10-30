@@ -682,8 +682,8 @@ public class ExperienceManager {
                 Object activeSubjectObject = resp.get(subjectElementClean);
                 if (activeSubjectObject == null) return false;
                 boolean activeSubjectObjectBoolean = (Boolean) activeSubjectObject;
-                if (!activeSubjectObjectBoolean && falseActive) return false;
-                if (activeSubjectObjectBoolean && !falseActive) return false;
+                if (!activeSubjectObjectBoolean && falseActive) return true;
+                if (activeSubjectObjectBoolean && !falseActive) return true;
             }
 
 

@@ -6,7 +6,7 @@
 </head>
 <body>
 
-<a href="#users/${userId}">
+<a href="/users/identity/${userId}">
     <img src="${userPhoto}" id="profile-img" class="profile-img-background"/>
 </a>
 

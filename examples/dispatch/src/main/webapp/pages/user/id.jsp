@@ -41,21 +41,38 @@
     #paper-editor{height:450px;background: #fff;border-bottom:dashed 1px #000;}
     #paper-editor:focus{background: #fff;}
     #paper-editor::placeholder{color:#000;}
-    .profile-img-background{background:#FF817A}
+    .profile-img-background{background:#FEF57A}
+    .profile-img{float:left;height:70px;width:70px;border-radius:170px;}
+    .left{float:left;}
+    .block{display:block}
+    .user-action{width:190px;}
 </style>
 
 
 <div id="row">
     <div id="left">
-        <a href="/users/identity/${userId}">
-            <img src="${userPhoto}" id="paper-profile-img" class="paper-profile-img profile-img-background"/>
-        </a>
-        <span id="occurrence">What's happening?</span>
-        <form action="/sheets/save" enctype="multipart/form-data" method="post">
-            <textarea name="paper-editor" id="paper-editor" placeholder="The giraffe may have consumed large sums of purple pineapples. please investigate."></textarea>
-            <input type="submit" value="Dispatch Intel &#8690;" class="blue button" id="dispatch"/>
-            <br class="clear"/>
-        </form>
+
+        <img src="${user.photo}" class="profile-img-background profile-img"/>
+        <br class="clear"/>
+
+        <h1 class="left">${user.name}</h1>
+        <br class="clear"/>
+        ${following}
+        <div class="left user-action">
+            <plsar:if spec="${following}">
+                <a href="/users/follow/${user.id}" class="future button">Follow</a>
+            </plsar:if>
+            <plsar:if spec="${!following}">
+                <a href="/users/unfollow/${user.id}" class="future button">Unfollow</a>
+            </plsar:if>
+            <span class="tiny block">Allows you to read what this individual has dispatched.</span>
+        </div>
+
+        <div class="left user-action">
+            <a href="/users/request/${user.id}" class="button yellow">Request Intel Access</a>
+            <span class="tiny block">Allows you to read what others have sent or @ to this individual</span>
+        </div>
+        <br class="clear"/>
     </div>
 
     <div id="middle">
@@ -89,7 +106,7 @@
 
                     <div class="paper-action-wrapper">
                         <span class="pretty-time">${paper.timeAgo}</span>
-                        <a href="/patron/${paper.id}" class="modern button action action-share">Share : ${paper.sharesCount}</a>
+                        <a href="/patron/${paper.id}" class="future button action action-share">Share : ${paper.sharesCount}</a>
 
                         <style>
                             .action{display:inline-block;}
