@@ -50,6 +50,7 @@ public class SpecTest extends BaseTest {
         sb.append("Nothing.\n");
         sb.append("</plsar:if>\n");
         String result = exp.execute(sb.toString(), pageCache, null,new ArrayList<>()).trim();
+        System.out.println("result:" + result);
         assertEquals("", result);
     }
 
@@ -110,5 +111,17 @@ public class SpecTest extends BaseTest {
         assertEquals("::0->Apache*0,0->Apache*1,0->Apache*2,:selected:1->Apache*0,1->Apache*1,1->Apache*2,::2->Apache*0,2->Apache*1,2->Apache*2,", result);
     }
 
-
+    @Test
+    public void g() throws PlsarException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
+        PageCache pageCache = this.create();
+        StringBuilder sb = new StringBuilder();
+        ExperienceManager exp = new ExperienceManager();
+        sb.append("<plsar:if spec=\"${tom.name == 'Tom'}\">\n");
+        sb.append("     <plsar:if spec=\"${condition}\">\n");
+        sb.append("         condition.\n");
+        sb.append("     </plsar:if>\n");
+        sb.append("</plsar:if>\n");
+        String result = exp.execute(sb.toString(), pageCache, null, new ArrayList<>()).replaceAll("([^\\S\\r\\n])+|(?:\\r?\\n)+", "");
+        assertEquals("condition.", result);
+    }
 }

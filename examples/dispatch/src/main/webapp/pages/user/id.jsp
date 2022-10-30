@@ -57,23 +57,28 @@
 
         <h1 class="left">${user.name}</h1>
         <br class="clear"/>
-        ${following}
-        <div class="left user-action">
-            <plsar:if spec="${!following}">
-                <a href="/users/follow/${user.id}" class="future button">Follow</a>
-            </plsar:if>
-            <plsar:if spec="${following}">
-                <a href="/users/unfollow/${user.id}" class="future button">Unfollow</a>
-            </plsar:if>
-            <span class="tiny block">Allows you to read what this individual has dispatched.</span>
-        </div>
 
-        <div class="left user-action">
-            <a href="/users/request/${user.id}" class="button yellow">Request Intel Access</a>
-            <span class="tiny block">Allows you to read what others have sent or @ to this individual</span>
-        </div>
-        <br class="clear"/>
+
+        ${!following}
+        <plsar:if spec="${userId != user.id}">
+            <div class="left user-action">
+                <p>Allows you to read what this individual has dispatched.</p>
+                <plsar:if spec="${!following}">
+                    <a href="/users/follow/${user.id}" class="future button">Follow</a>
+                </plsar:if>
+                <plsar:if spec="${following}">
+                    <a href="/users/unfollow/${user.id}" class="future button">Unfollow</a>
+                </plsar:if>
+            </div>
+
+            <div class="left user-action">
+                <p>Allows you to read what others have sent or @ to this individual</p>
+                <a href="/users/request/${user.id}" class="button yellow">Request Intel Access</a>
+            </div>
+            <br class="clear"/>
+        </plsar:if>
     </div>
+
 
     <div id="middle">
 

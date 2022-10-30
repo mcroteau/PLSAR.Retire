@@ -169,7 +169,6 @@ public class ExperienceManager {
                     if(!dataPartial.getComponents().isEmpty()){
                         for(ObjectComponent objectComponent : dataPartial.getComponents()) {
                             Object object = objectComponent.getObject();
-                            String activeField = objectComponent.getActiveField();
                             if (!passesSpec(object, specPartial, dataPartial, resp)) {
                                 passesObjectSpecsIterations = false;
                                 break specIteration;
@@ -606,17 +605,17 @@ public class ExperienceManager {
             String expressionElement = expressionElementClean.trim();
             String conditionalElement = getConditionalElement(expressionElement);
 
-            String subjectElement = expressionElement, predicateValue = "";
+            String subjectElement = expressionElement, predicateElementClean = "";
             if (!conditionalElement.equals("")) {
                 String[] expressionElements = expressionElement.split(conditionalElement);
                 subjectElement = expressionElements[ZERO].trim();
                 String predicateElement = expressionElements[ONE];
-                predicateValue = predicateElement.replaceAll("'", "").trim();
+                predicateElementClean = predicateElement.replaceAll("'", "").trim();
             }
 
             if (subjectElement.contains(".")) {
 
-                if (predicateValue.equals("") &&
+                if (predicateElementClean.equals("") &&
                         conditionalElement.equals("")) {
                     boolean falseActive = subjectElement.contains("!");
                     String subjectElementClean = subjectElement.replace("!", "");
@@ -651,7 +650,7 @@ public class ExperienceManager {
                     if (activeObjectValue == null) return false;
                     String subjectValue = String.valueOf(activeObjectValue);
                     Integer subjectNumericValue = Integer.parseInt(subjectValue);
-                    Integer predicateNumericValue = Integer.parseInt(predicateValue);
+                    Integer predicateNumericValue = Integer.parseInt(predicateElementClean);
                     if(getValidation(subjectNumericValue, predicateNumericValue, conditionalElement, expressionElement))return true;
                     return false;
                 }
@@ -668,14 +667,24 @@ public class ExperienceManager {
                     activeSubjectObject = getObjectValue(activeFieldElement, activeSubjectObject);
                 }
 
+                String[] activePredicateFieldElements = activeSubjectFields.split(DOT);
+                Object activePredicateObject = resp.get(subjectField);
+                if (activePredicateObject == null) return false;
+
+                for (String activeFieldElement : activePredicateFieldElements) {
+                    activePredicateObject = getObjectValue(activeFieldElement, activePredicateObject);
+                }
+
+                String subjectValue = String.valueOf(activeSubjectObject);
+                String predicateValue = String.valueOf(activeSubjectObject);
+
                 if (activeSubjectObject == null) {
                     if(!passesNilSpec(activeSubjectObject, predicateValue, conditionalElement))return false;
                 }
 
-                String subjectValue = String.valueOf(activeSubjectObject);
                 if(passesSpec(subjectValue, predicateValue, conditionalElement))return true;
 
-            } else if (predicateValue.equals("") &&
+            } else if (predicateElementClean.equals("") &&
                     conditionalElement.equals("")) {
                 boolean falseActive = subjectElement.contains("!");
                 String subjectElementClean = subjectElement.replace("!", "");
@@ -686,23 +695,50 @@ public class ExperienceManager {
                 if (activeSubjectObjectBoolean && !falseActive) return true;
             }
 
+            if(!predicateElementClean.equals("")) {
+                Object activeSubjectObject = resp.get(subjectElement);
+
+                String[] predicateFieldElements = predicateElementClean.split(DOT, 2);
+                String predicateField = predicateFieldElements[ZERO];
+                String predicateFieldElementsRemainder = predicateFieldElements[ONE];
+
+                String[] activePredicateFieldElements = predicateFieldElementsRemainder.split(DOT);
+                Object activePredicateObject = resp.get(predicateField);
+
+                for (String activeFieldElement : activePredicateFieldElements) {
+                    activePredicateObject = getObjectValue(activeFieldElement, activePredicateObject);
+                }
+
+                String subjectValue = String.valueOf(activeSubjectObject).trim();
+                String predicateValue = String.valueOf(activePredicateObject).trim();
+
+                if (activeSubjectObject == null) {
+                    if (!passesNilSpec(activeSubjectObject, predicateValue, conditionalElement)) return false;
+                }
+
+                if (passesSpec(subjectValue, predicateValue, conditionalElement)) return true;
+
+            }
 
             Object activeSubjectObject = resp.get(subjectElement);
-            if (activeSubjectObject == null) {
-                if(!passesNilSpec(activeSubjectObject, predicateValue, conditionalElement))return false;
-            }
             String subjectValue = String.valueOf(activeSubjectObject).trim();
-            if(!passesSpec(subjectValue, predicateValue, conditionalElement))return false;
+
+            if (activeSubjectObject == null) {
+                if (!passesNilSpec(activeSubjectObject, predicateElementClean, conditionalElement)) return false;
+            }
+
+            if (passesSpec(subjectValue, predicateElementClean, conditionalElement)) return true;
+
         }
         return true;
     }
 
-    boolean passesNilSpec(Object activePredicateObject, String predicateValue, String conditionalElement) {
-        if(activePredicateObject == null && predicateValue.equals("null") && conditionalElement.equals("=="))return true;
-        if(activePredicateObject == null && predicateValue.equals("null") && conditionalElement.equals("!="))return false;
-        if(activePredicateObject == null && predicateValue.equals("") && conditionalElement.equals("=="))return true;
-        if(activePredicateObject == null && predicateValue.equals("") && conditionalElement.equals(""))return false;
-        if(activePredicateObject == null && predicateValue.equals("") && conditionalElement.equals("!="))return false;
+    boolean passesNilSpec(Object activeSubjectObject, Object activePredicateObject, String conditionalElement) {
+        if(activeSubjectObject == null && activePredicateObject.equals("null") && conditionalElement.equals("=="))return true;
+        if(activeSubjectObject == null && activePredicateObject.equals("null") && conditionalElement.equals("!="))return false;
+        if(activeSubjectObject == null && activePredicateObject.equals("") && conditionalElement.equals("=="))return true;
+        if(activeSubjectObject == null && activePredicateObject.equals("") && conditionalElement.equals(""))return false;
+        if(activeSubjectObject == null && activePredicateObject.equals("") && conditionalElement.equals("!="))return false;
         return false;
     }
 

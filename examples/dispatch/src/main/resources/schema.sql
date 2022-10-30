@@ -11,6 +11,7 @@ create table users (
 );
 
 create table user_permissions(
+    id bigint PRIMARY KEY AUTO_INCREMENT,
     user_id bigint REFERENCES users(id),
     permission character varying(55)
 );

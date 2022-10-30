@@ -15,7 +15,7 @@ abstract class BaseTest {
 
     public PageCache create() {
 
-        PageCache pageCache = new PageCache();
+        PageCache cache = new PageCache();
 
         List<Todo> todos = new ArrayList<>();
 
@@ -45,19 +45,19 @@ abstract class BaseTest {
         Actor burgandy = getBlankPet();
         Actor iceman = getNilPet();
 
-        pageCache.set("not", null);
-        pageCache.set("blank", "");
-        pageCache.set("message", "Strain.");
-        pageCache.set("nil", "");
-        pageCache.set("tom", topgun);
-        pageCache.set("brad", blackjoe);
-        pageCache.set("will", burgandy);
-        pageCache.set("val", iceman);
-        pageCache.set("todos", todos);
-        pageCache.set("true", true);
-        pageCache.set("condition", true);
+        cache.set("not", null);
+        cache.set("blank", "");
+        cache.set("message", "Effort.");
+        cache.set("nil", "");
+        cache.set("tom", topgun);
+        cache.set("brad", blackjoe);
+        cache.set("will", burgandy);
+        cache.set("val", iceman);
+        cache.set("todos", todos);
+        cache.set("true", true);
+        cache.set("condition", true);
 
-        return pageCache;
+        return cache;
     }
 
     Actor getIt(){

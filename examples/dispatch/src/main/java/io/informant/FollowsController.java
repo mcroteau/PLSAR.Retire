@@ -39,6 +39,8 @@ public class FollowsController {
         String permission = "follows:maintenance:" + storedFollow.getId();
         userRepo.savePermission(authUser.getId(), permission);
 
+        Permission storedPermission = userRepo.getPermission(authUser.getId(), permission);
+
         cache.set("message", "success following.");
         return "redirect:/users/identity/" + id;
     }
@@ -66,7 +68,7 @@ public class FollowsController {
         if(storedFollow != null){
             userRepo.unfollow(userFollow);
             Permission userPermission = userRepo.getPermission(authUser.getId(), permission);
-            userRepo.removePermission(userPermission.getId());
+            userRepo.deletePermission(userPermission.getId());
         }
 
         cache.set("message", "unfollowing." );

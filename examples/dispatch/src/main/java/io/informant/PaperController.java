@@ -44,7 +44,7 @@ public class PaperController {
 
     @Design("/designs/sheets.jsp")
     @Get("/sheets/{offset}")
-    public String activity(PageCache pageCache, NetworkRequest req, SecurityManager securityManager, @Component Integer offset) throws ParseException {
+    public String activity(PageCache cache, NetworkRequest req, SecurityManager securityManager, @Component Integer offset) throws ParseException {
         if(!securityManager.isAuthenticated(req)){
             return "redirect:/signin";
         }
@@ -83,7 +83,8 @@ public class PaperController {
             papers = controllerHelper.getPapers(startTime, endTime, offset, authUser);
         }
 
-        pageCache.set("papers", papers);
+        cache.set("date", new Date());
+        cache.set("papers", papers);
         return "/pages/paper/sheets.jsp";
     }
 

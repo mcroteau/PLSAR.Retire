@@ -114,29 +114,24 @@ public class UserRepo {
         return true;
     }
 
-    public String getUserPassword(String phone) {
-        User user = getPhone(phone);
-        return user.getPassword();
-    }
-
-    public boolean savePermission(long userId, String permission){
+    public void savePermission(long userId, String permission){
         String sql = "insert into user_permissions (user_id, permission) values ([+], '[+]')";
         dao.save(sql, new Object[]{ userId,  permission });
-        return true;
     }
 
-    public Set<String> getUserPermissions(long id) {
-        String sql = "select permission from user_permissions where user_id = [+]";
-        List<Permission> permissionsList = (ArrayList) dao.getList(sql, new Object[]{ id }, Permission.class);
-        Set<String> permissions = new HashSet<>();
-        for(Permission permission: permissionsList){
-            permissions.add(permission.getPermission());
-        }
-        return permissions;
+    public Permission getPermission(Long userId, String permission) {
+        String sql = "select * from user_permissions where user_id = [+] and permission = '[+]'";
+        Permission userPermission = (Permission) dao.get(sql, new Object[] { userId, permission }, Permission.class);
+        return userPermission;
+    }
+
+    public void deletePermission(Long id) {
+        String sql = "delete from user_permissions where id = [+]";
+        dao.update(sql, new Object[] { id });
     }
 
     public UserFollow getFollow(Long userId, Long followingId) {
-        String sql = "select * from user_follows where id = [+]";
+        String sql = "select * from user_follows where user_id = [+] and following_id = [+]";
         UserFollow userFollow = (UserFollow) dao.get(sql, new Object[] { userId, followingId }, UserFollow.class);
         return userFollow;
     }
@@ -160,14 +155,4 @@ public class UserRepo {
         dao.update(sql, new Object[] { userFollow.getUserId(), userFollow.getFollowingId() });
     }
 
-    public Permission getPermission(Long userId, String permission) {
-        String sql = "select * from users where user_id = [+] and permission = '[+]'";
-        Permission userPermission = (Permission) dao.get(sql, new Object[] { userId, permission }, Permission.class);
-        return userPermission;
-    }
-
-    public void removePermission(Long id) {
-        String sql = "delete from user_permissions where id = [+]";
-        dao.update(sql, new Object[] { id });
-    }
 }
