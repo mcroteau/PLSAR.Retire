@@ -683,6 +683,7 @@ public class ExperienceManager {
                 }
 
                 if(passesSpec(subjectValue, predicateValue, conditionalElement))return true;
+                return false;
 
             } else if (predicateElementClean.equals("") &&
                     conditionalElement.equals("")) {
@@ -697,6 +698,11 @@ public class ExperienceManager {
 
             if(!predicateElementClean.equals("")) {
                 Object activeSubjectObject = resp.get(subjectElement);
+
+                if(!predicateElementClean.contains(".") && activeSubjectObject == null) {
+                    if (passesNilSpec(activeSubjectObject, predicateElementClean, conditionalElement)) return true;
+                    return false;
+                }
 
                 String[] predicateFieldElements = predicateElementClean.split(DOT, 2);
                 String predicateField = predicateFieldElements[ZERO];
@@ -713,11 +719,12 @@ public class ExperienceManager {
                 String predicateValue = String.valueOf(activePredicateObject).trim();
 
                 if (activeSubjectObject == null) {
-                    if (!passesNilSpec(activeSubjectObject, predicateValue, conditionalElement)) return false;
+                    if (passesNilSpec(activeSubjectObject, predicateValue, conditionalElement)) return true;
+                    return false;
                 }
 
                 if (passesSpec(subjectValue, predicateValue, conditionalElement)) return true;
-
+                return false;
             }
 
             Object activeSubjectObject = resp.get(subjectElement);
@@ -725,10 +732,11 @@ public class ExperienceManager {
 
             if (activeSubjectObject == null) {
                 if (!passesNilSpec(activeSubjectObject, predicateElementClean, conditionalElement)) return false;
+                return true;
             }
 
             if (passesSpec(subjectValue, predicateElementClean, conditionalElement)) return true;
-
+            return false;
         }
         return true;
     }
@@ -744,7 +752,9 @@ public class ExperienceManager {
 
     boolean passesSpec(String subjectValue, String predicateValue, String conditionalElement) {
         if(subjectValue.equals(predicateValue) && conditionalElement.equals("=="))return true;
+        if(subjectValue.equals(predicateValue) && conditionalElement.equals("!="))return false;
         if(!subjectValue.equals(predicateValue) && conditionalElement.equals("!="))return true;
+        if(!subjectValue.equals(predicateValue) && conditionalElement.equals("=="))return false;
         return false;
     }
 

@@ -221,7 +221,7 @@ public class PaperController {
         return "redirect:/sheets/0";
     }
 
-    @Post("/heart/{id}")
+    @Post("/sheets/heart/{id}")
     public String heart(PageCache pageCache, NetworkRequest req, SecurityManager securityManager, @Component Long id) throws ParseException {
         if(!securityManager.isAuthenticated(req)){
             pageCache.set("message", "authentication required.");
@@ -255,20 +255,15 @@ public class PaperController {
             storedPaper.setLikesCount(likesCount);
         }
 
-        SimpleDateFormat format = new SimpleDateFormat(informant.getDelimeter());
+        SimpleDateFormat format = new SimpleDateFormat(informant.getDateFormat());
         Date postedDate = format.parse(Long.toString(storedPaper.getTimeCreated()));
 
         PrettyTime prettyTime = new PrettyTime();
         storedPaper.setTimeAgo(prettyTime.format(postedDate));
 
-        if(!storedPaper.getSixtyFour().equals("")) {
-            List<String> photos = Arrays.asList(storedPaper.getSixtyFour().split(informant.getDelimeter()));
-            storedPaper.setPhotos(photos);
-        }
-
         paperRepo.update(storedPaper);
 
-        return "redirect:/sheets/feature/" + storedPaper;
+        return "redirect:/sheets/feature/" + storedPaper.getId();
     }
 
 }

@@ -38,7 +38,7 @@ public class SpecTest extends BaseTest {
         sb.append("${message}\n");
         sb.append("</plsar:if>\n");
         String result = exp.execute(sb.toString(), resp, null,new ArrayList<>()).trim();
-        assertEquals("Strain.", result);
+        assertEquals("Effort.", result);
     }
 
     @Test
@@ -47,10 +47,9 @@ public class SpecTest extends BaseTest {
         StringBuilder sb = new StringBuilder();
         ExperienceManager exp = new ExperienceManager();
         sb.append("<plsar:if spec=\"${blank != ''}\">\n");
-        sb.append("Nothing.\n");
+        sb.append("nothing.\n");
         sb.append("</plsar:if>\n");
         String result = exp.execute(sb.toString(), pageCache, null,new ArrayList<>()).trim();
-        System.out.println("result:" + result);
         assertEquals("", result);
     }
 
