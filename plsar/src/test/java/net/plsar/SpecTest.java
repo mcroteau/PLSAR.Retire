@@ -110,4 +110,5 @@ public class SpecTest extends BaseTest {
         assertEquals("::0->Apache*0,0->Apache*1,0->Apache*2,:selected:1->Apache*0,1->Apache*1,1->Apache*2,::2->Apache*0,2->Apache*1,2->Apache*2,", result);
     }
 
+
 }

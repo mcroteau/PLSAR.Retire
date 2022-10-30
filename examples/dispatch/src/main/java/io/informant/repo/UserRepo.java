@@ -156,7 +156,7 @@ public class UserRepo {
     }
 
     public void unfollow(UserFollow userFollow) {
-        String sql = "delete from user_follows where user_id = [+] and folling_id = [+]";
+        String sql = "delete from user_follows where user_id = [+] and following_id = [+]";
         dao.update(sql, new Object[] { userFollow.getUserId(), userFollow.getFollowingId() });
     }
 

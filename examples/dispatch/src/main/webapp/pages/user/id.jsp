@@ -59,10 +59,10 @@
         <br class="clear"/>
         ${following}
         <div class="left user-action">
-            <plsar:if spec="${following}">
+            <plsar:if spec="${!following}">
                 <a href="/users/follow/${user.id}" class="future button">Follow</a>
             </plsar:if>
-            <plsar:if spec="${!following}">
+            <plsar:if spec="${following}">
                 <a href="/users/unfollow/${user.id}" class="future button">Unfollow</a>
             </plsar:if>
             <span class="tiny block">Allows you to read what this individual has dispatched.</span>

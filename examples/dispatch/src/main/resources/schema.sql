@@ -49,5 +49,3 @@ insert into user_permissions(user_id, permission) values (1, 'users:maintenance:
 insert into user_permissions(user_id, permission) values (1, 'users:maintenance:3');
 insert into user_permissions(user_id, permission) values (2, 'users:maintenance:2');
 insert into user_permissions(user_id, permission) values (3, 'users:maintenance:3');
-insert into user_follows(user_id, following_id) values(1,2);
-insert into user_follows(user_id, following_id) values(2,1);

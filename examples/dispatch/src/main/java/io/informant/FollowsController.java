@@ -53,14 +53,18 @@ public class FollowsController {
         String credential = securityManager.getUser(req);
         User authUser = userRepo.getPhone(credential);
 
+        UserFollow storedFollow = userRepo.getFollow(authUser.getId(), id);
+        String permission = "follows:maintenance:" + storedFollow.getId();
+
+        if(!securityManager.hasPermission(permission, req)){
+            cache.set("message", "permission required.");
+            return "redirect:/users/identity/" + id;
+        }
+
         UserFollow userFollow = new UserFollow(authUser.getId(), id);
 
-        UserFollow storedFollow = userRepo.getFollow(authUser.getId(), id);
         if(storedFollow != null){
-
             userRepo.unfollow(userFollow);
-
-            String permission = "follows:maintenance:" + storedFollow.getId();
             Permission userPermission = userRepo.getPermission(authUser.getId(), permission);
             userRepo.removePermission(userPermission.getId());
         }
