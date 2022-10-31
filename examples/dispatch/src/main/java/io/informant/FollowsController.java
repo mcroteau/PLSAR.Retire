@@ -3,6 +3,7 @@ package io.informant;
 import io.informant.model.Permission;
 import io.informant.model.User;
 import io.informant.model.UserFollow;
+import io.informant.repo.FollowsRepo;
 import io.informant.repo.UserRepo;
 import net.plsar.annotations.Bind;
 import net.plsar.annotations.Component;
@@ -18,6 +19,9 @@ public class FollowsController {
     @Bind
     UserRepo userRepo;
 
+    @Bind
+    FollowsRepo followsRepo;
+
     @Get("/users/follow/{id}")
     public String follow(PageCache cache, NetworkRequest req, SecurityManager securityManager, @Component Long id){
         if(!securityManager.isAuthenticated(req)){
@@ -30,16 +34,14 @@ public class FollowsController {
 
         UserFollow userFollow = new UserFollow(authUser.getId(), id);
 
-        UserFollow existingFollow = userRepo.getFollow(authUser.getId(), id);
+        UserFollow existingFollow = followsRepo.get(authUser.getId(), id);
         if(existingFollow == null){
-            userRepo.follow(userFollow);
+            followsRepo.follow(userFollow);
         }
 
-        UserFollow storedFollow = userRepo.getFollow(authUser.getId(), id);
+        UserFollow storedFollow = followsRepo.get(authUser.getId(), id);
         String permission = "follows:maintenance:" + storedFollow.getId();
         userRepo.savePermission(authUser.getId(), permission);
-
-        Permission storedPermission = userRepo.getPermission(authUser.getId(), permission);
 
         cache.set("message", "success following.");
         return "redirect:/users/identity/" + id;
@@ -55,7 +57,7 @@ public class FollowsController {
         String credential = securityManager.getUser(req);
         User authUser = userRepo.getPhone(credential);
 
-        UserFollow storedFollow = userRepo.getFollow(authUser.getId(), id);
+        UserFollow storedFollow = followsRepo.get(authUser.getId(), id);
         String permission = "follows:maintenance:" + storedFollow.getId();
 
         if(!securityManager.hasPermission(permission, req)){
@@ -66,7 +68,7 @@ public class FollowsController {
         UserFollow userFollow = new UserFollow(authUser.getId(), id);
 
         if(storedFollow != null){
-            userRepo.unfollow(userFollow);
+            followsRepo.unfollow(userFollow);
             Permission userPermission = userRepo.getPermission(authUser.getId(), permission);
             userRepo.deletePermission(userPermission.getId());
         }

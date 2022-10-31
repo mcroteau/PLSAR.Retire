@@ -1,15 +1,11 @@
 package io.informant.repo;
 
+import io.informant.model.*;
 import net.plsar.Dao;
 import net.plsar.annotations.Repository;
-import io.informant.model.Permission;
-import io.informant.model.UserFollow;
-import io.informant.model.User;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Repository
 public class UserRepo {
@@ -128,31 +124,6 @@ public class UserRepo {
     public void deletePermission(Long id) {
         String sql = "delete from user_permissions where id = [+]";
         dao.update(sql, new Object[] { id });
-    }
-
-    public UserFollow getFollow(Long userId, Long followingId) {
-        String sql = "select * from user_follows where user_id = [+] and following_id = [+]";
-        UserFollow userFollow = (UserFollow) dao.get(sql, new Object[] { userId, followingId }, UserFollow.class);
-        return userFollow;
-    }
-
-    public List<UserFollow> getFollows(Long id) {
-        String sql = "select * from user_follows where user_id = [+]";
-        List<UserFollow> userFollows = (ArrayList) dao.getList(sql, new Object[]{ id }, UserFollow.class);
-        return userFollows;
-    }
-
-    public void follow(UserFollow userFollow){
-        String sql = "insert into user_follows (user_id, following_id) values ([+],[+])";
-        dao.save(sql, new Object[] {
-                userFollow.getUserId(),
-                userFollow.getFollowingId()
-        });
-    }
-
-    public void unfollow(UserFollow userFollow) {
-        String sql = "delete from user_follows where user_id = [+] and following_id = [+]";
-        dao.update(sql, new Object[] { userFollow.getUserId(), userFollow.getFollowingId() });
     }
 
 }

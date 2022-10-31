@@ -1,14 +1,16 @@
 package io.informant.model;
 
-public class Connection {
-    public Connection(Long userId, Long connectedUserId) {
+public class IntelAccess {
+    public IntelAccess(Long userId, Long accessUserId) {
         this.userId = userId;
-        this.connectedUserId = connectedUserId;
+        this.accessUserId = accessUserId;
     }
+
+    public IntelAccess(){}
 
     Long id;
     Long userId;
-    Long connectedUserId;
+    Long accessUserId;
 
     public Long getId() {
         return id;
@@ -26,11 +28,11 @@ public class Connection {
         this.userId = userId;
     }
 
-    public Long getConnectedUserId() {
-        return connectedUserId;
+    public Long getAccessUserId() {
+        return accessUserId;
     }
 
-    public void setConnectedUserId(Long connectedUserId) {
-        this.connectedUserId = connectedUserId;
+    public void setAccessUserId(Long accessUserId) {
+        this.accessUserId = accessUserId;
     }
 }

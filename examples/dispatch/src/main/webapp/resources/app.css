@@ -398,10 +398,10 @@ input[type="submit"].button.green{
     margin-bottom:23px;
     padding:10px 20px;
     border:solid 1px #617078;
-    background:#fff;
-    border-radius: 3px;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
+    background: transparent;
+    border-radius: 9px;
+    -moz-border-radius: 9px;
+    -webkit-border-radius: 9px;
 }
 
 .tiny{

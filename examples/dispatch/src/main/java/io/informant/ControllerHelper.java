@@ -1,5 +1,6 @@
 package io.informant;
 
+import io.informant.repo.FollowsRepo;
 import net.plsar.annotations.Bind;
 import net.plsar.annotations.Service;
 import net.plsar.model.NetworkRequest;
@@ -28,12 +29,14 @@ public class ControllerHelper {
         this.informant = new Informant();
     }
 
+    @Bind
+    PaperRepo paperRepo;
+
+    @Bind
+    FollowsRepo followsRepo;
 
     @Bind
     UserRepo userRepo;
-
-    @Bind
-    PaperRepo paperRepo;
 
     public User getUser(NetworkRequest req, SecurityManager securityManager){
         String credential = securityManager.getUser(req);
@@ -44,7 +47,7 @@ public class ControllerHelper {
 
     public List<Paper> getPapers(Long startTime, Long endTime, Integer offset, User authdUser) throws ParseException {
 
-        List<UserFollow> userFollows = userRepo.getFollows(authdUser.getId());
+        List<UserFollow> userFollows = followsRepo.getList(authdUser.getId());
         List<Paper> papers = paperRepo.getList(offset, startTime, endTime, authdUser, userFollows);
         List<Paper> papersGo = getPopulatePapersMetaData(papers);
 

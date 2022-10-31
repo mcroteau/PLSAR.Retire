@@ -1,11 +1,14 @@
 package io.informant.model;
 
 public class Request {
-    public Request(Long userId, Long requestUserId, Boolean approved) {
+
+
+    public Request(Long userId, Long requestUserId) {
         this.userId = userId;
         this.requestUserId = requestUserId;
-        this.approved = approved;
     }
+
+    public Request(){}
 
     Long id;
     Long userId;

@@ -42,10 +42,10 @@ create table requests (
     approved boolean default false
 );
 
-create table connections (
+create table intel_access (
     id bigint PRIMARY KEY AUTO_INCREMENT,
     user_id bigint REFERENCES users(id),
-    connected_user_id bigint REFERENCES users(id)
+    access_user_id bigint REFERENCES users(id)
 );
 
 

@@ -60,18 +60,23 @@
 
         <plsar:if spec="${userId != user.id}">
             <div class="left user-action">
-                <p>Allows users to read what this individual has dispatched in the dispatch feed.</p>
                 <plsar:if spec="${!following}">
                     <a href="/users/follow/${user.id}" class="future button">Follow</a>
                 </plsar:if>
                 <plsar:if spec="${following}">
                     <a href="/users/unfollow/${user.id}" class="future button">Unfollow</a>
                 </plsar:if>
+                <p>Get activity in your dispatch feed by this user.</p>
             </div>
 
             <div class="left user-action">
-                <p>Allows a user to read what others have sent or @ to this individual</p>
-                <a href="/users/request/${user.id}" class="button yellow">Request Intel Access</a>
+                <plsar:if spec="${!requested}">
+                    <a href="/users/request/${user.id}" class="button yellow">Request Intel Access</a>
+                </plsar:if>
+                <plsar:if spec="${requested}">
+                    <a href="/users/request/cancel/${user.id}" class="button remove">Cancel Intel Access</a>
+                </plsar:if>
+                <p>Get access to what users have @ to this user.</p>
             </div>
             <br class="clear"/>
         </plsar:if>

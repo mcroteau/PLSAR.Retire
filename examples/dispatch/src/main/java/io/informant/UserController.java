@@ -1,8 +1,8 @@
 package io.informant;
 
-import io.informant.model.Paper;
-import io.informant.model.Permission;
-import io.informant.model.UserFollow;
+import io.informant.model.*;
+import io.informant.repo.FollowsRepo;
+import io.informant.repo.RequestRepo;
 import net.plsar.annotations.Bind;
 import net.plsar.annotations.Component;
 import net.plsar.annotations.Controller;
@@ -11,7 +11,6 @@ import net.plsar.annotations.http.Get;
 import net.plsar.model.PageCache;
 import net.plsar.model.NetworkRequest;
 import net.plsar.security.SecurityManager;
-import io.informant.model.User;
 import io.informant.repo.UserRepo;
 
 import java.text.ParseException;
@@ -29,6 +28,12 @@ public class UserController {
 
     @Bind
     UserRepo userRepo;
+
+    @Bind
+    FollowsRepo followsRepo;
+
+    @Bind
+    RequestRepo requestRepo;
 
     @Bind
     ControllerHelper controllerHelper;
@@ -65,13 +70,22 @@ public class UserController {
         Long endTime = informant.getDate(0);
         List<Paper> papers = controllerHelper.getPapers(startTime, endTime, 0, authUser);
 
-        UserFollow storedFollow = userRepo.getFollow(authUser.getId(), id);
+        UserFollow storedFollow = followsRepo.get(authUser.getId(), id);
 
         cache.set("following", false);
 
         if(storedFollow != null){
             cache.set("following", true);
         }
+
+        Request storedRequest = requestRepo.get(authUser.getId(), id);
+
+        cache.set("requested", false);
+
+        if(storedRequest != null){
+            cache.set("requested", true);
+        }
+
 
         cache.set("user", user);
         cache.set("papers", papers);
