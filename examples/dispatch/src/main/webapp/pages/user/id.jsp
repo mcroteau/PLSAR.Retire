@@ -58,11 +58,9 @@
         <h1 class="left">${user.name}</h1>
         <br class="clear"/>
 
-
-        ${!following}
         <plsar:if spec="${userId != user.id}">
             <div class="left user-action">
-                <p>Allows you to read what this individual has dispatched.</p>
+                <p>Allows users to read what this individual has dispatched in the dispatch feed.</p>
                 <plsar:if spec="${!following}">
                     <a href="/users/follow/${user.id}" class="future button">Follow</a>
                 </plsar:if>
@@ -72,11 +70,12 @@
             </div>
 
             <div class="left user-action">
-                <p>Allows you to read what others have sent or @ to this individual</p>
+                <p>Allows a user to read what others have sent or @ to this individual</p>
                 <a href="/users/request/${user.id}" class="button yellow">Request Intel Access</a>
             </div>
             <br class="clear"/>
         </plsar:if>
+
     </div>
 
 
