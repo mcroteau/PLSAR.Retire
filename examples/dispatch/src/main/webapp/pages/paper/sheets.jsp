@@ -89,7 +89,7 @@
 
                     <div class="paper-action-wrapper">
                         <span class="pretty-time">${paper.timeAgo}</span>
-                        <a href="/patron/${paper.id}" class="future button action action-share">Share : ${paper.sharesCount}</a>
+                        <a href="/sheets/patron/${paper.id}" class="future button action action-share">Share : ${paper.sharesCount}</a>
 
                         <style>
                             .action{display:inline-block;}
