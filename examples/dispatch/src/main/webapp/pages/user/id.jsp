@@ -8,6 +8,7 @@
         width: 43%;
         overflow:auto;
         background: #f5f7f8;
+        background: #fff;
     }
     #middle{
         text-align: left;
@@ -71,12 +72,12 @@
 
             <div class="left user-action">
                 <plsar:if spec="${!requested}">
-                    <a href="/users/request/${user.id}" class="button yellow">Request Intel Access</a>
+                    <a href="/users/request/${user.id}" class="button yellow">Request Access</a>
                 </plsar:if>
                 <plsar:if spec="${requested}">
-                    <a href="/users/request/cancel/${user.id}" class="button remove">Cancel Intel Access</a>
+                    <a href="/users/request/cancel/${user.id}" class="button remove">Cancel Access</a>
                 </plsar:if>
-                <p>Get access to what users have @ to this user.</p>
+                <p>Get reference to what users have @ to this user.</p>
             </div>
             <br class="clear"/>
         </plsar:if>

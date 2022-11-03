@@ -1,16 +1,20 @@
 package io.informant.repo;
 
-import io.informant.model.IntelAccess;
+import io.informant.model.Reference;
 import io.informant.model.Request;
+import io.informant.model.User;
 import net.plsar.Dao;
 import net.plsar.annotations.Repository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Repository
-public class RequestRepo {
+public class ReferenceRepo {
 
     Dao dao;
 
-    public RequestRepo(Dao dao){
+    public ReferenceRepo(Dao dao){
         this.dao = dao;
     }
 
@@ -43,17 +47,28 @@ public class RequestRepo {
         dao.update(sql, new Object[]{ false, request.getId() });
     }
 
-    public void allow(IntelAccess intelAccess) {
-        String sql = "insert into intel_access (user_id, access_user_id) values ([+],[+])";
+    public void allow(Reference reference) {
+        String sql = "insert into info_access (user_id, access_user_id) values ([+],[+])";
         dao.save(sql, new Object[]{
-            intelAccess.getUserId(),
-            intelAccess.getAccessUserId()
+            reference.getUserId(),
+            reference.getAccessUserId()
         });
     }
 
-    public void revoke(IntelAccess intelAccess) {
-        String sql = "delete from intelAccess where user_id = [+] and access_user_id = [+]";
-        dao.update(sql, new Object[] { intelAccess.getUserId(), intelAccess.getAccessUserId() });
+    public void remove(Reference reference) {
+        String sql = "delete from info_access where user_id = [+] and access_user_id = [+]";
+        dao.update(sql, new Object[] { reference.getUserId(), reference.getAccessUserId() });
     }
 
+    public List<Request> getRequests(Long id) {
+        String sql = "select * from requests where user_id";
+        List<Request> references = (ArrayList) dao.getList(sql, new Object[]{ id }, Request.class);
+        return references;
+    }
+
+    public List<Reference> getReferences(Long id) {
+        String sql = "select * from references where user_id";
+        List<Reference> references = (ArrayList) dao.getList(sql, new Object[]{ id }, Reference.class);
+        return references;
+    }
 }

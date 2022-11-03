@@ -1,12 +1,12 @@
 package io.informant.model;
 
-public class IntelAccess {
-    public IntelAccess(Long userId, Long accessUserId) {
+public class Reference {
+    public Reference(Long userId, Long accessUserId) {
         this.userId = userId;
         this.accessUserId = accessUserId;
     }
 
-    public IntelAccess(){}
+    public Reference(){}
 
     Long id;
     Long userId;

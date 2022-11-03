@@ -8,6 +8,7 @@
         width: 43%;
         overflow:auto;
         background: #f5f7f8;
+        background: #fff;
     }
     #middle{
         text-align: left;

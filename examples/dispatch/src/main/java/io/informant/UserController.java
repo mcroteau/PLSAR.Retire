@@ -2,7 +2,7 @@ package io.informant;
 
 import io.informant.model.*;
 import io.informant.repo.FollowsRepo;
-import io.informant.repo.RequestRepo;
+import io.informant.repo.ReferenceRepo;
 import net.plsar.annotations.Bind;
 import net.plsar.annotations.Component;
 import net.plsar.annotations.Controller;
@@ -33,7 +33,7 @@ public class UserController {
     FollowsRepo followsRepo;
 
     @Bind
-    RequestRepo requestRepo;
+    ReferenceRepo referenceRepo;
 
     @Bind
     ControllerHelper controllerHelper;
@@ -78,14 +78,15 @@ public class UserController {
             cache.set("following", true);
         }
 
-        Request storedRequest = requestRepo.get(authUser.getId(), id);
-
+        Request storedRequest = referenceRepo.get(authUser.getId(), id);
         cache.set("requested", false);
 
         if(storedRequest != null){
             cache.set("requested", true);
         }
 
+        List<Request> requests = referenceRepo.getRequests(id);
+        List<Reference> references = referenceRepo.getReferences(id);
 
         cache.set("user", user);
         cache.set("papers", papers);

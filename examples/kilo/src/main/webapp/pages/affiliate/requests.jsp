@@ -47,7 +47,7 @@
     <h3>What are Business Partner requests?</h3>
 
     <p>Business Partner requests are requests made by individuals who are interested in
-    running an online store as an affiliate or business partner. They gain intelAccess to your
+    running an online store as an affiliate or business partner. They gain reference to your
     products and can set prices and add designs to your item page. They cannot change
     quantity, descriptions or item options.</p>
 </ocean:if>
